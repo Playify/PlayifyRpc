@@ -1,0 +1,32 @@
+{
+  "compilerOptions":{
+    "experimentalDecorators": true,
+    "target":"ESNext",
+    "module":"ESNext",
+    "moduleResolution":"node",
+    "allowSyntheticDefaultImports":true,
+    "esModuleInterop":true,
+    "types":[
+      "vite/client",
+      "node"
+    ],
+    "lib":[
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+    "noEmit":true,
+    "isolatedModules":true,
+    "alwaysStrict":true,
+    "noImplicitAny":true,
+    "strictBindCallApply":true,
+    "noImplicitReturns":true,
+    "noImplicitThis":true,
+    "strictNullChecks":true,
+    "strict":true,
+    //"noUncheckedIndexedAccess":true,
+    
+    "sourceMap":true,
+    "rootDir":"src"
+  }
+}
