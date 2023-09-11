@@ -1,5 +1,5 @@
 import {RpcId} from "../connection/RpcId";
-import {callFunction} from "./functions/FunctionCallContext";
+import {callRemoteFunction} from "./functions/FunctionCallContext";
 import {PendingCall} from "./functions/PendingCall";
 import {Func,registeredFunctions} from "../internal/RegisteredTypes";
 
@@ -25,7 +25,7 @@ export function isRemoteFunction(func: Func): func is RemoteFunction{
 
 export function createRemoteFunction<T extends ((...args: any)=>any)>(type: string | null,method: string): RemoteFunction<T>{
 	return Object.freeze(Object.assign(
-		((...params: any[])=>callFunction(type,method,...params)) as any,
+		((...params: any[])=>callRemoteFunction(type,method,...params)) as any,
 		{
 			type:type,
 			method,

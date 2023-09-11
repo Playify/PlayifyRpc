@@ -1,8 +1,8 @@
 import {RpcNameOrId,setName} from "./connection/IdAndName";
 import {isConnected,waitConnected} from "./connection/WebSocketConnection";
-import {createRpcObject,RPC_ROOT} from "./types/RpcObject";
+import {createRemoteObject,RPC_ROOT} from "./types/RpcObject";
 import {createRemoteFunction,registerFunction,unregisterFunction} from "./types/RemoteFunction";
-import {callFunction,callLocal,FunctionCallContext,getFunctionContext} from "./types/functions/FunctionCallContext";
+import {callRemoteFunction,callLocal,FunctionCallContext,getFunctionContext} from "./types/functions/FunctionCallContext";
 import {registerType,unregisterType} from "./internal/RegisteredTypes";
 import {RpcId} from "./connection/RpcId";
 
@@ -34,13 +34,13 @@ export class Rpc{
 	public static get waitUntilConnected():Promise<void>{return waitConnected();}
 	
 	//Functions
-	public static createRemoteObject=createRpcObject;
-	public static createRemoteFunction=createRemoteFunction;
+	public static createObject=createRemoteObject;
+	public static createFunction=createRemoteFunction;
 	public static registerFunction=registerFunction;
 	public static unregisterFunction=unregisterFunction;
 	
 	public static callLocal=callLocal;//Call function and get a PendingCall, this allows the use of the FunctionCallContext within the function
-	public static callFunction=callFunction;//Call remote function
+	public static callFunction=callRemoteFunction;//Call remote function
 	
 	public static getContext:()=>FunctionCallContext=getFunctionContext;
 	
@@ -49,10 +49,12 @@ export class Rpc{
 	public static unregisterType=unregisterType;
 	
 	
-	public static checkTypes=async(...types:string[])=>await callFunction<number>(null,'?',...types);
+	public static checkTypes=async(...types:string[])=>await callRemoteFunction<number>(null,'?',...types);
 	public static checkType=async(type:string)=>(await Rpc.checkTypes(type))!=0;
-	public static getAllTypes=async()=>await callFunction<string[]>(null,'T');
-	public static getAllConnections=async()=>await callFunction<string[]>(null,'C');
+	public static getAllTypes=async()=>await callRemoteFunction<string[]>(null,'T');
+	public static getAllConnections=async()=>await callRemoteFunction<string[]>(null,'C');
 	
 	public static objects=RPC_ROOT;
 }
+
+//TODO mixup between type and object, they should be one and the same

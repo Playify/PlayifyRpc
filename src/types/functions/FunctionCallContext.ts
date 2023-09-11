@@ -25,7 +25,7 @@ export function getFunctionContext(): FunctionCallContext{
 
 let nextId=0;
 
-export function callFunction<T=unknown>(type: string | null,method: string,...args: any[]): PendingCall<T>{
+export function callRemoteFunction<T=unknown>(type: string | null,method: string,...args: any[]): PendingCall<T>{
 	if(type!=null){
 		const local=registeredTypes.get(type);
 		if(local) return callLocalFunction(type,method,()=>local[method](...args));

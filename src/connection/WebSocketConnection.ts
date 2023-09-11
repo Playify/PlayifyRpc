@@ -1,7 +1,7 @@
 import {RpcNameOrId} from "./IdAndName";
 import {disposeConnection,receiveRpc} from "./Connection";
 import {DataInput} from "../types/data/DataInput";
-import {callFunction} from "../types/functions/FunctionCallContext";
+import {callRemoteFunction} from "../types/functions/FunctionCallContext";
 import {registeredTypes} from "../internal/RegisteredTypes";
 import {isNodeJs} from "./RpcId";
 
@@ -61,8 +61,8 @@ export let _webSocket: WebSocket | null=null;
 		try{
 			_webSocket=webSocket;
 
-			await callFunction(null,'N',RpcNameOrId);
-			await callFunction(null,'+',...registeredTypes.keys());
+			await callRemoteFunction(null,'N',RpcNameOrId);
+			await callRemoteFunction(null,'+',...registeredTypes.keys());
 
 			isConnected=true;
 			resolveWaitUntilConnected();

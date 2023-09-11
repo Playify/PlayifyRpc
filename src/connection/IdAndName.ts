@@ -1,5 +1,5 @@
 import {isConnected} from "./WebSocketConnection";
-import {callFunction} from "../types/functions/FunctionCallContext";
+import {callRemoteFunction} from "../types/functions/FunctionCallContext";
 import {RpcId} from "./RpcId";
 
 
@@ -10,7 +10,7 @@ export async function setName(name:string|null){
 	_name=name;
 	RpcNameOrId=_name!=null?`${_name} (${RpcId})`: RpcId;
 	try{
-		if(isConnected) await callFunction(null,'N',RpcNameOrId);
+		if(isConnected) await callRemoteFunction(null,'N',RpcNameOrId);
 	}catch(e){
 		console.error(e);
 	}

@@ -1,5 +1,5 @@
 import {DataInput} from "./DataInput";
-import {createRpcObject,RpcObjectType} from "../RpcObject";
+import {createRemoteObject,RpcObjectType} from "../RpcObject";
 import {createRemoteFunction} from "../RemoteFunction";
 import {DataOutput} from "./DataOutput";
 
@@ -70,7 +70,7 @@ export function readDynamic(data: DataInput,already: unknown[]){
 				return data.readError();
 			case 'O':{
 				const type=data.readString();
-				return createRpcObject(type);
+				return createRemoteObject(type);
 			}
 			case 'F':{
 				const type=data.readString();
@@ -115,7 +115,7 @@ export function writeDynamic(output: DataOutput,d: unknown,already: unknown[]){
 	}else if(d instanceof Error){
 		output.writeLength('E'.charCodeAt(0));
 		output.writeError(d);
-	}else if((d as any)[RpcObjectType]!=null){//RpcObject
+	}else if(typeof d==="object"&&RpcObjectType in d){//RpcObject
 		output.writeLength('O'.charCodeAt(0));
 		output.writeString((d as any)[RpcObjectType]);
 	}else if(typeof d==="function"){//RpcFunction
