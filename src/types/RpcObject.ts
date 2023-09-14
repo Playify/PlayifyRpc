@@ -1,4 +1,4 @@
-import {createRemoteFunction,RemoteFunction} from "./RemoteFunction";
+import {RpcFunction} from "./RemoteFunction";
 
 export const RpcObjectType=Symbol("RpcObjectType");
 export type RpcObject<T=RpcObjectTemplate,Type=string>={
@@ -6,8 +6,8 @@ export type RpcObject<T=RpcObjectTemplate,Type=string>={
 	x extends "then" | symbol?
 		T[x]:
 		T[x] extends (...args: any[])=>unknown?
-			RemoteFunction<T[x]>:
-			RemoteFunction;
+			RpcFunction<T[x]>:
+			RpcFunction<any>;
 } & {
 	[RpcObjectType]: Type
 };
@@ -25,7 +25,7 @@ export function createRemoteObject<
 	target: T=new class RpcObject{[RpcObjectType]=type} as T,
 ): RpcObject<T,TypeString>{
 	
-	const cache=new Map<string,RemoteFunction>();
+	const cache=new Map<string,RpcFunction<any>>();
 	
 	
 	return new Proxy<RpcObject<T,TypeString>>(<any>target,{
@@ -36,7 +36,7 @@ export function createRemoteObject<
 			) return (<any>target)[p];
 			if(cache.has(p)) return cache.get(p);
 
-			const func=createRemoteFunction(
+			const func=new RpcFunction(
 				type,
 				p);
 			cache.set(p,func);

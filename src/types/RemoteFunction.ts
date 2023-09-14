@@ -1,68 +1,50 @@
 import {RpcId} from "../connection/RpcId";
 import {callRemoteFunction} from "./functions/FunctionCallContext";
 import {PendingCall} from "./functions/PendingCall";
-import {Func,registeredFunctions} from "../internal/RegisteredTypes";
+import {registeredFunctions} from "../internal/RegisteredTypes";
 
 
-//TODO make remotefunction its own class
+type ParamsOrEmpty<T>=T extends (...args: infer Params)=>any?Params: unknown extends T?any[]: [];
+type ReturnTypeFromAnything<T>=T extends (...args: any)=>infer ReturnType?ReturnType: T;
+type UnwrapPromise<T>=T extends Promise<infer PromiseType>?PromiseType: T;
 
-export type RemoteFunction<T extends ((...args:any)=>unknown) =(...args:any[])=>unknown>
-	=T extends (...args: infer P)=>infer ReturnType?//if is function
-	(((...args: P)=>(//function parameters stay the same
-			ReturnType extends Promise<infer PromiseType>?PendingCall<PromiseType>:PendingCall<ReturnType>//return type is always a PendingCall
-			))
-		//combine with RemoteFunction properties
-		& {
-		type: string,
-		method: string
-	})
-	: never;
+export type RpcFunction<FuncOrReturnType>=InstanceType<typeof RpcFunction<FuncOrReturnType>>;
 
-
-export function isRemoteFunction(func: Func): func is RemoteFunction{
-	return "type" in func&&"method" in func;
-}
-
-export function createRemoteFunction<T extends ((...args: any)=>any)>(type: string | null,method: string): RemoteFunction<T>{
-	return Object.freeze(Object.assign(
-		((...params: any[])=>callRemoteFunction(type,method,...params)) as any,
-		{
-			type:type,
-			method,
-			toString:()=>{
-				return `rpc (...params) => ${type??"null"}.${method}(...params)`;
-			}
+export const RpcFunction=class RpcFunction<FuncOrReturnType>
+	extends (function Extendable(func: Function){return Object.setPrototypeOf(func,new.target.prototype);} as any as {
+		new<FuncOrReturnType=unknown>(func: Function): {
+			//Complex call signature from generic, to allow easier definition later on
+			(...args: ParamsOrEmpty<FuncOrReturnType>): PendingCall<UnwrapPromise<ReturnTypeFromAnything<FuncOrReturnType>>>;
 		}
-	));
-}
+	})<FuncOrReturnType>{
+
+	constructor(
+		public readonly type: string|null,
+		public readonly method: string,
+	){super(callRemoteFunction.bind(null,type,method));}
 
 
-let nextId:number=Date.now();
-export function registerFunction<T extends ((...args: any)=>any)>(func: T): RemoteFunction<T>{
-	if(isRemoteFunction(func)) return func as unknown as RemoteFunction<T>;
+	toString(){
+		return `rpc (...params) => ${this.type??"null"}.${this.method}(...params)`;
+	}
+};
+
+
+let nextId: number=Date.now();
+
+export function registerFunction<T extends ((...args: any)=>any)>(func: T): RpcFunction<T>{
+	if(func instanceof RpcFunction) return func;
 	const id=(nextId++).toString(16);
 
 	registeredFunctions[id]=func;
 
 	const type="$"+RpcId;
-	return Object.assign(func as any,{//TODO functioncontext
-		type,
-		method:id,
-		toString:()=>{
-			return `rpc (...params) => ${type??"null"}.${id}(...params)`;
-		}
-	});
+	return new RpcFunction(type,id);
 }
 
-export function unregisterFunction(func: RemoteFunction){
-	if(!isRemoteFunction(func)) return;
+export function unregisterFunction(func: RpcFunction<any>){
 	const type="$"+RpcId;
 	if(func.type!=type) throw new Error("Can't unregister RemoteFunction, that was not registered locally");
 
-	const registered=registeredFunctions[func.method] as RemoteFunction;
 	delete registeredFunctions[func.method];
-	// @ts-ignore
-	delete registered.type;
-	// @ts-ignore
-	delete registered.method;
 }

@@ -1,8 +1,13 @@
 import {RpcNameOrId,setName} from "./connection/IdAndName";
 import {isConnected,waitConnected} from "./connection/WebSocketConnection";
 import {createRemoteObject,RPC_ROOT} from "./types/RpcObject";
-import {createRemoteFunction,registerFunction,unregisterFunction} from "./types/RemoteFunction";
-import {callRemoteFunction,callLocal,FunctionCallContext,getFunctionContext} from "./types/functions/FunctionCallContext";
+import {registerFunction,RpcFunction,unregisterFunction} from "./types/RemoteFunction";
+import {
+	callLocal,
+	callRemoteFunction,
+	FunctionCallContext,
+	getFunctionContext
+} from "./types/functions/FunctionCallContext";
 import {registerType,unregisterType} from "./internal/RegisteredTypes";
 import {RpcId} from "./connection/RpcId";
 
@@ -35,7 +40,7 @@ export class Rpc{
 	
 	//Functions
 	public static createObject=createRemoteObject;
-	public static createFunction=createRemoteFunction;
+	public static createFunction=<T>(type:string|null,method:string)=>new RpcFunction<T>(type,method);
 	public static registerFunction=registerFunction;
 	public static unregisterFunction=unregisterFunction;
 	

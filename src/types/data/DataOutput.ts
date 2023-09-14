@@ -1,4 +1,4 @@
-import {isRemoteFunction,registerFunction,RemoteFunction} from "../RemoteFunction";
+import {registerFunction,RpcFunction} from "../RemoteFunction";
 import {RpcError} from "../RpcError";
 import {RpcNameOrId} from "../../connection/IdAndName";
 import {writeDynamic} from "./DynamicData";
@@ -7,7 +7,6 @@ export class DataOutput{
 	private _buf: Uint8Array;
 	private _data: DataView;
 	private _count: number=0;
-	public functions: RemoteFunction[]=[];
 
 	constructor(size:number|Uint8Array=32){
 		this._buf=typeof size==="number"?new Uint8Array(size):size;
@@ -124,14 +123,13 @@ export class DataOutput{
 		return this._buf.slice(from,this._count-from);
 	}
 	
-	writeFunction(rf:RemoteFunction){
-		if(!isRemoteFunction(rf)){
-			rf=registerFunction(rf);
-			this.functions.push(rf);
-		}
+	writeFunction(func:Function|RpcFunction<any>){
+		let rpcFunc:RpcFunction<any>;
+		if(func instanceof RpcFunction)rpcFunc=func;
+		else rpcFunc=registerFunction(func as any);
 		
-		this.writeString(rf.type);
-		this.writeString(rf.method);
+		this.writeString(rpcFunc.type);
+		this.writeString(rpcFunc.method);
 	}
 
 	writeError(error: Error){

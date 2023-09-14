@@ -1,4 +1,4 @@
-import {createRemoteFunction,RemoteFunction} from "../RemoteFunction";
+import {RpcFunction} from "../RemoteFunction";
 import {RpcError} from "../RpcError";
 import {readDynamic} from "./DynamicData";
 
@@ -130,8 +130,11 @@ export class DataInput{
 		return arr;
 	}
 
-	readFunction():RemoteFunction{
-		return createRemoteFunction(this.readString()!,this.readString()!);
+	readFunction<T>():RpcFunction<T>{
+		const type=this.readString();
+		const method=this.readString();
+		if(method==null) throw new Error("InvalidOperation");
+		return new RpcFunction(type,method);
 	}
 
 	readError(){

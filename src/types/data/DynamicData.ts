@@ -1,6 +1,5 @@
 import {DataInput} from "./DataInput";
 import {createRemoteObject,RpcObjectType} from "../RpcObject";
-import {createRemoteFunction} from "../RemoteFunction";
 import {DataOutput} from "./DataOutput";
 
 export const writeRegistry: [id: string,check: (d: unknown)=>boolean,write: (data: DataOutput,o: unknown,already: unknown[])=>void][]=[];
@@ -68,16 +67,10 @@ export function readDynamic(data: DataInput,already: unknown[]){
 			}
 			case 'E':
 				return data.readError();
-			case 'O':{
-				const type=data.readString();
-				return createRemoteObject(type);
-			}
-			case 'F':{
-				const type=data.readString();
-				const method=data.readString();
-				if(method==null) throw new Error("InvalidOperation");
-				return createRemoteFunction(type,method);
-			}
+			case 'O':
+				return createRemoteObject(data.readString());
+			case 'F':
+				return data.readFunction();
 			default:
 				throw new Error("Unknown data type number: "+objectId);
 		}
@@ -119,8 +112,9 @@ export function writeDynamic(output: DataOutput,d: unknown,already: unknown[]){
 		output.writeLength('O'.charCodeAt(0));
 		output.writeString((d as any)[RpcObjectType]);
 	}else if(typeof d==="function"){//RpcFunction
+		//TODO use already, maybe this is currently broken, don't know how c# handles it
 		output.writeLength('F'.charCodeAt(0));
-		output.writeFunction(d as any);
+		output.writeFunction(d);
 	}else if(already.includes(d)){
 		output.writeLength(-(already.indexOf(d)*4/* +0 */));
 	}else if(typeof d==="string"){
