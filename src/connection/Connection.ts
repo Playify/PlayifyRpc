@@ -200,7 +200,7 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 				let ctx=currentlyExecuting.get(callId);
 				if(!ctx){
-					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: {callId}`);
+					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: ${callId}`);
 					break;
 				}
 				ctx.cancel();
@@ -210,7 +210,7 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 				let ctx=currentlyExecuting.get(callId);
 				if(!ctx){
-					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: {callId}`);
+					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: ${callId}`);
 					break;
 				}
 				const already: unknown[]=[];
@@ -222,7 +222,7 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 				let pending=activeRequests.get(callId);
 				if(!pending){
-					console.log(`${RpcNameOrId} has no ActiveRequest with id: {callId}`);
+					console.log(`${RpcNameOrId} has no ActiveRequest with id: ${callId}`);
 					break;
 				}
 				const already: unknown[]=[];

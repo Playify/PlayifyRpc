@@ -51,31 +51,33 @@ export function callRemoteFunction<T=unknown>(type: string | null,method: string
 		return call;
 	}
 
-	if(isConnected||(type==null&&_webSocket!=null)){
-		call.sendMessage=(...msgArgs)=>{
-			if(call.finished) return call;
-			const msg=new DataOutput();
-			msg.writeByte(PacketType.MessageToExecutor);
-			msg.writeLength(callId);
-			const list: unknown[]=[];
-			msg.writeArray(msgArgs,d=>msg.writeDynamic(d,already));
-			already.push(...list);
+	if(!(isConnected||(type==null&&_webSocket!=null))){
+		rejectCall.get(call)?.(new Error("Not connected"));
+		return call;
+	}
+	call.sendMessage=(...msgArgs)=>{
+		if(call.finished) return call;
+		const msg=new DataOutput();
+		msg.writeByte(PacketType.MessageToExecutor);
+		msg.writeLength(callId);
+		const list: unknown[]=[];
+		msg.writeArray(msgArgs,d=>msg.writeDynamic(d,already));
+		already.push(...list);
 
-			sendRaw(msg);
-			return call;
-		};
-		call.cancel=()=>{
-			if(call.finished) return;
-			const msg=new DataOutput();
-			msg.writeByte(PacketType.FunctionCancel);
-			msg.writeLength(callId);
+		sendRaw(msg);
+		return call;
+	};
+	call.cancel=()=>{
+		if(call.finished) return;
+		const msg=new DataOutput();
+		msg.writeByte(PacketType.FunctionCancel);
+		msg.writeLength(callId);
 
-			sendRaw(msg);
-		};
+		sendRaw(msg);
+	};
 
-		sendCall(callId,call,buff);
-	}else rejectCall.get(call)?.(new Error("Not connected"));
-
+	sendCall(callId,call,buff);
+	
 	return call;
 }
 
