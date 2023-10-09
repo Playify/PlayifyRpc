@@ -81,7 +81,7 @@ export function writeDynamic(output: DataOutput,d: unknown,already: unknown[]){
 	if(d==null) output.writeLength('n'.charCodeAt(0));
 	else if(d===true) output.writeLength('t'.charCodeAt(0));
 	else if(d===false) output.writeLength('f'.charCodeAt(0));
-	else if(d=== +d){
+	else if(typeof d=="number"&&(d|0)===d){
 		output.writeLength('i'.charCodeAt(0));
 		output.writeInt(d);
 	}else if(typeof d=="number"){
