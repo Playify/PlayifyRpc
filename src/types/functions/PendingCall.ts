@@ -87,7 +87,7 @@ export function registerReceive(call: PendingCall | FunctionCallContext,func: (.
 			try{
 				func(...pending);
 			}catch(e){
-				console.warn("Error receiving pending: "+e);
+				console.warn("Error receiving pending: ",e);
 			}
 		}
 	}
@@ -101,7 +101,7 @@ export function runReceiveMessage(call: PendingCall | FunctionCallContext,args: 
 			try{
 				func(...args);
 			}catch(e){
-				console.warn("Error receiving: "+e);
+				console.warn("Error receiving: ",e);
 			}
 		}
 	}else if(pendingMap.has(call)){
