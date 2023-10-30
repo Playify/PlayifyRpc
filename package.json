@@ -1,7 +1,6 @@
 {
   "name": "playify-rpc",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,12 +8,12 @@
   },
   "devDependencies": {
     "@types/node":"^20.5.9",
+    "@types/web":"^0.0.114",
     "@types/ws":"^8.5.5",
     "typescript":"^5.2.2",
     "vite":"^4.4.9"
   },
   "dependencies": {
-    "@types/web":"^0.0.114",
     "ws":"^8.13.0"
   },
   "main":"dist/rpc.js",
