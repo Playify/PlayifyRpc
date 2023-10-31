@@ -70,7 +70,7 @@ export default defineConfig({
 				secure:false,
 				ws:true,
 				headers:{
-					"Cookie":"token="+process.env.RPC_TOKEN
+					"Cookie":"RPC_TOKEN="+process.env.RPC_TOKEN
 				}
 			}
 		}

@@ -22,9 +22,9 @@ export async function waitConnected(){
 let createWebSocket: ()=>WebSocket;
 if(isNodeJs){
 	const WebSocket=(await import("ws")).WebSocket;
-	createWebSocket=()=>new WebSocket(process.env.RPC_URL!,{
+	createWebSocket=()=>new WebSocket(process.env.RPC_URL!,process.env.RPC_TOKEN==null?{}:{
 		headers:{
-			Cookie:"token="+process.env.RPC_TOKEN
+			Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN
 		}
 	}) as unknown as WebSocket
 }else if("document" in globalThis){

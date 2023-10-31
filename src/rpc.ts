@@ -49,7 +49,7 @@ export class Rpc{
 	
 	public static getContext:()=>FunctionCallContext=getFunctionContext;
 	
-	
+	//Types
 	public static registerType=registerType;
 	public static unregisterType=unregisterType;
 	

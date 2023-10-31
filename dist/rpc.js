@@ -1,14 +1,14 @@
-const z = globalThis?.process?.versions?.node != null;
+const Z = globalThis?.process?.versions?.node != null;
 let d;
-if (z)
+if (Z)
   d = "node@" + (await import("os")).hostname() + "@" + process.pid;
 else if ("document" in globalThis)
   d = "web@" + globalThis.document.location + "@" + Date.now().toString(36) + "X" + Math.random().toString(36).substring(2);
 else
   throw new Error("Unknown Platform");
-const J = /* @__PURE__ */ Object.create(null), y = /* @__PURE__ */ new Map();
-y.set("$" + d, J);
-async function ee(t, e) {
+const K = /* @__PURE__ */ Object.create(null), y = /* @__PURE__ */ new Map();
+y.set("$" + d, K);
+async function z(t, e) {
   if (!y.has(t) && (y.set(t, e), C))
     try {
       await w(null, "+", t);
@@ -16,7 +16,7 @@ async function ee(t, e) {
       console.log(n);
     }
 }
-async function he(t) {
+async function le(t) {
   if (y.has(t)) {
     if (C)
       try {
@@ -27,13 +27,13 @@ async function he(t) {
     y.delete(t);
   }
 }
-class K {
+class V {
   [Symbol.toStringTag] = "PendingCall";
   finished = !1;
   promise;
   constructor() {
     this.promise = new Promise((e, n) => {
-      I.set(this, (r) => {
+      A.set(this, (r) => {
         e(r), this.finished = !0;
       }), f.set(this, (r) => {
         n(r), this.finished = !0;
@@ -80,7 +80,7 @@ function O(t) {
     }
   };
 }
-const I = /* @__PURE__ */ new WeakMap(), f = /* @__PURE__ */ new WeakMap(), S = /* @__PURE__ */ new WeakMap(), E = /* @__PURE__ */ new WeakMap();
+const A = /* @__PURE__ */ new WeakMap(), f = /* @__PURE__ */ new WeakMap(), S = /* @__PURE__ */ new WeakMap(), E = /* @__PURE__ */ new WeakMap();
 function j(t, e) {
   if (E.has(t))
     E.get(t).push(e);
@@ -95,7 +95,7 @@ function j(t, e) {
       }
   }
 }
-function R(t, e) {
+function I(t, e) {
   if (!t.finished)
     if (E.has(t))
       for (let n of E.get(t))
@@ -107,32 +107,32 @@ function R(t, e) {
     else
       S.has(t) ? S.set(t, [...S.get(t), e]) : S.set(t, [e]);
 }
-let A = null;
-function te(t, e) {
-  const n = A;
-  A = e;
+let F = null;
+function ee(t, e) {
+  const n = F;
+  F = e;
   try {
     return t();
   } finally {
-    A = n;
+    F = n;
   }
 }
-function ue() {
-  if (A == null)
+function he() {
+  if (F == null)
     throw new Error("FunctionCallContext not available");
-  return A;
+  return F;
 }
-let fe = 0;
+let ue = 0;
 function w(t, e, ...n) {
   if (t != null) {
     const c = y.get(t);
     if (c)
-      return ne(t, e, () => c[e](...n));
+      return te(t, e, () => c[e](...n));
   }
-  const r = new K(), i = [];
+  const r = new V(), i = [];
   r.finally(() => {
   });
-  const s = new m(), o = fe++;
+  const s = new m(), o = ue++;
   try {
     s.writeByte(D.FunctionCall), s.writeLength(o), s.writeString(t), s.writeString(e), s.writeArray(n, (c) => s.writeDynamic(c, i));
   } catch (c) {
@@ -150,16 +150,16 @@ function w(t, e, ...n) {
       return;
     const c = new m();
     c.writeByte(D.FunctionCancel), c.writeLength(o), v(c);
-  }, ye(o, r, s), r) : (f.get(r)?.(new Error("Not connected")), r);
+  }, de(o, r, s), r) : (f.get(r)?.(new Error("Not connected")), r);
 }
-function ge(t) {
-  return ne(null, null, t);
+function fe(t) {
+  return te(null, null, t);
 }
-function ne(t, e, n) {
-  const r = new K(), i = new AbortController(), s = {
+function te(t, e, n) {
+  const r = new V(), i = new AbortController(), s = {
     type: t,
     method: e,
-    sendMessage: (...o) => (r.finished || R(r, o), s),
+    sendMessage: (...o) => (r.finished || I(r, o), s),
     get finished() {
       return r.finished;
     },
@@ -169,10 +169,10 @@ function ne(t, e, n) {
     cancel: () => i.abort(),
     [Symbol.asyncIterator]: () => O(s)
   };
-  r.sendMessage = (...o) => (r.finished || R(s, o), r), r.cancel = () => r.finished || s.cancel();
+  r.sendMessage = (...o) => (r.finished || I(s, o), r), r.cancel = () => r.finished || s.cancel();
   try {
-    const o = te(n, s);
-    o instanceof Promise ? o.then((c) => I.get(r)?.(c), (c) => f.get(r)?.(c)) : I.get(r)?.(o);
+    const o = ee(n, s);
+    o instanceof Promise ? o.then((c) => A.get(r)?.(c), (c) => f.get(r)?.(c)) : A.get(r)?.(o);
   } catch (o) {
     f.get(r)?.(o);
   }
@@ -188,20 +188,20 @@ const _ = class extends function(n) {
     return `rpc (...params) => ${this.type ?? "null"}.${this.method}(...params)`;
   }
 };
-let we = Date.now();
-function X(t) {
+let ge = Date.now();
+function J(t) {
   if (t instanceof _)
     return t;
-  const e = (we++).toString(16);
-  J[e] = t;
+  const e = (ge++).toString(16);
+  K[e] = t;
   const n = "$" + d;
   return new _(n, e);
 }
-function re(t) {
+function ne(t) {
   const e = "$" + d;
   if (t.type != e)
     throw new Error("Can't unregister RemoteFunction, that was not registered locally");
-  delete J[t.method];
+  delete K[t.method];
 }
 class x extends Error {
   name;
@@ -242,11 +242,11 @@ function $(t, e = new class {
     }
   });
 }
-const ie = new Proxy({}, {
+const re = new Proxy({}, {
   get: (t, e) => typeof e == "string" ? $(e) : void 0,
   has: (t, e) => !(e in globalThis) && e != "then"
-}), se = [], oe = /* @__PURE__ */ new Map();
-function W(t, e) {
+}), ie = [], se = /* @__PURE__ */ new Map();
+function N(t, e) {
   let n = t.readLength();
   if (n < 0) {
     switch (n = -n, n % 4) {
@@ -259,7 +259,7 @@ function W(t, e) {
         e.push(r);
         for (let i = 0; i < n / 4; i++) {
           const s = t.readString();
-          r[s] = W(t, e);
+          r[s] = N(t, e);
         }
         return r;
       }
@@ -267,13 +267,13 @@ function W(t, e) {
         const r = new Array((n - 3) / 4);
         e.push(r);
         for (let i = 0; i < r.length; i++)
-          r[i] = W(t, e);
+          r[i] = N(t, e);
         return r;
       }
     }
     throw new Error("Unreachable code reached");
   } else if (n >= 128) {
-    const r = new TextDecoder().decode(t.readBuffer(n - 128)), i = oe.get(r);
+    const r = new TextDecoder().decode(t.readBuffer(n - 128)), i = se.get(r);
     if (i)
       return i(t, e);
     throw new Error("Unknown data type: " + r);
@@ -312,7 +312,7 @@ function W(t, e) {
         throw new Error("Unknown data type number: " + n);
     }
 }
-function P(t, e, n) {
+function W(t, e, n) {
   if (e == null)
     t.writeLength("n".charCodeAt(0));
   else if (e === !0)
@@ -349,9 +349,9 @@ function P(t, e, n) {
   } else if (Array.isArray(e)) {
     n.push(e), t.writeLength(-(e.length * 4 + 3));
     for (let r of e)
-      P(t, r, n);
+      W(t, r, n);
   } else {
-    for (let [r, i, s] of se) {
+    for (let [r, i, s] of ie) {
       if (!i(e))
         continue;
       const o = new TextEncoder().encode(r);
@@ -363,7 +363,7 @@ function P(t, e, n) {
       const r = Object.entries(e);
       t.writeLength(-(r.length * 4 + 2));
       for (let [i, s] of r)
-        t.writeString(i), P(t, s, n);
+        t.writeString(i), W(t, s, n);
     } else
       throw new Error("Unknown type for " + e);
   }
@@ -445,7 +445,7 @@ class m {
   }
   writeFunction(e) {
     let n;
-    e instanceof _ ? n = e : n = X(e), this.writeString(n.type), this.writeString(n.method);
+    e instanceof _ ? n = e : n = J(e), this.writeString(n.type), this.writeString(n.method);
   }
   writeError(e) {
     const n = e instanceof x ? e : new x(e.name, u, e.message, e.stack);
@@ -464,11 +464,11 @@ class m {
     this.writeString(null);
   }
   writeDynamic(e, n = []) {
-    P(this, e, n);
+    W(this, e, n);
   }
 }
 const B = /* @__PURE__ */ new Map(), L = /* @__PURE__ */ new Map();
-function de(t) {
+function we(t) {
   for (let e of B.values())
     f.get(e)?.(t);
   B.clear();
@@ -480,7 +480,7 @@ function v(t) {
     throw new Error("Not connected");
   T.send(t.toBuffer());
 }
-function ye(t, e, n) {
+function de(t, e, n) {
   B.set(t, e);
   try {
     v(n);
@@ -495,7 +495,7 @@ globalThis.process ? process.on("unhandledRejection", () => {
 }) : window.addEventListener("unhandledrejection", (t) => {
   M && t.reason instanceof x && (M = !1, t.preventDefault());
 });
-async function be(t) {
+async function ye(t) {
   try {
     switch (t.readByte()) {
       case 0: {
@@ -525,7 +525,7 @@ async function be(t) {
           const b = y.get(a);
           if (!b)
             throw new Error(`Type "${a}" is not registered on client ${u}`);
-          const l = t.readString(), h = t.readArray(() => t.readDynamic(r)) ?? [], Q = new AbortController(), p = {
+          const l = t.readString(), h = t.readArray(() => t.readDynamic(r)) ?? [], H = new AbortController(), p = {
             type: a,
             method: l,
             get finished() {
@@ -535,23 +535,23 @@ async function be(t) {
             sendMessage(...g) {
               if (i)
                 return p;
-              const F = new m();
-              F.writeByte(
+              const R = new m();
+              R.writeByte(
                 5
                 /* MessageToCaller */
-              ), F.writeLength(n);
-              const Y = [];
-              return F.writeArray(g, (le) => F.writeDynamic(le, Y)), r.push(...Y), v(F), p;
+              ), R.writeLength(n);
+              const Q = [];
+              return R.writeArray(g, (ae) => R.writeDynamic(ae, Q)), r.push(...Q), v(R), p;
             },
             addMessageListener(g) {
               return j(p, g), p;
             },
-            cancelToken: Q.signal,
-            cancel: () => Q.abort(),
+            cancelToken: H.signal,
+            cancel: () => H.abort(),
             [Symbol.asyncIterator]: () => O(p)
           };
           L.set(n, p);
-          const U = te(() => {
+          const U = ee(() => {
             const g = b[l];
             if (g == null)
               throw new Error(`Method "${l}" not found in "${a}"`);
@@ -570,7 +570,7 @@ async function be(t) {
           break;
         }
         try {
-          I.get(r)?.(t.readDynamic());
+          A.get(r)?.(t.readDynamic());
         } catch (i) {
           f.get(r)?.(i);
         }
@@ -608,7 +608,7 @@ async function be(t) {
           break;
         }
         const i = [], s = t.readArray(() => t.readDynamic(i)) ?? [];
-        R(r, s);
+        I(r, s);
         break;
       }
       case 5: {
@@ -619,7 +619,7 @@ async function be(t) {
           break;
         }
         const i = [], s = t.readArray(() => t.readDynamic(i)) ?? [];
-        R(r, s);
+        I(r, s);
         break;
       }
     }
@@ -627,7 +627,7 @@ async function be(t) {
     console.error(e);
   }
 }
-class ce {
+class oe {
   _buf;
   _data;
   _pos;
@@ -735,148 +735,149 @@ class ce {
     return n;
   }
   readDynamic(e = []) {
-    return W(this, e);
+    return N(this, e);
   }
 }
-let C = !1, G, q, ae = new Promise((t, e) => [G, q] = [t, e]);
-async function pe() {
+let C = !1, X, P, ce = new Promise((t, e) => [X, P] = [t, e]);
+async function be() {
   for (; ; )
-    if (await ae.then(() => !0, () => !1))
+    if (await ce.then(() => !0, () => !1))
       return;
 }
-let V;
-if (z) {
+let q;
+if (Z) {
   const t = (await import("ws")).WebSocket;
-  V = () => new t(process.env.RPC_URL, {
+  q = () => new t(process.env.RPC_URL, process.env.RPC_TOKEN == null ? {} : {
     headers: {
-      Cookie: "token=" + process.env.RPC_TOKEN
+      Cookie: "RPC_TOKEN=" + process.env.RPC_TOKEN
     }
   });
 } else if ("document" in globalThis)
-  V = () => new WebSocket("ws" + globalThis.document.location.origin.substring(4) + "/rpc");
+  q = () => new WebSocket("ws" + globalThis.document.location.origin.substring(4) + "/rpc");
 else
   throw new Error("Unknown Platform");
-function Z(t) {
-  const e = q;
-  ae = new Promise((n, r) => [G, q] = [n, r]), e(t), de(t);
+function Y(t) {
+  const e = P;
+  ce = new Promise((n, r) => [X, P] = [n, r]), e(t), we(t);
 }
 let T = null;
 (function t() {
-  const e = V();
+  const e = q();
   e.onclose = () => {
     T = null, C = !1, console.log("Websocket disconnected");
     const n = new Error("Connection closed");
-    Z(n), setTimeout(t, 1e3);
+    Y(n), setTimeout(t, 1e3);
   }, e.onopen = async () => {
     console.log("Websocket connected");
     try {
-      T = e, await w(null, "N", u), await w(null, "+", ...y.keys()), C = !0, G();
+      T = e, await w(null, "N", u), await w(null, "+", ...y.keys()), C = !0, X();
     } catch (n) {
-      console.error(n.stack), Z(n), e?.close(4e3, "Error registering types");
+      console.error(n.stack), Y(n), e?.close(4e3, "Error registering types");
       return;
     }
   }, e.binaryType = "arraybuffer", e.onmessage = function(r) {
     const i = r.data;
-    typeof i == "string" ? console.log(i) : be(new ce(new Uint8Array(i)));
+    typeof i == "string" ? console.log(i) : ye(new oe(new Uint8Array(i)));
   };
 })();
-let N, u = d;
-async function me(t) {
-  N = t, u = N != null ? `${N} (${d})` : d;
+let u = d;
+async function pe(t) {
+  u = t != null ? `${t} (${d})` : d;
   try {
     C && await w(null, "N", u);
   } catch (e) {
     console.error(e);
   }
 }
+function me(t) {
+  return function(e) {
+    z(t ?? e.prototype.constructor.name, e).catch(console.error);
+  };
+}
 function _e(t) {
   return function(e) {
-    ee(t ?? e.prototype.constructor.name, e).catch(console.error);
+    ie.push([t, (n) => n instanceof e, (n, r, i) => r.write(n, i)]), se.set(t, (n, r) => e.read(n, r));
   };
 }
-function Ce(t) {
-  return function(e) {
-    se.push([t, (n) => n instanceof e, (n, r, i) => r.write(n, i)]), oe.set(t, (n, r) => e.read(n, r));
-  };
-}
-Promise.resolve().then(() => Le).then((t) => Object.assign(globalThis, t));
-class H {
+Promise.resolve().then(() => Ce).then((t) => Object.assign(globalThis, t));
+class G {
   //Rpc
   static id = d;
   static get nameOrId() {
     return u;
   }
   static setName(e) {
-    return me(e);
+    return pe(e);
   }
   //Connection	
   static get isConnected() {
     return C;
   }
   static get waitUntilConnected() {
-    return pe();
+    return be();
   }
   //Functions
   static createObject = $;
   static createFunction = (e, n) => new _(e, n);
-  static registerFunction = X;
-  static unregisterFunction = re;
-  static callLocal = ge;
+  static registerFunction = J;
+  static unregisterFunction = ne;
+  static callLocal = fe;
   //Call function and get a PendingCall, this allows the use of the FunctionCallContext within the function
   static callFunction = w;
   //Call remote function
-  static getContext = ue;
-  static registerType = ee;
-  static unregisterType = he;
+  static getContext = he;
+  //Types
+  static registerType = z;
+  static unregisterType = le;
   static checkTypes = async (...e) => await w(null, "?", ...e);
-  static checkType = async (e) => await H.checkTypes(e) != 0;
+  static checkType = async (e) => await G.checkTypes(e) != 0;
   static getAllTypes = async () => await w(null, "T");
   static getAllConnections = async () => await w(null, "C");
-  static objects = ie;
+  static objects = re;
 }
-const Le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ce = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  CustomDynamicType: Ce,
-  DataInput: ce,
+  CustomDynamicType: _e,
+  DataInput: oe,
   DataOutput: m,
-  PendingCall: K,
-  RPC_ROOT: ie,
-  Rpc: H,
+  PendingCall: V,
+  RPC_ROOT: re,
+  Rpc: G,
   RpcError: x,
   RpcFunction: _,
   RpcObjectType: k,
-  RpcProvider: _e,
+  RpcProvider: me,
   createRemoteObject: $,
   getAsyncIterator: O,
   listenersMap: E,
   pendingMap: S,
-  registerFunction: X,
+  registerFunction: J,
   registerReceive: j,
   rejectCall: f,
-  resolveCall: I,
-  runReceiveMessage: R,
-  unregisterFunction: re
+  resolveCall: A,
+  runReceiveMessage: I,
+  unregisterFunction: ne
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  Ce as CustomDynamicType,
-  ce as DataInput,
+  _e as CustomDynamicType,
+  oe as DataInput,
   m as DataOutput,
-  K as PendingCall,
-  ie as RPC_ROOT,
-  H as Rpc,
+  V as PendingCall,
+  re as RPC_ROOT,
+  G as Rpc,
   x as RpcError,
   _ as RpcFunction,
   k as RpcObjectType,
-  _e as RpcProvider,
+  me as RpcProvider,
   $ as createRemoteObject,
   O as getAsyncIterator,
   E as listenersMap,
   S as pendingMap,
-  X as registerFunction,
+  J as registerFunction,
   j as registerReceive,
   f as rejectCall,
-  I as resolveCall,
-  R as runReceiveMessage,
-  re as unregisterFunction
+  A as resolveCall,
+  I as runReceiveMessage,
+  ne as unregisterFunction
 };
 //# sourceMappingURL=rpc.js.map
