@@ -175,6 +175,10 @@ export async function receiveRpc(data: DataInput){
 					resolveCall.get(pending)?.(data.readDynamic());
 				}catch(e){
 					rejectCall.get(pending)?.(e as Error);
+				}finally{
+					activeRequests.delete(callId);
+					resolveCall.delete(pending);
+					rejectCall.delete(pending);
 				}
 				break;
 			}
@@ -189,10 +193,13 @@ export async function receiveRpc(data: DataInput){
 
 				try{
 					ignoreUnhandledRejections=true;
-					rejectCall.get(pending)?.(await data.readError());
+					rejectCall.get(pending)?.(data.readError());
 				}catch(e){
 					rejectCall.get(pending)?.(e as Error);
 				}finally{
+					activeRequests.delete(callId);
+					resolveCall.delete(pending);
+					rejectCall.delete(pending);
 				}
 				break;
 			}
