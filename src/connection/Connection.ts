@@ -151,7 +151,11 @@ export async function receiveRpc(data: DataInput){
 
 
 					const result: Promise<any> | any=runWithContext(()=>{
-						const func=local[method];
+						let func=local[method];
+						if(func==null){
+							let ignoreCase=Object.keys(local).find(s=>s.toLowerCase()==method.toLowerCase());
+							if(ignoreCase!=null) func=local[ignoreCase];
+						}
 						if(func==null) throw new Error(`Method \"${method}\" not found in \"${type}\"`);
 						return func.call(local,...args);
 					},context);

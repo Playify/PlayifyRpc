@@ -54,6 +54,7 @@ export class Rpc{
 	public static unregisterType=unregisterType;
 	
 	
+	public static getObjectWithFallback=async(type:string,...fallback:string[])=>await callRemoteFunction<number>(null,'O',type,...fallback);
 	public static checkTypes=async(...types:string[])=>await callRemoteFunction<number>(null,'?',...types);
 	public static checkType=async(type:string)=>(await Rpc.checkTypes(type))!=0;
 	public static getAllTypes=async()=>await callRemoteFunction<string[]>(null,'T');
