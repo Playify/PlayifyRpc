@@ -62,5 +62,3 @@ export class Rpc{
 	
 	public static objects=RPC_ROOT;
 }
-
-//TODO mixup between type and object, they should be one and the same
