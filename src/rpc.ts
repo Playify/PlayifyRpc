@@ -10,6 +10,8 @@ import {
 } from "./types/functions/FunctionCallContext";
 import {registerType,unregisterType} from "./internal/RegisteredTypes";
 import {RpcId} from "./connection/RpcId";
+import {DataOutput} from "./types/data/DataOutput";
+import {DataInput} from "./types/data/DataInput";
 
 
 export * from "./types/data/DataInput";
@@ -63,4 +65,12 @@ export class Rpc{
 	public static objects=RPC_ROOT;
 }
 
-//TODO mixup between type and object, they should be one and the same
+let buff=new DataOutput();
+buff.writeDynamic({
+	key:null,
+	val:true
+});
+console.log(buff.toBuffer());
+let input=new DataInput(buff.toBuffer());
+let x=input.readDynamic();
+console.log(x);

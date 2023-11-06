@@ -142,14 +142,6 @@ export class DataInput{
 		//return RemoteError.readError(this);
 	}
 
-	readObject(already: unknown[]): Record<string,any>{
-		const o: Record<string,any>={};
-		already.push(o);
-		for(let s=this.readString(); s!=null; s=this.readString())
-			o[s]=this.readDynamic(already);
-		return o;
-	}
-
 	readDynamic(already: unknown[]=[]){
 		return readDynamic(this,already);
 	}

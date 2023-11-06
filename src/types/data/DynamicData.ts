@@ -18,7 +18,7 @@ export function readDynamic(data: DataInput,already: unknown[]){
 			case 2:{
 				const o: Record<string,any>={};
 				already.push(o);
-				for(let i=0; i<objectId/4; i++){
+				for(let i=0; i<(objectId-2)/4; i++){
 					const key=data.readString();
 					o[key!]=readDynamic(data,already);
 				}
