@@ -31,12 +31,16 @@ export const RpcFunction=class RpcFunction<FuncOrReturnType>
 
 
 let nextId: number=Date.now();
+const functionCache=new WeakMap<((...args: any)=>any),string>();
 
 export function registerFunction<T extends ((...args: any)=>any)>(func: T): RpcFunction<T>{
 	if(func instanceof RpcFunction) return func;
+	const already=functionCache.get(func);
+	if(already!=null)return new RpcFunction("$"+RpcId,already);
 	const id=(nextId++).toString(16);
 
 	registeredFunctions[id]=func;
+	functionCache.set(func,id);
 
 	const type="$"+RpcId;
 	return new RpcFunction(type,id);
@@ -47,4 +51,5 @@ export function unregisterFunction(func: RpcFunction<any>){
 	if(func.type!=type) throw new Error("Can't unregister RemoteFunction, that was not registered locally");
 
 	delete registeredFunctions[func.method];
+	functionCache.delete(func);
 }
