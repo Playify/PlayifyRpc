@@ -19,16 +19,15 @@ export async function waitConnected(){
 }
 
 
-let createWebSocket: ()=>WebSocket;
+let createWebSocket: ()=>Promise<WebSocket>;
 if(isNodeJs){
-	const WebSocket=(await import("ws")).WebSocket;
-	createWebSocket=()=>new WebSocket(process.env.RPC_URL!,process.env.RPC_TOKEN==null?{}:{
+	createWebSocket=async()=>new (await import("ws")).WebSocket(process.env.RPC_URL!,process.env.RPC_TOKEN==null?{}: {
 		headers:{
-			Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN
-		}
-	}) as unknown as WebSocket
+			Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN,
+		},
+	}) as unknown as WebSocket;
 }else if("document" in globalThis){
-	createWebSocket=()=>new WebSocket("ws"+globalThis.document.location.origin.substring(4)+"/rpc");
+	createWebSocket=async()=>new WebSocket("ws"+globalThis.document.location.origin.substring(4)+"/rpc");
 }else throw new Error("Unknown Platform");
 
 
@@ -44,8 +43,8 @@ function closeRpc(e: Error){
 //connect
 
 export let _webSocket: WebSocket | null=null;
-(function reconnect(){
-	const webSocket=createWebSocket();
+(async function reconnect(){
+	const webSocket=await createWebSocket();
 
 	webSocket.onclose=()=>{
 		_webSocket=null;
