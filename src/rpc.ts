@@ -29,7 +29,7 @@ import("./rpc").then((m)=>Object.assign(globalThis,m));
 export class Rpc{
 
 	//Rpc
-	public static id:string=RpcId;
+	public static readonly id:string=RpcId;
 	public static get nameOrId():string{return RpcNameOrId;}
 	
 	public static setName(name:string){return setName(name);}

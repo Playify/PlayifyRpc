@@ -15,6 +15,7 @@ import {
 import {registeredTypes} from "../internal/RegisteredTypes";
 import {FunctionCallContext,runWithContext} from "../types/functions/FunctionCallContext";
 import {RpcError} from "../types/RpcError";
+import {isNodeJs} from "./RpcId";
 
 
 const activeRequests=new Map<number,PendingCall>();
@@ -53,7 +54,7 @@ export enum PacketType{
 //TODO move this to RemoteError.ts?
 //receiving FunctionError results in an Uncaught in promise warning, that doesn't make sense, therefore it gets blocked here
 let ignoreUnhandledRejections=false;
-if(globalThis.process) process.on("unhandledRejection",()=>{
+if(isNodeJs) process.on("unhandledRejection",()=>{
 	ignoreUnhandledRejections=false;
 });
 else window.addEventListener("unhandledrejection",e=>{
