@@ -1,4 +1,3 @@
-import {registerFunction,RpcFunction} from "../RemoteFunction";
 import {RpcError} from "../RpcError";
 import {RpcNameOrId} from "../../connection/IdAndName";
 import {writeDynamic} from "./DynamicData";
@@ -122,15 +121,6 @@ export class DataOutput{
 	toBuffer(from=0): Uint8Array{
 		return this._buf.slice(from,this._count-from);
 	}
-	
-	writeFunction(func:Function|RpcFunction<any>){
-		let rpcFunc:RpcFunction<any>;
-		if(func instanceof RpcFunction)rpcFunc=func;
-		else rpcFunc=registerFunction(func as any);
-		
-		this.writeString(rpcFunc.type);
-		this.writeString(rpcFunc.method);
-	}
 
 	writeError(error: Error){
 		const remote=error instanceof RpcError?
@@ -140,21 +130,6 @@ export class DataOutput{
 		this.writeString(remote.from);
 		this.writeString(remote.message);
 		this.writeString(remote.stackTrace);
-	}
-	/*writeError(error: Error){
-		const remote=error instanceof RemoteError?
-			error:
-			new UserRemoteError(error);
-		remote.writeError(this);
-	}*/
-	
-	writeObject(o:Record<string,any>,already:unknown[]){
-		already.push(o);
-		for(const key in o){
-			this.writeString(key);
-			this.writeDynamic(o[key],already);
-		}
-		this.writeString(null);
 	}
 
 	writeDynamic(value: any,already: unknown[]=[]){

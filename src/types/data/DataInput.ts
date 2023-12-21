@@ -1,4 +1,3 @@
-import {RpcFunction} from "../RemoteFunction";
 import {RpcError} from "../RpcError";
 import {readDynamic} from "./DynamicData";
 
@@ -130,16 +129,8 @@ export class DataInput{
 		return arr;
 	}
 
-	readFunction<T>():RpcFunction<T>{
-		const type=this.readString();
-		const method=this.readString();
-		if(method==null) throw new Error("InvalidOperation");
-		return new RpcFunction(type,method);
-	}
-
 	readError(){
 		return new RpcError(this.readString(),this.readString()??"???",this.readString(),this.readString());
-		//return RemoteError.readError(this);
 	}
 
 	readDynamic(already: unknown[]=[]){

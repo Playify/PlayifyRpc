@@ -9,6 +9,7 @@ if(isNodeJs){
 	try{
 		//RpcId="node@"+(await import("os")).hostname()+"@"+process.pid;
 		//@ts-ignore
+		// noinspection JSUnresolvedReference
 		RpcId="node@"+process.binding("os").getHostname()+"@"+process.pid;//Needed to not use top level await
 	}catch{
 		RpcId="node@"+process.platform+":"+process.arch+"@"+process.pid;

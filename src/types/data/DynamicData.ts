@@ -1,6 +1,7 @@
 import {DataInput} from "./DataInput";
 import {createRemoteObject,RpcObjectType} from "../RpcObject";
 import {DataOutput} from "./DataOutput";
+import {registerFunction,RpcFunction,unregisterFunction} from "../RemoteFunction";
 
 export const writeRegistry: [id: string,check: (d: unknown)=>boolean,write: (data: DataOutput,o: unknown,already: unknown[])=>void][]=[];
 export const readRegistry=new Map<string,(data: DataInput,already: unknown[])=>unknown>();
@@ -62,7 +63,7 @@ export function readDynamic(data: DataInput,already: unknown[]){
 
 				return new RegExp(pattern!,"g"+
 					((flags&1)?"i": "")+
-					((flags&2)?"m": "")
+					((flags&2)?"m": ""),
 				);
 			}
 			case 'E':
@@ -70,7 +71,12 @@ export function readDynamic(data: DataInput,already: unknown[]){
 			case 'O':
 				return createRemoteObject(data.readString());
 			case 'F':
-				return data.readFunction();
+				const type=data.readString();
+				const method=data.readString();
+				if(method==null) throw new Error("InvalidOperation");
+				const func=new RpcFunction(type,method);
+				already.push(func);
+				return func;
 			default:
 				throw new Error("Unknown data type number: "+objectId);
 		}
@@ -103,7 +109,7 @@ export function writeDynamic(output: DataOutput,d: unknown,already: unknown[]){
 		const flags=d.flags;
 		output.writeByte(
 			(flags.includes("i")?1: 0)||
-			(flags.includes("m")?2: 0)
+			(flags.includes("m")?2: 0),
 		);
 	}else if(d instanceof Error){
 		output.writeLength('E'.charCodeAt(0));
@@ -112,18 +118,26 @@ export function writeDynamic(output: DataOutput,d: unknown,already: unknown[]){
 		output.writeLength('O'.charCodeAt(0));
 		output.writeString((d as any)[RpcObjectType]);
 	}else if(typeof d==="function"){//RpcFunction
-		//TODO use already, maybe this is currently broken, don't know how c# handles it
+		already.push(d);
 		output.writeLength('F'.charCodeAt(0));
-		output.writeFunction(d);
+		
+		let rpcFunc:RpcFunction<any>;
+		if(d instanceof RpcFunction)rpcFunc=d;
+		else{
+			rpcFunc=registerFunction(d as any);
+			onFree.set(d,()=>unregisterFunction(rpcFunc));
+		}
+
+		output.writeString(rpcFunc.type);
+		output.writeString(rpcFunc.method);
+		
 	}else if(already.includes(d)){
 		output.writeLength(-(already.indexOf(d)*4/* +0 */));
 	}else if(typeof d==="string"){
 		const buffer=new TextEncoder().encode(d);
 		output.writeLength(-(buffer.length*4+1));
 		output.writeBytes(buffer);
-	}/*else if(d instanceof DataTemplate){
-		d.writeDynamic(output,already);
-	}*/ else if(Array.isArray(d)){
+	} else if(Array.isArray(d)){
 		already.push(d);
 		output.writeLength(-(d.length*4+3));
 		for(let element of d) writeDynamic(output,element,already);
@@ -147,4 +161,10 @@ export function writeDynamic(output: DataOutput,d: unknown,already: unknown[]){
 			}
 		}else throw new Error("Unknown type for "+d);
 	}
+}
+
+const onFree=new WeakMap<any,VoidFunction>();
+export function freeDynamic(already:unknown[]){
+	for(let element of already)
+		onFree.get(element)?.();
 }

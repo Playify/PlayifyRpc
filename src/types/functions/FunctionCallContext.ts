@@ -3,6 +3,7 @@ import {getAsyncIterator,PendingCall,registerReceive,rejectCall,resolveCall,runR
 import {DataOutput} from "../data/DataOutput";
 import {PacketType,sendCall,sendRaw} from "../../connection/Connection";
 import {_webSocket,isConnected} from "../../connection/WebSocketConnection";
+import {freeDynamic} from "../data/DynamicData";
 
 
 let currentContext: FunctionCallContext | null=null;
@@ -34,9 +35,7 @@ export function callRemoteFunction<T=unknown>(type: string | null,method: string
 	const call=new PendingCall<T>();
 
 	const already: unknown[]=[];
-	call.finally(()=>{
-		//TODO foreach(var d in already.OfType<Delegate>()) RemoteFunction.UnregisterFunction(d);
-	});
+	call.finally(()=>freeDynamic(already));
 
 	const buff=new DataOutput();
 	const callId=nextId++;
@@ -61,7 +60,7 @@ export function callRemoteFunction<T=unknown>(type: string | null,method: string
 		msg.writeByte(PacketType.MessageToExecutor);
 		msg.writeLength(callId);
 		const list: unknown[]=[];
-		msg.writeArray(msgArgs,d=>msg.writeDynamic(d,already));
+		msg.writeArray(msgArgs,d=>msg.writeDynamic(d,list));
 		already.push(...list);
 
 		sendRaw(msg);

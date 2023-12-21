@@ -16,6 +16,7 @@ import {registeredTypes} from "../internal/RegisteredTypes";
 import {FunctionCallContext,runWithContext} from "../types/functions/FunctionCallContext";
 import {RpcError} from "../types/RpcError";
 import {isNodeJs} from "./RpcId";
+import {freeDynamic} from "../types/data/DynamicData";
 
 
 const activeRequests=new Map<number,PendingCall>();
@@ -51,7 +52,6 @@ export enum PacketType{
 	MessageToCaller=5,
 }
 
-//TODO move this to RemoteError.ts?
 //receiving FunctionError results in an Uncaught in promise warning, that doesn't make sense, therefore it gets blocked here
 let ignoreUnhandledRejections=false;
 if(isNodeJs) process.on("unhandledRejection",()=>{
@@ -90,8 +90,8 @@ export async function receiveRpc(data: DataInput){
 						buff.writeDynamic(t);
 						sendRaw(buff);
 						currentlyExecuting.delete(callId);
-						
-						//TODO foreach(var d in already.OfType<Delegate>()) RemoteFunction.UnregisterFunction(d);
+
+						freeDynamic(already);
 					};
 					reject=e=>{
 						rej(e);
@@ -104,7 +104,7 @@ export async function receiveRpc(data: DataInput){
 						sendRaw(buff);
 						currentlyExecuting.delete(callId);
 
-						//TODO foreach(var d in already.OfType<Delegate>()) RemoteFunction.UnregisterFunction(d);
+						freeDynamic(already);
 					};
 				});
 

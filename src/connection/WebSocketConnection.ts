@@ -21,14 +21,19 @@ export async function waitConnected(){
 
 let createWebSocket: ()=>Promise<WebSocket>;
 if(isNodeJs){
-	createWebSocket=async()=>new (await import("ws")).WebSocket(process.env.RPC_URL!,process.env.RPC_TOKEN==null?{}: {
-		headers:{
-			Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN,
-		},
-	}) as unknown as WebSocket;
-}else if("document" in globalThis){
-	createWebSocket=async()=>new WebSocket("ws"+globalThis.document.location.origin.substring(4)+"/rpc");
-}else throw new Error("Unknown Platform");
+	const url=process.env.RPC_URL;
+	if(!url){
+		console.warn("RPC_URL is not defined => RPC will not connect");
+		createWebSocket=async()=>({} as any as WebSocket);
+	}else
+		createWebSocket=async()=>new (await import("ws")).WebSocket(url,process.env.RPC_TOKEN==null?{}: {
+			headers:{
+				Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN,
+			},
+		}) as unknown as WebSocket;
+}else if("document" in globalThis)
+	createWebSocket=async()=>new WebSocket("ws"+document.location.origin.substring(4)+"/rpc");
+else throw new Error("Unknown Platform");
 
 
 function closeRpc(e: Error){

@@ -26,6 +26,7 @@ export {CustomDynamicType} from "./types/data/CustomDynamicTypeDecorator";
 
 import("./rpc").then((m)=>Object.assign(globalThis,m));
 
+// noinspection JSUnusedGlobalSymbols
 export class Rpc{
 
 	//Rpc
@@ -60,5 +61,7 @@ export class Rpc{
 	public static getAllTypes=async()=>await callRemoteFunction<string[]>(null,'T');
 	public static getAllConnections=async()=>await callRemoteFunction<string[]>(null,'C');
 	
+	/** @deprecated Use Rpc.root instead*/
 	public static objects=RPC_ROOT;
+	public static root=RPC_ROOT;
 }

@@ -54,5 +54,5 @@ export function createRemoteObject<
 
 export const RPC_ROOT=new Proxy({},{
 	get:(_,prop)=>typeof prop=="string"?createRemoteObject(prop):undefined,
-	has:(_,prop)=>!(prop in globalThis)&&prop!="then",
+	has:(_,prop)=>typeof prop=="string"&&prop!="then",
 }) as Record<string,RpcObject>;
