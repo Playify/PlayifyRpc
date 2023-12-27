@@ -103,14 +103,14 @@ function callLocalFunction<T>(type: string|null,method: string|null,func:()=>(Pr
 			return context;
 		},
 		cancelToken:controller.signal,
-		cancel:()=>controller.abort(),
+		cancelSelf:()=>controller.abort(),
 		[Symbol.asyncIterator]:()=>getAsyncIterator(context),
 	};
 	call.sendMessage=(...received)=>{
 		call.finished||runReceiveMessage(context,received);
 		return call;
 	};
-	call.cancel=()=>call.finished||context.cancel();
+	call.cancel=()=>call.finished||context.cancelSelf();
 
 	try{
 		const promise: Promise<T> | T=runWithContext(func,context);
@@ -135,7 +135,7 @@ export interface FunctionCallContext{
 
 	cancelToken: AbortSignal
 
-	cancel(): void
+	cancelSelf(): void
 
 	[Symbol.asyncIterator](): AsyncIterator<any[]>;
 }

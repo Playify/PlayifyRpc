@@ -26,7 +26,7 @@ export function disposeConnection(e: Error){
 	for(let pending of activeRequests.values()) rejectCall.get(pending)?.(e);
 	activeRequests.clear();
 
-	for(let ctx of currentlyExecuting.values()) ctx.cancel();
+	for(let ctx of currentlyExecuting.values()) ctx.cancelSelf();
 }
 
 export function sendRaw(buff: DataOutput){
@@ -145,7 +145,7 @@ export async function receiveRpc(data: DataInput){
 							return context;
 						},
 						cancelToken:controller.signal,
-						cancel:()=>controller.abort(),
+						cancelSelf:()=>controller.abort(),
 						[Symbol.asyncIterator]:()=>getAsyncIterator(context),
 					};
 					currentlyExecuting.set(callId,context);
@@ -215,7 +215,7 @@ export async function receiveRpc(data: DataInput){
 					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: ${callId}`);
 					break;
 				}
-				ctx.cancel();
+				ctx.cancelSelf();
 				break;
 			}
 			case PacketType.MessageToExecutor:{
