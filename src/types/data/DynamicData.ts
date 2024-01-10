@@ -69,11 +69,14 @@ export function readDynamic(data: DataInput,already: unknown[]){
 			case 'E':
 				return data.readError();
 			case 'O':
-				return createRemoteObject(data.readString());
+				const objectType=data.readString();
+				if(objectType==null) throw new Error("Type can't be null");
+				return createRemoteObject(objectType);
 			case 'F':
 				const type=data.readString();
+				if(type==null) throw new Error("Type can't be null");
 				const method=data.readString();
-				if(method==null) throw new Error("InvalidOperation");
+				if(method==null) throw new Error("Method can't be null");
 				const func=new RpcFunction(type,method);
 				already.push(func);
 				return func;

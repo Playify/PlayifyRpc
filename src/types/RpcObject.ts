@@ -22,7 +22,7 @@ export type RpcObjectTemplate={
 
 export function createRemoteObject<
 	T extends object=RpcObjectTemplate,
-	TypeString extends string | null=string
+	TypeString extends string=string
 >(
 	type: TypeString,
 	target: T=new class RpcObject{[RpcObjectType]=type} as T,

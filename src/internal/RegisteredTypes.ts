@@ -2,7 +2,6 @@ import {isConnected} from "../connection/WebSocketConnection";
 import {RpcId} from "../connection/RpcId";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext";
 import {RpcObjectGetMethods} from "../types/RpcObject";
-import {afterEach} from "node:test";
 
 
 export type Func=(...args: any[])=>Promise<any>;

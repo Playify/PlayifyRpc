@@ -1,28 +1,23 @@
-<head>
-	<title>RPC Test</title>
-	<script type="module" src="rpc.ts"></script>
+<title>RPC Test</title>
+<script type="module" src="/rpc.ts"></script>
 
-	<label>
-		<input type="text" value="Rpc.getRegistrations()" style="width:100%"/>
-	</label>
-	<pre>&nbsp;</pre>
-	<script>
-		const input=document.querySelector("input");
-		const pre=document.querySelector("pre");
 
-		let curr=0;
-		input.addEventListener("keydown",async e=>{
-			if(e.key!="Enter") return;
-			try{
-				pre.style.color="blue";
-				const now=++curr;
-				pre.textContent= await Rpc.eval(input.value);
-				if(now!=curr) return;//Don't update if another call was started just now
-				pre.style.color="green";
-			}catch(e){
-				pre.textContent=""+e;
-				pre.style.color="red";
-			}
-		});
-	</script>
-</head>
+<input type="text" value="Rpc.getRegistrations()" style="width:100%"/>
+<pre></pre>
+<script>
+	const input=document.querySelector("input"),pre=document.querySelector("pre");
+	let curr=0;
+	input.addEventListener("keydown",async e=>{
+		if(e.key!="Enter") return;
+		try{
+			pre.style.color="blue";
+			const now=++curr;
+			pre.textContent= await Rpc.eval(input.value);
+			if(now!=curr) return;//Don't update if another call was started just now
+			pre.style.color="green";
+		}catch(e){
+			pre.textContent=""+e;
+			pre.style.color="red";
+		}
+	});
+</script>

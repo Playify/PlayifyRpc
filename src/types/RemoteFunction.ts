@@ -19,7 +19,7 @@ export const RpcFunction=class RpcFunction<FuncOrReturnType>
 	})<FuncOrReturnType>{
 
 	constructor(
-		public readonly type: string|null,
+		public readonly type: string,
 		public readonly method: string,
 	){super(callRemoteFunction.bind(null,type,method));}
 
@@ -28,7 +28,6 @@ export const RpcFunction=class RpcFunction<FuncOrReturnType>
 		return `rpc (...params) => ${this.type??"null"}.${this.method}(...params)`;
 	}
 };
-
 
 let nextId: number=Date.now();
 const functionCache=new WeakMap<((...args: any)=>any),string>();
