@@ -13,7 +13,7 @@ export const rpcPlugin=(devRpcServer: string="http://127.0.0.1:4590/",rpcToken:s
 			map:null,
 		};
 	},
-	configResolved(config){
+	configResolved(config){//TODO this doesn't work
 		let external=config.build.rollupOptions.external;
 		if(Array.isArray(external))external.push("/rpc.js");
 		else if(typeof external==="function"){

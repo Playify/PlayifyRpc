@@ -1,4 +1,4 @@
-import {registeredTypes} from "../../internal/RegisteredTypes";
+import {invoke,registeredTypes} from "../../internal/RegisteredTypes";
 import {getAsyncIterator,PendingCall,registerReceive,rejectCall,resolveCall,runReceiveMessage} from "./PendingCall";
 import {DataOutput} from "../data/DataOutput";
 import {PacketType,sendCall,sendRaw} from "../../connection/Connection";
@@ -26,10 +26,10 @@ export function getFunctionContext(): FunctionCallContext{
 
 let nextId=0;
 
-export function callRemoteFunction<T=unknown>(type: string | null,method: string,...args: any[]): PendingCall<T>{
+export function callRemoteFunction<T=unknown>(type: string | null,method: string|null,...args: any[]): PendingCall<T>{
 	if(type!=null){
 		const local=registeredTypes.get(type);
-		if(local) return callLocalFunction(type,method,()=>local[method](...args));
+		if(local) return callLocalFunction(type,method,()=>invoke(local,type,method,...args));
 	}
 
 	const call=new PendingCall<T>();

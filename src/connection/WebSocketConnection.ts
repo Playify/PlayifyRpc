@@ -19,20 +19,24 @@ export async function waitConnected(){
 }
 
 
-let createWebSocket: ()=>Promise<WebSocket>;
+let createWebSocket: (query: URLSearchParams)=>Promise<WebSocket>;
 if(isNodeJs){
 	const url=process.env.RPC_URL;
 	if(!url){
 		console.warn("RPC_URL is not defined => RPC will not connect");
 		createWebSocket=async()=>({} as any as WebSocket);
 	}else
-		createWebSocket=async()=>new (await import("ws")).WebSocket(url,process.env.RPC_TOKEN==null?{}: {
-			headers:{
-				Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN,
-			},
-		}) as unknown as WebSocket;
+		createWebSocket=async(query)=>{
+			const uri=new URL(url);
+			uri.search=query.toString();
+			return new (await import("ws")).WebSocket(uri,process.env.RPC_TOKEN==null?{}: {
+				headers:{
+					Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN,
+				},
+			}) as unknown as WebSocket;
+		};
 }else if("document" in globalThis)
-	createWebSocket=async()=>new WebSocket("ws"+document.location.origin.substring(4)+"/rpc");
+	createWebSocket=async(query)=>new WebSocket("ws"+document.location.origin.substring(4)+"/rpc?"+query);
 else throw new Error("Unknown Platform");
 
 
@@ -49,7 +53,20 @@ function closeRpc(e: Error){
 
 export let _webSocket: WebSocket | null=null;
 (async function reconnect(){
-	const webSocket=await createWebSocket();
+	await Promise.resolve();
+
+	let reportedName=RpcNameOrId;
+	let reportedTypes=new Set<string>();
+
+	const query=new URLSearchParams();
+	query.set("name",reportedName);
+	for(let key of registeredTypes.keys()){
+		reportedTypes.add(key);
+		query.append("type",key);
+	}
+
+
+	const webSocket=await createWebSocket(query);
 
 	webSocket.onclose=()=>{
 		_webSocket=null;
@@ -65,8 +82,19 @@ export let _webSocket: WebSocket | null=null;
 		try{
 			_webSocket=webSocket;
 
-			await callRemoteFunction(null,'N',RpcNameOrId);
-			await callRemoteFunction(null,'+',...registeredTypes.keys());
+			const toRegister=new Set(registeredTypes.keys());
+			const toDelete=new Set(reportedTypes);
+
+			for(let type of toRegister)
+				if(toDelete.delete(type))
+					toRegister.delete(type);
+
+			if(toRegister.size||toDelete.size)
+				if(RpcNameOrId!=reportedName) await callRemoteFunction(null,'H',RpcNameOrId,[...toRegister.keys()],[...toDelete.keys()]);
+				else await callRemoteFunction(null,'H',[...toRegister.keys()],[...toDelete.keys()]);
+			else if(RpcNameOrId!=reportedName) await callRemoteFunction(null,'H',RpcNameOrId);
+			
+
 
 			isConnected=true;
 			resolveWaitUntilConnected();

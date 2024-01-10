@@ -12,7 +12,7 @@ import {
 	resolveCall,
 	runReceiveMessage
 } from "../types/functions/PendingCall";
-import {registeredTypes} from "../internal/RegisteredTypes";
+import {invoke,registeredTypes} from "../internal/RegisteredTypes";
 import {FunctionCallContext,runWithContext} from "../types/functions/FunctionCallContext";
 import {RpcError} from "../types/RpcError";
 import {isNodeJs} from "./RpcId";
@@ -115,7 +115,7 @@ export async function receiveRpc(data: DataInput){
 					const local=registeredTypes.get(type);
 					if(!local) throw new Error(`Type "${type}" is not registered on client ${RpcNameOrId}`);
 
-					const method=data.readString()!;
+					const method=data.readString();
 
 					const args=data.readArray(()=>data.readDynamic(already))??[];
 
@@ -151,15 +151,7 @@ export async function receiveRpc(data: DataInput){
 					currentlyExecuting.set(callId,context);
 
 
-					const result: Promise<any> | any=runWithContext(()=>{
-						let func=local[method];
-						if(func==null){
-							let ignoreCase=Object.keys(local).find(s=>s.toLowerCase()==method.toLowerCase());
-							if(ignoreCase!=null) func=local[ignoreCase];
-						}
-						if(func==null) throw new Error(`Method \"${method}\" not found in \"${type}\"`);
-						return func.call(local,...args);
-					},context);
+					const result: Promise<any> | any=runWithContext(()=>invoke(local,type,method,...args),context);
 
 					if(result instanceof Promise) result.then(r=>resolve(r),e=>reject(e));
 					else resolve(result);

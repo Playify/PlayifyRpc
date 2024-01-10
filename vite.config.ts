@@ -63,7 +63,7 @@ export default defineConfig({
 	server:{
 		port:3000,
 		proxy:{
-			"^/rpc$":{
+			"^/rpc([/?].*)$":{
 				target:"http://127.2.4.8:4590",
 				prependPath:true,
 				changeOrigin:true,
