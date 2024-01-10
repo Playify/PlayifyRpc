@@ -3,7 +3,7 @@
 import {Alias,AliasOptions,PluginOption,TransformResult} from "vite";
 
 
-export const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590/",rpcToken:string|undefined=process.env.RPC_TOKEN): PluginOption=>({
+export const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590",rpcToken:string|undefined=process.env.RPC_TOKEN): PluginOption=>({
 	name:"playify-rpc",
 
 	transform(code,_,cfg): TransformResult | undefined{
@@ -33,18 +33,18 @@ export const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590/",rpc
 		((config.optimizeDeps??={}).exclude??=[]).push("playify-rpc","/rpc.js");
 
 		//Proxy
-		((config.server??={}).proxy??={})["/rpc"]={
+		((config.server??={}).proxy??={})["/rpc"]??={
 			target:devRpcServer,
 			changeOrigin:true,
 			ws:true,
-			prependPath:true,
+			prependPath:false,
 			headers:rpcToken==null?undefined:{
 				"Cookie":"RPC_TOKEN="+rpcToken,
 			}
 		};
-		
+
 		//Resolve for server side
-		if(cfg.ssrBuild){
+		if(!cfg.ssrBuild){
 			const alias: AliasOptions=(config.resolve??={}).alias??={};
 			if(Array.isArray(alias))
 				(alias as Alias[]).push({

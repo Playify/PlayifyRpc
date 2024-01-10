@@ -43,7 +43,7 @@ export class Rpc{
 
 	//Functions
 	public static createObject=createRemoteObject;
-	public static createFunction=<T>(type: string | null,method: string)=>new RpcFunction<T>(type,method);
+	public static createFunction=<T>(type: string,method: string)=>new RpcFunction<T>(type,method);
 	public static registerFunction=registerFunction;
 	public static unregisterFunction=unregisterFunction;
 
