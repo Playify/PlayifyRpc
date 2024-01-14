@@ -1,7 +1,7 @@
 import {DataInput} from "./DataInput";
 import {createRemoteObject,RpcObjectType} from "../RpcObject";
 import {DataOutput} from "./DataOutput";
-import {registerFunction,RpcFunction,unregisterFunction} from "../RemoteFunction";
+import {registerFunction,RpcFunction,unregisterFunction} from "../RpcFunction";
 
 export const writeRegistry: [id: string,check: (d: unknown)=>boolean,write: (data: DataOutput,o: unknown,already: unknown[])=>void][]=[];
 export const readRegistry=new Map<string,(data: DataInput,already: unknown[])=>unknown>();

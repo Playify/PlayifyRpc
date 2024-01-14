@@ -1,13 +1,8 @@
 import {RpcNameOrId,setName} from "./connection/IdAndName";
 import {isConnected,waitConnected} from "./connection/WebSocketConnection";
-import {createRemoteObject,RPC_ROOT,RpcObjectGetMethods,RpcObjectType} from "./types/RpcObject";
-import {registerFunction,RpcFunction,unregisterFunction} from "./types/RemoteFunction";
-import {
-	callLocal,
-	callRemoteFunction,
-	FunctionCallContext,
-	getFunctionContext,
-} from "./types/functions/FunctionCallContext";
+import {createRemoteObject,RPC_ROOT,RpcObjectExists,RpcObjectGetMethods,RpcObjectType} from "./types/RpcObject";
+import {registerFunction,RpcFunction,unregisterFunction} from "./types/RpcFunction";
+import {callLocal,callRemoteFunction,FunctionCallContext,getFunctionContext,} from "./types/functions/FunctionCallContext";
 import {registerType,unregisterType} from "./internal/RegisteredTypes";
 import {RpcId} from "./connection/RpcId";
 
@@ -19,7 +14,7 @@ export type {FunctionCallContext} from "./types/functions/FunctionCallContext";
 export * from "./types/functions/PendingCall";
 
 export * from "./types/RpcObject";
-export * from "./types/RemoteFunction";
+export * from "./types/RpcFunction";
 export * from "./types/RpcError";
 export {RpcProvider} from "./types/RpcProviderDecorator";
 export {CustomDynamicType} from "./types/data/CustomDynamicTypeDecorator";
@@ -66,6 +61,7 @@ export class Rpc{
 	public static eval=async(expression: string): Promise<string>=>await callRemoteFunction("Rpc","eval",expression);
 
 	public static root=RPC_ROOT;
-	public static objectType=RpcObjectType;
+	public static type=RpcObjectType;
+	public static exists=RpcObjectExists;
 	public static getMethods=RpcObjectGetMethods;
 }

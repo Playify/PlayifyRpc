@@ -55,10 +55,10 @@ export default defineConfig({
 					entryFileNames:"[name].js",
 					chunkFileNames:"rpc/[hash].js",
 					assetFileNames:"rpc/[name].[ext]",
-					sourcemap:true,
 				},
 			],
-		}
+		},
+		sourcemap:true,
 	},
 	server:{
 		port:3000,
