@@ -11,11 +11,19 @@
     "@types/web":"^0.0.114",
     "@types/ws":"^8.5.5",
     "typescript":"^5.2.2",
-    "vite":"^4.4.9"
+    "vite":"^5.0.11"
   },
   "dependencies": {
     "ws":"^8.13.0"
   },
   "main":"dist/rpc.js",
-  "types":"src/rpc.ts"
+  "types":"src/rpc.ts",
+  "exports":{
+    ".":{
+      "import":"./dist/rpc.js",
+      "require":"./dist/rpc.js",
+      "default":"./dist/rpc.js"
+    },
+    "./vite":"./dist_dev/vite.js"
+  }
 }

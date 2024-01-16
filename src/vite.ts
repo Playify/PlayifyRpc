@@ -44,7 +44,7 @@ export const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590",rpcT
 		};
 
 		//Resolve for server side
-		if(!cfg.ssrBuild){
+		if(cfg.command=="build"&&!(cfg.isSsrBuild||("ssrBuild" in cfg&&cfg.ssrBuild))){
 			const alias: AliasOptions=(config.resolve??={}).alias??={};
 			if(Array.isArray(alias))
 				(alias as Alias[]).push({

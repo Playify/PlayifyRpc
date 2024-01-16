@@ -1,4 +1,4 @@
-class x extends Error {
+class T extends Error {
   name;
   from;
   stackTrace;
@@ -10,48 +10,76 @@ caused by: ` + s.stack) : (super(r), this.stackTrace = this.stack.substring(this
 `, this.stackTrace = this.stackTrace.replaceAll(/^  +/gm, "	"), this.stack += this.stackTrace);
   }
 }
-const X = globalThis?.process?.versions?.node != null;
-let d;
-if (X)
+const G = globalThis?.process?.versions?.node != null;
+let w;
+if (G)
   try {
-    d = "node@" + process.binding("os").getHostname() + "@" + process.pid;
+    w = "node@" + process.binding("os").getHostname() + "@" + process.pid;
   } catch {
-    d = "node@" + process.platform + ":" + process.arch + "@" + process.pid;
+    w = "node@" + process.platform + ":" + process.arch + "@" + process.pid;
   }
 else if ("document" in globalThis)
-  d = "web@" + document.location + "@" + Date.now().toString(36) + "X" + Math.random().toString(36).substring(2);
+  w = "web@" + document.location + "@" + Date.now().toString(36) + "X" + Math.random().toString(36).substring(2);
 else
   throw new Error("Unknown Platform");
-const G = /* @__PURE__ */ Object.create(null), _ = /* @__PURE__ */ new Map();
-_.set("$" + d, G);
+const z = /* @__PURE__ */ Object.create(null), d = /* @__PURE__ */ new Map();
+d.set("$" + w, z);
 async function re(t, e) {
-  if (!_.has(t) && (_.set(t, e), S))
+  if (!d.has(t) && (d.set(t, e), R))
     try {
-      await w(null, "+", t);
+      await l(null, "+", t);
     } catch (n) {
       console.log(n);
     }
 }
-async function fe(t) {
-  if (_.has(t)) {
-    if (S)
+async function ge(t) {
+  if (d.has(t)) {
+    if (R)
       try {
-        await w(null, "-", t);
+        await l(null, "-", t);
       } catch (e) {
         console.log(e);
       }
-    _.delete(t);
+    d.delete(t);
   }
 }
-class Q {
+async function te(t) {
+  const e = t[I];
+  if (e)
+    return await e.call(t);
+  const n = [];
+  for (let r in t)
+    typeof t[r] == "function" && n.push(r);
+  return n;
+}
+async function se(t, e, n, ...r) {
+  if (n != null) {
+    let s = t[n];
+    if (s == null) {
+      let o = (await te(t)).find((c) => c.toLowerCase() == n.toLowerCase());
+      o != null && (s = t[o]);
+    }
+    const i = {}[n];
+    if (s == null || s === i)
+      throw new Error(`Method "${n}" not found in "${e}"`);
+    return s.call(t, ...r);
+  }
+  switch (r.length == 0 ? null : r[0]) {
+    case "M":
+      return te(t);
+    default:
+      throw new Error("Invalid meta-call");
+  }
+}
+class J {
   [Symbol.toStringTag] = "PendingCall";
   finished = !1;
   promise;
   constructor() {
     this.promise = new Promise((e, n) => {
-      L.set(this, (r) => {
+      C.set(this, (r) => {
         e(r), this.finished = !0;
-      }), l.set(this, (r) => {
+      }), u.set(this, (r) => {
         n(r), this.finished = !0;
       });
     });
@@ -70,16 +98,16 @@ class Q {
     return this;
   }
   addMessageListener(e) {
-    return U(this, e), this;
+    return $(this, e), this;
   }
   cancel() {
   }
   //overridden by callFunction and callLocal
   [Symbol.asyncIterator]() {
-    return $(this);
+    return U(this);
   }
 }
-function $(t) {
+function U(t) {
   let e = [], n = [], r = t.finished;
   return t.promise.finally(() => {
     r = !0;
@@ -96,13 +124,13 @@ function $(t) {
     }
   };
 }
-const L = /* @__PURE__ */ new WeakMap(), l = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new WeakMap(), R = /* @__PURE__ */ new WeakMap();
-function U(t, e) {
-  if (R.has(t))
-    R.get(t).push(e);
+const C = /* @__PURE__ */ new WeakMap(), u = /* @__PURE__ */ new WeakMap(), k = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new WeakMap();
+function $(t, e) {
+  if (B.has(t))
+    B.get(t).push(e);
   else {
-    R.set(t, [e]);
-    const n = B.get(t) ?? [];
+    B.set(t, [e]);
+    const n = k.get(t) ?? [];
     for (let r of n)
       try {
         e(...r);
@@ -113,65 +141,65 @@ function U(t, e) {
 }
 function F(t, e) {
   if (!t.finished)
-    if (R.has(t))
-      for (let n of R.get(t))
+    if (B.has(t))
+      for (let n of B.get(t))
         try {
           n(...e);
         } catch (r) {
           console.warn("Error receiving: ", r);
         }
     else
-      B.has(t) ? B.set(t, [...B.get(t), e]) : B.set(t, [e]);
+      k.has(t) ? k.set(t, [...k.get(t), e]) : k.set(t, [e]);
 }
-let I = null;
-function se(t, e) {
-  const n = I;
-  I = e;
+let v = null;
+function ie(t, e) {
+  const n = v;
+  v = e;
   try {
     return t();
   } finally {
-    I = n;
+    v = n;
   }
 }
-function ge() {
-  if (I == null)
+function de() {
+  if (v == null)
     throw new Error("FunctionCallContext not available");
-  return I;
+  return v;
 }
-let we = 0;
-function w(t, e, ...n) {
+let ye = 0;
+function l(t, e, ...n) {
   if (t != null) {
-    const c = _.get(t);
+    const c = d.get(t);
     if (c)
-      return ie(t, e, () => c[e](...n));
+      return oe(t, e, () => se(c, t, e, ...n));
   }
-  const r = new Q(), s = [];
-  r.finally(() => H(s));
-  const i = new E(), o = we++;
+  const r = new J(), s = [];
+  r.finally(() => K(s));
+  const i = new S(), o = ye++;
   try {
-    i.writeByte(T.FunctionCall), i.writeLength(o), i.writeString(t), i.writeString(e), i.writeArray(n, (c) => i.writeDynamic(c, s));
+    i.writeByte(D.FunctionCall), i.writeLength(o), i.writeString(t), i.writeString(e), i.writeArray(n, (c) => i.writeDynamic(c, s));
   } catch (c) {
-    return l.get(r)?.(c), r;
+    return u.get(r)?.(c), r;
   }
-  return S || t == null && D != null ? (r.sendMessage = (...c) => {
+  return R || t == null && x != null ? (r.sendMessage = (...c) => {
     if (r.finished)
       return r;
-    const a = new E();
-    a.writeByte(T.MessageToExecutor), a.writeLength(o);
-    const y = [];
-    return a.writeArray(c, (h) => a.writeDynamic(h, y)), s.push(...y), A(a), r;
+    const a = new S();
+    a.writeByte(D.MessageToExecutor), a.writeLength(o);
+    const b = [];
+    return a.writeArray(c, (g) => a.writeDynamic(g, b)), s.push(...b), A(a), r;
   }, r.cancel = () => {
     if (r.finished)
       return;
-    const c = new E();
-    c.writeByte(T.FunctionCancel), c.writeLength(o), A(c);
-  }, be(o, r, i), r) : (l.get(r)?.(new Error("Not connected")), r);
+    const c = new S();
+    c.writeByte(D.FunctionCancel), c.writeLength(o), A(c);
+  }, _e(o, r, i), r) : (u.get(r)?.(new Error("Not connected")), r);
 }
-function de(t) {
-  return ie(null, null, t);
+function pe(t) {
+  return oe(null, null, t);
 }
-function ie(t, e, n) {
-  const r = new Q(), s = new AbortController(), i = {
+function oe(t, e, n) {
+  const r = new J(), s = new AbortController(), i = {
     type: t,
     method: e,
     sendMessage: (...o) => (r.finished || F(r, o), i),
@@ -179,63 +207,65 @@ function ie(t, e, n) {
       return r.finished;
     },
     promise: r,
-    addMessageListener: (o) => (U(i, o), i),
+    addMessageListener: (o) => ($(i, o), i),
     cancelToken: s.signal,
-    cancel: () => s.abort(),
-    [Symbol.asyncIterator]: () => $(i)
+    cancelSelf: () => s.abort(),
+    [Symbol.asyncIterator]: () => U(i)
   };
-  r.sendMessage = (...o) => (r.finished || F(i, o), r), r.cancel = () => r.finished || i.cancel();
+  r.sendMessage = (...o) => (r.finished || F(i, o), r), r.cancel = () => r.finished || i.cancelSelf();
   try {
-    const o = se(n, i);
-    o instanceof Promise ? o.then((c) => L.get(r)?.(c), (c) => l.get(r)?.(c)) : L.get(r)?.(o);
+    const o = ie(n, i);
+    o instanceof Promise ? o.then((c) => C.get(r)?.(c), (c) => u.get(r)?.(c)) : C.get(r)?.(o);
   } catch (o) {
-    l.get(r)?.(o);
+    u.get(r)?.(o);
   }
   return r;
 }
-const m = class extends function(n) {
+const p = class extends function(n) {
   return Object.setPrototypeOf(n, new.target.prototype);
 } {
   constructor(e, n) {
-    super(w.bind(null, e, n)), this.type = e, this.method = n;
+    super(l.bind(null, e, n)), this.type = e, this.method = n;
   }
   toString() {
     return `rpc (...params) => ${this.type ?? "null"}.${this.method}(...params)`;
   }
 };
-let ye = Date.now();
-const P = /* @__PURE__ */ new WeakMap();
-function Y(t) {
-  if (t instanceof m)
+let be = Date.now();
+const W = /* @__PURE__ */ new WeakMap();
+function X(t) {
+  if (t instanceof p)
     return t;
-  const e = P.get(t);
+  const e = W.get(t);
   if (e != null)
-    return new m("$" + d, e);
-  const n = (ye++).toString(16);
-  G[n] = t, P.set(t, n);
-  const r = "$" + d;
-  return new m(r, n);
+    return new p("$" + w, e);
+  const n = (be++).toString(16);
+  z[n] = t, W.set(t, n);
+  const r = "$" + w;
+  return new p(r, n);
 }
-function Z(t) {
-  const e = "$" + d;
+function Q(t) {
+  const e = "$" + w;
   if (t.type != e)
     throw new Error("Can't unregister RemoteFunction, that was not registered locally");
-  delete G[t.method], P.delete(t);
+  delete z[t.method], W.delete(t);
 }
-const v = Symbol("RpcObjectType");
+const L = Symbol("RpcObjectType"), I = Symbol("RpcObjectGetMethods");
 function N(t, e = new class {
-  [v] = t;
+  [L] = t;
 }()) {
   const n = /* @__PURE__ */ new Map();
   return new Proxy(e, {
     get(r, s) {
-      if (s == v)
+      if (s == L)
         return t;
+      if (s == I)
+        return () => l(t, null, "M");
       if (typeof s != "string" || s == "then")
         return e[s];
       if (n.has(s))
         return n.get(s);
-      const i = new m(
+      const i = new p(
         t,
         s
       );
@@ -245,15 +275,15 @@ function N(t, e = new class {
       return new r(...s);
     },
     has(r, s) {
-      return s == v || s in e;
+      return s == L || s == I || s in e;
     }
   });
 }
-const q = new Proxy({}, {
+const ce = new Proxy({}, {
   get: (t, e) => typeof e == "string" ? N(e) : void 0,
   has: (t, e) => typeof e == "string" && e != "then"
-}), oe = [], ce = /* @__PURE__ */ new Map();
-function K(t, e) {
+}), ae = [], le = /* @__PURE__ */ new Map();
+function q(t, e) {
   let n = t.readLength();
   if (n < 0) {
     switch (n = -n, n % 4) {
@@ -266,7 +296,7 @@ function K(t, e) {
         e.push(r);
         for (let s = 0; s < (n - 2) / 4; s++) {
           const i = t.readString();
-          r[i] = K(t, e);
+          r[i] = q(t, e);
         }
         return r;
       }
@@ -274,13 +304,13 @@ function K(t, e) {
         const r = new Array((n - 3) / 4);
         e.push(r);
         for (let s = 0; s < r.length; s++)
-          r[s] = K(t, e);
+          r[s] = q(t, e);
         return r;
       }
     }
     throw new Error("Unreachable code reached");
   } else if (n >= 128) {
-    const r = new TextDecoder().decode(t.readBuffer(n - 128)), s = ce.get(r);
+    const r = new TextDecoder().decode(t.readBuffer(n - 128)), s = le.get(r);
     if (s)
       return s(t, e);
     throw new Error("Unknown data type: " + r);
@@ -303,57 +333,63 @@ function K(t, e) {
       case "D":
         return new Date(Number(t.readLong()));
       case "R": {
-        const o = t.readString(), c = t.readByte();
+        const c = t.readString(), a = t.readByte();
         return new RegExp(
-          o,
-          "g" + (c & 1 ? "i" : "") + (c & 2 ? "m" : "")
+          c,
+          "g" + (a & 1 ? "i" : "") + (a & 2 ? "m" : "")
         );
       }
       case "E":
         return t.readError();
       case "O":
-        return N(t.readString());
+        const r = t.readString();
+        if (r == null)
+          throw new Error("Type can't be null");
+        return N(r);
       case "F":
-        const r = t.readString(), s = t.readString();
+        const s = t.readString();
         if (s == null)
-          throw new Error("InvalidOperation");
-        const i = new m(r, s);
-        return e.push(i), i;
+          throw new Error("Type can't be null");
+        const i = t.readString();
+        if (i == null)
+          throw new Error("Method can't be null");
+        const o = new p(s, i);
+        return e.push(o), o;
       default:
         throw new Error("Unknown data type number: " + n);
     }
 }
-function V(t, e, n) {
+function H(t, e, n) {
   if (e == null)
-    t.writeLength("n".charCodeAt(0));
+    t.writeLength(110);
   else if (e === !0)
-    t.writeLength("t".charCodeAt(0));
+    t.writeLength(116);
   else if (e === !1)
-    t.writeLength("f".charCodeAt(0));
+    t.writeLength(102);
   else if (typeof e == "number" && (e | 0) === e)
-    t.writeLength("i".charCodeAt(0)), t.writeInt(e);
+    t.writeLength(105), t.writeInt(e);
   else if (typeof e == "number")
-    t.writeLength("d".charCodeAt(0)), t.writeDouble(e);
+    t.writeLength(100), t.writeDouble(e);
   else if (typeof e == "bigint")
-    t.writeLength("l".charCodeAt(0)), t.writeLong(e);
+    t.writeLength(108), t.writeLong(e);
   else if (e instanceof Uint8Array)
-    t.writeLength("b".charCodeAt(0)), t.writeLength(e.length), t.writeBuffer(e);
+    t.writeLength(98), t.writeLength(e.length), t.writeBuffer(e);
   else if (e instanceof Date)
-    t.writeLength("D".charCodeAt(0)), t.writeLong(+e);
+    t.writeLength(68), t.writeLong(+e);
   else if (e instanceof RegExp) {
-    t.writeLength("R".charCodeAt(0)), t.writeString(e.source);
+    t.writeLength(82), t.writeString(e.source);
     const r = e.flags;
     t.writeByte(
       (r.includes("i") ? 1 : 0) || (r.includes("m") ? 2 : 0)
     );
   } else if (e instanceof Error)
-    t.writeLength("E".charCodeAt(0)), t.writeError(e);
-  else if (typeof e == "object" && v in e)
-    t.writeLength("O".charCodeAt(0)), t.writeString(e[v]);
+    t.writeLength(69), t.writeError(e);
+  else if (typeof e == "object" && L in e)
+    t.writeLength(79), t.writeString(e[L]);
   else if (typeof e == "function") {
-    n.push(e), t.writeLength("F".charCodeAt(0));
+    n.push(e), t.writeLength(70);
     let r;
-    e instanceof m ? r = e : (r = Y(e), ae.set(e, () => Z(r))), t.writeString(r.type), t.writeString(r.method);
+    e instanceof p ? r = e : (r = X(e), he.set(e, () => Q(r))), t.writeString(r.type), t.writeString(r.method);
   } else if (n.includes(e))
     t.writeLength(-(n.indexOf(e) * 4));
   else if (typeof e == "string") {
@@ -362,9 +398,9 @@ function V(t, e, n) {
   } else if (Array.isArray(e)) {
     n.push(e), t.writeLength(-(e.length * 4 + 3));
     for (let r of e)
-      V(t, r, n);
+      H(t, r, n);
   } else {
-    for (let [r, s, i] of oe) {
+    for (let [r, s, i] of ae) {
       if (!s(e))
         continue;
       const o = new TextEncoder().encode(r);
@@ -376,17 +412,17 @@ function V(t, e, n) {
       const r = Object.entries(e);
       t.writeLength(-(r.length * 4 + 2));
       for (let [s, i] of r)
-        t.writeString(s), V(t, i, n);
+        t.writeString(s), H(t, i, n);
     } else
       throw new Error("Unknown type for " + e);
   }
 }
-const ae = /* @__PURE__ */ new WeakMap();
-function H(t) {
+const he = /* @__PURE__ */ new WeakMap();
+function K(t) {
   for (let e of t)
-    ae.get(e)?.();
+    he.get(e)?.();
 }
-class E {
+class S {
   _buf;
   _data;
   _count = 0;
@@ -462,158 +498,149 @@ class E {
     return this._buf.slice(e, this._count - e);
   }
   writeError(e) {
-    const n = e instanceof x ? e : new x(e.name, g, e.message, e.stack);
+    const n = e instanceof T ? e : new T(e.name, h, e.message, e.stack);
     this.writeString(n.name), this.writeString(n.from), this.writeString(n.message), this.writeString(n.stackTrace);
   }
   writeDynamic(e, n = []) {
-    V(this, e, n);
+    H(this, e, n);
   }
 }
-const b = /* @__PURE__ */ new Map(), k = /* @__PURE__ */ new Map();
-function pe(t) {
-  for (let e of b.values())
-    l.get(e)?.(t);
-  b.clear();
-  for (let e of k.values())
-    e.cancel();
+const y = /* @__PURE__ */ new Map(), E = /* @__PURE__ */ new Map();
+function me(t) {
+  for (let e of y.values())
+    u.get(e)?.(t);
+  y.clear();
+  for (let e of E.values())
+    e.cancelSelf();
 }
 function A(t) {
-  if (D == null)
+  if (x == null)
     throw new Error("Not connected");
-  D.send(t.toBuffer());
+  x.send(t.toBuffer());
 }
-function be(t, e, n) {
-  b.set(t, e);
+function _e(t, e, n) {
+  y.set(t, e);
   try {
     A(n);
   } catch (r) {
-    l.get(e)?.(r);
+    u.get(e)?.(r);
   }
 }
-var T = /* @__PURE__ */ ((t) => (t[t.FunctionCall = 0] = "FunctionCall", t[t.FunctionSuccess = 1] = "FunctionSuccess", t[t.FunctionError = 2] = "FunctionError", t[t.FunctionCancel = 3] = "FunctionCancel", t[t.MessageToExecutor = 4] = "MessageToExecutor", t[t.MessageToCaller = 5] = "MessageToCaller", t))(T || {});
+var D = /* @__PURE__ */ ((t) => (t[t.FunctionCall = 0] = "FunctionCall", t[t.FunctionSuccess = 1] = "FunctionSuccess", t[t.FunctionError = 2] = "FunctionError", t[t.FunctionCancel = 3] = "FunctionCancel", t[t.MessageToExecutor = 4] = "MessageToExecutor", t[t.MessageToCaller = 5] = "MessageToCaller", t))(D || {});
 let O = !1;
-X ? process.on("unhandledRejection", () => {
+G ? process.on("unhandledRejection", () => {
   O = !1;
 }) : window.addEventListener("unhandledrejection", (t) => {
-  O && t.reason instanceof x && (O = !1, t.preventDefault());
+  O && t.reason instanceof T && (O = !1, t.preventDefault());
 });
-async function me(t) {
+async function Ce(t) {
   try {
     switch (t.readByte()) {
       case 0: {
         const n = t.readLength(), r = [];
         let s = !1, i = null, o = null;
-        const c = new Promise((a, y) => {
-          i = (h) => {
-            a(h), s = !0;
-            const f = new E();
+        const c = new Promise((a, b) => {
+          i = (g) => {
+            a(g), s = !0;
+            const f = new S();
             f.writeByte(
               1
               /* FunctionSuccess */
-            ), f.writeLength(n), f.writeDynamic(h), A(f), k.delete(n), H(r);
-          }, o = (h) => {
-            y(h), s = !0;
-            const f = new E();
+            ), f.writeLength(n), f.writeDynamic(g), A(f), E.delete(n), K(r);
+          }, o = (g) => {
+            b(g), s = !0;
+            const f = new S();
             f.writeByte(
               2
               /* FunctionError */
-            ), f.writeLength(n), f.writeError(h), A(f), k.delete(n), H(r);
+            ), f.writeLength(n), f.writeError(g), A(f), E.delete(n), K(r);
           };
         });
         try {
           const a = t.readString();
           if (a == null)
             throw new Error("Client can't use null as a type for function calls");
-          const y = _.get(a);
-          if (!y)
-            throw new Error(`Type "${a}" is not registered on client ${g}`);
-          const h = t.readString(), f = t.readArray(() => t.readDynamic(r)) ?? [], te = new AbortController(), C = {
+          const b = d.get(a);
+          if (!b)
+            throw new Error(`Type "${a}" is not registered on client ${h}`);
+          const g = t.readString(), f = t.readArray(() => t.readDynamic(r)) ?? [], Z = new AbortController(), m = {
             type: a,
-            method: h,
+            method: g,
             get finished() {
               return s;
             },
             promise: c,
-            sendMessage(...u) {
+            sendMessage(..._) {
               if (s)
-                return C;
-              const p = new E();
-              p.writeByte(
+                return m;
+              const M = new S();
+              M.writeByte(
                 5
                 /* MessageToCaller */
-              ), p.writeLength(n);
-              const M = [];
-              return p.writeArray(u, (ue) => p.writeDynamic(ue, M)), r.push(...M), A(p), C;
+              ), M.writeLength(n);
+              const ee = [];
+              return M.writeArray(_, (we) => M.writeDynamic(we, ee)), r.push(...ee), A(M), m;
             },
-            addMessageListener(u) {
-              return U(C, u), C;
+            addMessageListener(_) {
+              return $(m, _), m;
             },
-            cancelToken: te.signal,
-            cancel: () => te.abort(),
-            [Symbol.asyncIterator]: () => $(C)
+            cancelToken: Z.signal,
+            cancelSelf: () => Z.abort(),
+            [Symbol.asyncIterator]: () => U(m)
           };
-          k.set(n, C);
-          const W = se(() => {
-            let u = y[h];
-            if (u == null) {
-              let p = Object.keys(y).find((M) => M.toLowerCase() == h.toLowerCase());
-              p != null && (u = y[p]);
-            }
-            if (u == null)
-              throw new Error(`Method "${h}" not found in "${a}"`);
-            return u.call(y, ...f);
-          }, C);
-          W instanceof Promise ? W.then((u) => i(u), (u) => o(u)) : i(W);
+          E.set(n, m);
+          const P = ie(() => se(b, a, g, ...f), m);
+          P instanceof Promise ? P.then((_) => i(_), (_) => o(_)) : i(P);
         } catch (a) {
           o(a);
         }
         break;
       }
       case 1: {
-        const n = t.readLength(), r = b.get(n);
+        const n = t.readLength(), r = y.get(n);
         if (r == null) {
-          console.log(`${g} has no activeRequest with id: ${n}`);
+          console.log(`${h} has no activeRequest with id: ${n}`);
           break;
         }
         try {
-          L.get(r)?.(t.readDynamic());
+          C.get(r)?.(t.readDynamic());
         } catch (s) {
-          l.get(r)?.(s);
+          u.get(r)?.(s);
         } finally {
-          b.delete(n), L.delete(r), l.delete(r);
+          y.delete(n), C.delete(r), u.delete(r);
         }
         break;
       }
       case 2: {
-        const n = t.readLength(), r = b.get(n);
+        const n = t.readLength(), r = y.get(n);
         if (r == null) {
-          console.log(`${g} has no activeRequest with id: ${n}`);
+          console.log(`${h} has no activeRequest with id: ${n}`);
           break;
         }
         try {
-          O = !0, l.get(r)?.(t.readError());
+          O = !0, u.get(r)?.(t.readError());
         } catch (s) {
-          l.get(r)?.(s);
+          u.get(r)?.(s);
         } finally {
-          b.delete(n), L.delete(r), l.delete(r);
+          y.delete(n), C.delete(r), u.delete(r);
         }
         break;
       }
       case 3: {
         const n = t.readLength();
-        let r = k.get(n);
+        let r = E.get(n);
         if (!r) {
-          console.log(`${g} has no CurrentlyExecuting with id: ${n}`);
+          console.log(`${h} has no CurrentlyExecuting with id: ${n}`);
           break;
         }
-        r.cancel();
+        r.cancelSelf();
         break;
       }
       case 4: {
         const n = t.readLength();
-        let r = k.get(n);
+        let r = E.get(n);
         if (!r) {
-          console.log(`${g} has no CurrentlyExecuting with id: ${n}`);
+          console.log(`${h} has no CurrentlyExecuting with id: ${n}`);
           break;
         }
         const s = [], i = t.readArray(() => t.readDynamic(s)) ?? [];
@@ -622,9 +649,9 @@ async function me(t) {
       }
       case 5: {
         const n = t.readLength();
-        let r = b.get(n);
+        let r = y.get(n);
         if (!r) {
-          console.log(`${g} has no ActiveRequest with id: ${n}`);
+          console.log(`${h} has no ActiveRequest with id: ${n}`);
           break;
         }
         const s = [], i = t.readArray(() => t.readDynamic(s)) ?? [];
@@ -636,7 +663,7 @@ async function me(t) {
     console.error(e);
   }
 }
-class le {
+class ue {
   _buf;
   _data;
   _pos;
@@ -728,155 +755,172 @@ class le {
     return r;
   }
   readError() {
-    return new x(this.readString(), this.readString() ?? "???", this.readString(), this.readString());
+    return new T(this.readString(), this.readString() ?? "???", this.readString(), this.readString());
   }
   readDynamic(e = []) {
-    return K(this, e);
+    return q(this, e);
   }
 }
-let S = !1, z, J, he = new Promise((t, e) => [z, J] = [t, e]);
-async function _e() {
+let R = !1, Y, V, fe = new Promise((t, e) => [Y, V] = [t, e]);
+async function Le() {
   for (; ; )
-    if (await he.then(() => !0, () => !1))
+    if (await fe.then(() => !0, () => !1))
       return;
 }
 let j;
-if (X) {
+if (G) {
   const t = process.env.RPC_URL;
-  t ? j = async () => new (await import("ws")).WebSocket(t, process.env.RPC_TOKEN == null ? {} : {
-    headers: {
-      Cookie: "RPC_TOKEN=" + process.env.RPC_TOKEN
-    }
-  }) : (console.warn("RPC_URL is not defined => RPC will not connect"), j = async () => ({}));
+  t ? j = async (e) => {
+    const n = new URL(t);
+    return n.search = e.toString(), new (await import("ws")).WebSocket(n, process.env.RPC_TOKEN == null ? {} : {
+      headers: {
+        Cookie: "RPC_TOKEN=" + process.env.RPC_TOKEN
+      }
+    });
+  } : (console.warn("RPC_URL is not defined => RPC will not connect"), j = async () => ({}));
 } else if ("document" in globalThis)
-  j = async () => new WebSocket("ws" + document.location.origin.substring(4) + "/rpc");
+  j = async (t) => new WebSocket("ws" + document.location.origin.substring(4) + "/rpc?" + t);
 else
   throw new Error("Unknown Platform");
 function ne(t) {
-  const e = J;
-  he = new Promise((n, r) => [z, J] = [n, r]), e(t), pe(t);
+  const e = V;
+  fe = new Promise((n, r) => [Y, V] = [n, r]), e(t), me(t);
 }
-let D = null;
+let x = null;
 (async function t() {
-  const e = await j();
-  e.onclose = () => {
-    D = null, S = !1, console.log("Websocket disconnected");
-    const n = new Error("Connection closed");
-    ne(n), setTimeout(t, 1e3);
-  }, e.onopen = async () => {
+  await Promise.resolve();
+  let e = h, n = /* @__PURE__ */ new Set();
+  const r = new URLSearchParams();
+  r.set("name", e);
+  for (let i of d.keys())
+    n.add(i), r.append("type", i);
+  const s = await j(r);
+  s.onclose = () => {
+    x = null, R = !1, console.log("Websocket disconnected");
+    const i = new Error("Connection closed");
+    ne(i), setTimeout(t, 1e3);
+  }, s.onopen = async () => {
     console.log("Websocket connected");
     try {
-      D = e, await w(null, "N", g), await w(null, "+", ..._.keys()), S = !0, z();
-    } catch (n) {
-      console.error(n.stack), ne(n), e?.close(4e3, "Error registering types");
+      x = s;
+      const i = new Set(d.keys()), o = new Set(n);
+      for (let c of i)
+        o.delete(c) && i.delete(c);
+      i.size || o.size ? h != e ? await l(null, "H", h, [...i.keys()], [...o.keys()]) : await l(null, "H", [...i.keys()], [...o.keys()]) : h != e && await l(null, "H", h), R = !0, Y();
+    } catch (i) {
+      console.error(i.stack), ne(i), s?.close(4e3, "Error registering types");
       return;
     }
-  }, e.binaryType = "arraybuffer", e.onmessage = function(r) {
-    const s = r.data;
-    typeof s == "string" ? console.log(s) : me(new le(new Uint8Array(s)));
+  }, s.binaryType = "arraybuffer", s.onmessage = function(o) {
+    const c = o.data;
+    typeof c == "string" ? console.log(c) : Ce(new ue(new Uint8Array(c)));
   };
 })();
-let g = d;
-async function Ce(t) {
-  g = t != null ? `${t} (${d})` : d;
+let h = w;
+async function Se(t) {
+  h = t != null ? `${t} (${w})` : w;
   try {
-    S && await w(null, "N", g);
+    R && await l(null, "N", h);
   } catch (e) {
     console.error(e);
   }
 }
-function Le(t) {
+function Re(t) {
   return function(e) {
     re(t ?? e.prototype.constructor.name, e).catch(console.error);
   };
 }
 function Ee(t) {
   return function(e) {
-    oe.push([t, (n) => n instanceof e, (n, r, s) => r.write(n, s)]), ce.set(t, (n, r) => e.read(n, r));
+    ae.push([t, (n) => n instanceof e, (n, r, s) => r.write(n, s)]), le.set(t, (n, r) => e.read(n, r));
   };
 }
-Promise.resolve().then(() => Se).then((t) => Object.assign(globalThis, t));
-class ee {
+Promise.resolve().then(() => Be).then((t) => Object.assign(globalThis, t));
+class ke {
   //Rpc
-  static id = d;
+  static id = w;
   static get nameOrId() {
-    return g;
+    return h;
   }
   static setName(e) {
-    return Ce(e);
+    return Se(e);
   }
   //Connection	
   static get isConnected() {
-    return S;
+    return R;
   }
   static get waitUntilConnected() {
-    return _e();
+    return Le();
   }
   //Functions
   static createObject = N;
-  static createFunction = (e, n) => new m(e, n);
-  static registerFunction = Y;
-  static unregisterFunction = Z;
-  static callLocal = de;
+  static createFunction = (e, n) => new p(e, n);
+  static registerFunction = X;
+  static unregisterFunction = Q;
+  static callLocal = pe;
   //Call function and get a PendingCall, this allows the use of the FunctionCallContext within the function
-  static callFunction = w;
+  static callFunction = l;
   //Call remote function
-  static getContext = ge;
+  static getContext = de;
   //Types
   static registerType = re;
-  static unregisterType = fe;
-  static getObjectWithFallback = async (e, ...n) => await w(null, "O", e, ...n);
-  static checkTypes = async (...e) => await w(null, "?", ...e);
-  static checkType = async (e) => await ee.checkTypes(e) != 0;
-  static getAllTypes = async () => await w(null, "T");
-  static getAllConnections = async () => await w(null, "C");
-  /** @deprecated Use Rpc.root instead*/
-  static objects = q;
-  static root = q;
+  static unregisterType = ge;
+  static getObjectWithFallback = async (e, ...n) => await l("Rpc", "getObjectWithFallback", e, ...n);
+  static checkTypes = async (...e) => await l("Rpc", "checkTypes", ...e);
+  static checkType = async (e) => await l("Rpc", "checkType", e);
+  static getAllTypes = async () => await l("Rpc", "getAllTypes");
+  static getAllConnections = async () => await l("Rpc", "getAllConnections");
+  static getRegistrations = async () => await l("Rpc", "getRegistrations");
+  static eval = async (e) => await l("Rpc", "eval", e);
+  static root = ce;
+  static objectType = L;
+  static getMethods = I;
 }
-const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   CustomDynamicType: Ee,
-  DataInput: le,
-  DataOutput: E,
-  PendingCall: Q,
-  RPC_ROOT: q,
-  Rpc: ee,
-  RpcError: x,
-  RpcFunction: m,
-  RpcObjectType: v,
-  RpcProvider: Le,
+  DataInput: ue,
+  DataOutput: S,
+  PendingCall: J,
+  RPC_ROOT: ce,
+  Rpc: ke,
+  RpcError: T,
+  RpcFunction: p,
+  RpcObjectGetMethods: I,
+  RpcObjectType: L,
+  RpcProvider: Re,
   createRemoteObject: N,
-  getAsyncIterator: $,
-  listenersMap: R,
-  pendingMap: B,
-  registerFunction: Y,
-  registerReceive: U,
-  rejectCall: l,
-  resolveCall: L,
+  getAsyncIterator: U,
+  listenersMap: B,
+  pendingMap: k,
+  registerFunction: X,
+  registerReceive: $,
+  rejectCall: u,
+  resolveCall: C,
   runReceiveMessage: F,
-  unregisterFunction: Z
+  unregisterFunction: Q
 }, Symbol.toStringTag, { value: "Module" }));
 export {
   Ee as CustomDynamicType,
-  le as DataInput,
-  E as DataOutput,
-  Q as PendingCall,
-  q as RPC_ROOT,
-  ee as Rpc,
-  x as RpcError,
-  m as RpcFunction,
-  v as RpcObjectType,
-  Le as RpcProvider,
+  ue as DataInput,
+  S as DataOutput,
+  J as PendingCall,
+  ce as RPC_ROOT,
+  ke as Rpc,
+  T as RpcError,
+  p as RpcFunction,
+  I as RpcObjectGetMethods,
+  L as RpcObjectType,
+  Re as RpcProvider,
   N as createRemoteObject,
-  $ as getAsyncIterator,
-  R as listenersMap,
-  B as pendingMap,
-  Y as registerFunction,
-  U as registerReceive,
-  l as rejectCall,
-  L as resolveCall,
+  U as getAsyncIterator,
+  B as listenersMap,
+  k as pendingMap,
+  X as registerFunction,
+  $ as registerReceive,
+  u as rejectCall,
+  C as resolveCall,
   F as runReceiveMessage,
-  Z as unregisterFunction
+  Q as unregisterFunction
 };
 //# sourceMappingURL=rpc.js.map

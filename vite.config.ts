@@ -12,24 +12,22 @@ const appendDotHtml=(defaultPath: string): PluginOption=>({
 	apply:"serve",
 	configureServer(viteDevServer){
 		// @ts-ignore
-		viteDevServer.middlewares.use(async(req,res,next)=>{
+		viteDevServer.middlewares.use(async(req,_,next)=>{
 			const url=new URL(req.originalUrl!,"http://localhost");
 			if(url.pathname=="/")
 				req.url=defaultPath+url.search;
-			else if(!url.pathname.match(/[.@]/))
+			else if(!/[.@]/.test(url.pathname))
 				if(await exists("./src"+url.pathname+".html"))
 					req.url=url.pathname+".html"+url.search;
 
 			next();
 		});
-	}
+	},
 });
-
-const dist="dist/";
 
 export default defineConfig({
 	plugins:[
-		appendDotHtml("/index.html"),
+		appendDotHtml("/index.html")
 	],
 
 	root:"src",
@@ -37,28 +35,32 @@ export default defineConfig({
 	build:{
 		lib:{
 			name:"rpc",
-			entry:fileURLToPath(new URL("./src/rpc.ts",import.meta.url)),
+			entry:[fileURLToPath(new URL("./src/rpc.ts",import.meta.url))],
 			fileName:"rpc",
 		},
 		target:'esnext',
-		outDir:dist+"raw_web",
-		emptyOutDir:true,
+		outDir:"dist",
+		emptyOutDir:false,
 		modulePreload:{
-			polyfill:false
+			polyfill:false,
 		},
 		rollupOptions:{
+			input:[
+				"./src/rpc.ts",
+				"./src/vite.ts",
+			],
 			external:["os","ws"],
 			output:[
 				{
-					dir:dist,
+					dir:".",
 					format:"es",
-					entryFileNames:"[name].js",
-					chunkFileNames:"rpc/[hash].js",
-					assetFileNames:"rpc/[name].[ext]",
-					sourcemap:true,
+					entryFileNames:c=>c.name=="vite"?"dist_dev/[name].js":"dist/[name].js",
+					chunkFileNames:"dist/rpc/[hash].js",
+					assetFileNames:"dist/rpc/[name].[ext]",
 				},
 			],
-		}
+		},
+		sourcemap:true,
 	},
 	server:{
 		port:3000,
@@ -70,9 +72,9 @@ export default defineConfig({
 				secure:false,
 				ws:true,
 				headers:{
-					"Cookie":"RPC_TOKEN="+process.env.RPC_TOKEN
-				}
-			}
-		}
+					"Cookie":"RPC_TOKEN="+process.env.RPC_TOKEN,
+				},
+			},
+		},
 	},
 });
