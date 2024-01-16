@@ -1,7 +1,8 @@
-import {RpcFunction} from "./RemoteFunction";
+import {RpcFunction} from "./RpcFunction";
 import {callRemoteFunction} from "./functions/FunctionCallContext";
 
 export const RpcObjectType=Symbol("RpcObjectType");
+export const RpcObjectExists=Symbol("RpcObjectExists");
 export const RpcObjectGetMethods=Symbol("RpcObjectGetMethods");
 export type RpcObject<T=RpcObjectTemplate,Type=string>={
 	[x in keyof T]:
@@ -12,6 +13,7 @@ export type RpcObject<T=RpcObjectTemplate,Type=string>={
 			RpcFunction<any>;
 } & {
 	[RpcObjectType]: Type,
+	[RpcObjectExists]: ()=>Promise<boolean>
 	[RpcObjectGetMethods]: ()=>Promise<string[]>
 };
 
@@ -34,6 +36,7 @@ export function createRemoteObject<
 	return new Proxy<RpcObject<T,TypeString>>(<any>target,{
 		get(_: never,p: string | symbol): any{
 			if(p==RpcObjectType) return type;
+			if(p==RpcObjectExists) return ()=>callRemoteFunction(null,"E",type);
 			if(p==RpcObjectGetMethods) return ()=>callRemoteFunction(type,null,"M");
 			if(typeof p!="string"||
 				p=="then"//otherwise every RemoteObject would be thenable => would interfere with async await
@@ -50,7 +53,7 @@ export function createRemoteObject<
 			return new target(...argArray);
 		},
 		has(_:never,p: string | symbol): boolean{
-			return p==RpcObjectType||p==RpcObjectGetMethods||p in target;
+			return p==RpcObjectType||p==RpcObjectGetMethods||p==RpcObjectExists||p in target;
 		},
 	});
 }
