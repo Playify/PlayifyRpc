@@ -3,7 +3,6 @@ import {getAsyncIterator,PendingCall,registerReceive,rejectCall,resolveCall,runR
 import {DataOutput} from "../data/DataOutput.js";
 import {PacketType,sendCall,sendRaw} from "../../connection/Connection.js";
 import {_webSocket,isConnected} from "../../connection/WebSocketConnection.js";
-import {freeDynamic} from "../data/DynamicData.js";
 import {RpcError,rpcMarkInternal} from "../RpcError.js";
 import {RpcConnectionError} from "../errors/PredefinedErrors.js";
 
@@ -34,10 +33,8 @@ export function callRemoteFunction<T=unknown>(type:string | null,method:string |
 		if(local) return callLocalFunction<T>(invoke.bind(null,local,type,method,...args),type,method,args,3);
 	}
 
-	const call=new PendingCall<T>(2);
-
 	const already:unknown[]=[];
-	call.finally(()=>freeDynamic(already));
+	const call=new PendingCall<T>(2,already);
 
 	const buff=new DataOutput();
 	const callId=nextId++;
@@ -88,7 +85,7 @@ export function callLocal<T>(func:()=>(Promise<T> | T)):PendingCall<T>{
 }
 
 function callLocalFunction<T>(func:()=>(Promise<T> | T),type:string | null,method:string | null,args:any[] | null,skip:number){
-	const pending=new PendingCall<T>(skip);
+	const pending=new PendingCall<T>(skip,[]);
 
 	const controller=new AbortController();
 	const context:FunctionCallContext={

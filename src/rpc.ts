@@ -12,7 +12,6 @@ import {
 import {registerType,unregisterType} from "./internal/RegisteredTypes.js";
 import {RpcId} from "./connection/RpcId.js";
 import {RpcProvider} from "./types/RpcProviderDecorator.js";
-import {RpcError} from "./types/RpcError.js";
 
 
 export * from "./types/data/DataInput.js";
@@ -85,64 +84,4 @@ export class Rpc{
 	public static type=RpcObjectType;
 	public static exists=RpcObjectExists;
 	public static getMethods=RpcObjectGetMethods;
-}
-
-
-class TestJs{
-	static test0(){
-		throw new Error("T0");
-	}
-	static test0R(){
-		throw new RpcError(null,null,"T0R",null);
-	}
-
-	static test1(){
-		try{
-			this.test0();
-		}catch(e){
-			throw new Error("T1",{cause:e});
-		}
-	}
-
-	static async test2r(){
-		try{
-			await Rpc.callLocal(function test(){
-				throw new Error("T");
-			});
-		}catch(e){
-			throw new Error("T1",{cause:e});
-		}
-	}
-	static async test3r(){
-		try{
-			await Rpc.callLocal(async function test(){
-				throw new Error("T");
-			});
-		}catch(e){
-			throw new Error("T1",{cause:e});
-		}
-	}
-
-	static async test4r(){
-		try{
-			await Rpc.callFunction("TestJs","test0");
-		}catch(e){
-			throw new Error("T1",{cause:e});
-		}
-	}
-
-	static async test2(){
-		await Rpc.callLocal(function test(){
-			throw new Error("T");
-		});
-	}
-	static async test3(){
-		await Rpc.callLocal(async function test(){
-			throw new Error("T");
-		});
-	}
-
-	static async test4(){
-		await Rpc.callFunction("TestJs","test0");
-	}
 }

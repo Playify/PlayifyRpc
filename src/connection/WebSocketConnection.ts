@@ -11,9 +11,10 @@ import {Rpc} from "../rpc.js";
 export let isConnected=false;
 
 
-let resolveWaitUntilConnected: VoidFunction,rejectWaitUntilConnected: (e: Error)=>void;
+let resolveWaitUntilConnected:VoidFunction,rejectWaitUntilConnected:(e:Error)=>void;
 let waitUntilConnectedAttempt=new Promise<void>((res,rej)=>[resolveWaitUntilConnected,rejectWaitUntilConnected]=[res,rej]);
-waitUntilConnectedAttempt.catch(()=>{});//Prevent uncaught error warning
+waitUntilConnectedAttempt.catch(()=>{
+});//Prevent uncaught error warning
 
 export async function waitConnected(){
 	while(true)
@@ -21,7 +22,7 @@ export async function waitConnected(){
 			return;
 }
 
-let createWebSocket: (query: URLSearchParams)=>Promise<WebSocket>;
+let createWebSocket:(query:URLSearchParams)=>Promise<WebSocket>;
 if(isNodeJs){
 	const RPC_URL="RPC_URL" in globalThis?(globalThis as any)["RPC_URL"]:process.env.RPC_URL;
 	const RPC_TOKEN="RPC_TOKEN" in globalThis?(globalThis as any)["RPC_TOKEN"]:process.env.RPC_TOKEN;
@@ -32,7 +33,7 @@ if(isNodeJs){
 		createWebSocket=async(query)=>{
 			const uri=new URL(RPC_URL);
 			uri.search=query.toString();
-			return new (await import("ws")).WebSocket(uri,RPC_TOKEN==null?{}: {
+			return new (await import("ws")).WebSocket(uri,RPC_TOKEN==null?{}:{
 				headers:{
 					Cookie:"RPC_TOKEN="+RPC_TOKEN,
 				},
@@ -50,7 +51,7 @@ else{//Unknown Platform
 		createWebSocket=async(query)=>{
 			const uri=new URL(RPC_URL);
 			uri.search=query.toString();
-			return new WebSocket(uri,RPC_TOKEN==null?{}: {
+			return new WebSocket(uri,RPC_TOKEN==null?{}:{
 				headers:{
 					Cookie:"RPC_TOKEN="+RPC_TOKEN,
 				},
@@ -59,10 +60,11 @@ else{//Unknown Platform
 }
 
 
-function closeRpc(e: Error){
+function closeRpc(e:Error){
 	const reject=rejectWaitUntilConnected;
 	waitUntilConnectedAttempt=new Promise<void>((res,rej)=>[resolveWaitUntilConnected,rejectWaitUntilConnected]=[res,rej]);
-	waitUntilConnectedAttempt.catch(()=>{});//Prevent uncaught error warning
+	waitUntilConnectedAttempt.catch(()=>{
+	});//Prevent uncaught error warning
 	reject(e);
 
 	disposeConnection(e);
@@ -71,20 +73,21 @@ function closeRpc(e: Error){
 
 //connect
 
-export let _webSocket: WebSocket | null=null;
-(async function reconnect(){
-	await Promise.resolve();//Moves from main into the event loop
 
+export let _webSocket:WebSocket | null=null;
+
+
+export async function connectOnce(reconnect:VoidFunction){
 	let reportedName=RpcName;
 	let reportedTypes=new Set<string>();
 
 	const query=new URLSearchParams();
 	query.set("id",RpcId);
 	reportedTypes.add("$"+RpcId);
-	
+
 	if(reportedName!=null)
 		query.set("name",reportedName);
-	
+
 	for(let key of registeredTypes.keys())
 		if(!reportedTypes.has(key)){
 			reportedTypes.add(key);
@@ -120,16 +123,13 @@ export let _webSocket: WebSocket | null=null;
 				if(RpcName!=reportedName) await callRemoteFunction(null,'H',RpcName,[...toRegister.keys()],[...toDelete.keys()]);
 				else await callRemoteFunction(null,'H',[...toRegister.keys()],[...toDelete.keys()]);
 			else if(RpcName!=reportedName) await callRemoteFunction(null,'H',RpcName);
-			
-
 
 			isConnected=true;
 			resolveWaitUntilConnected();
 
-
 			// @ts-ignore
-		}catch(e: Error){
-			console.error(e.stack);
+		}catch(e:Error){
+			console.error("Error registering types: ",e);
 			closeRpc(e);
 
 			webSocket?.close(4000,"Error registering types");
@@ -138,14 +138,18 @@ export let _webSocket: WebSocket | null=null;
 	};
 
 	webSocket.binaryType="arraybuffer";
-	webSocket.onmessage=function onMessage(e: MessageEvent){
+	webSocket.onmessage=(e:MessageEvent)=>{
 		const data=e.data;
-
-		if(typeof data=="string"){
-			console.log(data);
-		}else{
-			// noinspection JSIgnoredPromiseFromCall
-			receiveRpc(new DataInput(new Uint8Array(data)));
-		}
+		if(typeof data=="string") console.log(data);
+		else receiveRpc(new DataInput(new Uint8Array(data)));
 	};
+}
+
+(async function connectLoop(){
+	await Promise.resolve();//Moves from main into the event loop
+
+	// noinspection InfiniteLoopJS
+	while(true)
+		await new Promise<void>(
+			resolve=>connectOnce(resolve));
 }());

@@ -1,5 +1,6 @@
 import {FunctionCallContext} from "./FunctionCallContext.js";
 import {RpcError} from "../RpcError.js";
+import {freeDynamic} from "../data/DynamicData.js";
 
 type Action<T>=(t:T)=>void;
 
@@ -8,7 +9,7 @@ export class PendingCall<T=unknown> implements Promise<T>{
 	public finished=false;
 	public readonly promise:Promise<T>;
 
-	constructor(skip:number){
+	constructor(skip:number,dispose:unknown[]){
 		try{
 			// noinspection ExceptionCaughtLocallyJS
 			throw new Error();
@@ -19,12 +20,14 @@ export class PendingCall<T=unknown> implements Promise<T>{
 					rejectCall.delete(this);
 					this.finished=true;
 					resolve(t);
+					freeDynamic(dispose);
 				});
 				rejectCall.set(this,e=>{
 					resolveCall.delete(this);
 					rejectCall.delete(this);
 					this.finished=true;
 					reject(e instanceof RpcError?e.unfreeze(stackSource as any,skip):e);
+					freeDynamic(dispose);
 				});
 			});
 		}
@@ -62,6 +65,7 @@ export function getAsyncIterator(call:PendingCall | FunctionCallContext):AsyncIt
 	let didReceive:IteratorResult<unknown[]>[]=[];
 	let waitReceive:((r:IteratorResult<unknown[]>)=>void)[]=[];
 
+	call.promise.catch(()=>{});
 	call.promise.finally(()=>{
 		for(let request of waitReceive) request({done:true,value:undefined});
 	});
@@ -72,9 +76,9 @@ export function getAsyncIterator(call:PendingCall | FunctionCallContext):AsyncIt
 	return {
 		async next():Promise<IteratorResult<unknown[]>>{
 			if(call.finished) return {done:true,value:undefined};
-			return didReceive.shift()??await new Promise(res=>waitReceive.push(res));
-		}
-	}
+			return didReceive.shift()?? await new Promise(res=>waitReceive.push(res));
+		},
+	};
 }
 
 export const resolveCall=new WeakMap<PendingCall,Action<any>>();
@@ -82,7 +86,7 @@ export const rejectCall=new WeakMap<PendingCall,Action<unknown>>();
 export const pendingMap=new WeakMap<PendingCall | FunctionCallContext,(any[])[]>();
 export const listenersMap=new WeakMap<PendingCall | FunctionCallContext,((...args:any[])=>void)[]>();
 
-export function registerReceive<AnyCall extends PendingCall|FunctionCallContext>(call:AnyCall,func:(...args:any[])=>void){
+export function registerReceive<AnyCall extends PendingCall | FunctionCallContext>(call:AnyCall,func:(...args:any[])=>void){
 	if(listenersMap.has(call)){
 		listenersMap.get(call)!.push(func);
 	}else{
