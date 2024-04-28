@@ -29,7 +29,8 @@ export const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590",rpcT
 		rollupOptions.makeAbsoluteExternalsRelative=false;
 
 		//Prevent from being included as code
-		((config.ssr??={}).external??=[]).push("playify-rpc","/rpc.js");
+		const ssrExternal=(config.ssr??={}).external??=[];
+		if(ssrExternal!=true)ssrExternal.push("playify-rpc","/rpc.js");
 		((config.optimizeDeps??={}).exclude??=[]).push("playify-rpc","/rpc.js");
 
 		//Proxy

@@ -1,4 +1,4 @@
-import {registerType} from "../internal/RegisteredTypes";
+import {registerType} from "../internal/RegisteredTypes.js";
 
 export function RpcProvider(type?: string){
 	return function(target: any){

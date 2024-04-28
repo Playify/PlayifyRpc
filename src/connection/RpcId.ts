@@ -1,18 +1,25 @@
-
 export const isNodeJs=globalThis?.process?.versions?.node!=null;
 
+const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const randomId=()=>Date.now().toString(36)+Array(10)
+	.fill(undefined)
+	.map(()=>chars[Math.floor(Math.random()*chars.length)])
+	.join("");
 
 
 //RpcId
-export let RpcId: string;
-if(isNodeJs){
+export let RpcId:string;
+if(isNodeJs)
 	try{
-		//RpcId="node@"+(await import("os")).hostname()+"@"+process.pid;
-		//@ts-ignore
-		// noinspection JSUnresolvedReference
-		RpcId="node@"+process.binding("os").getHostname()+"@"+process.pid;//Needed to not use top level await
+		if(process?.versions.bun)
+			RpcId="bun@"+require("os").hostname()+"@"+process.pid;
+		else
+			//@ts-ignore
+			// noinspection JSUnresolvedReference
+			RpcId="node@"+process.binding("os").getHostname()+"@"+process.pid;//Needed to not use top level await
 	}catch{
-		RpcId="node@"+process.platform+":"+process.arch+"@"+process.pid;
+		RpcId="node-alternative@"+process.platform+":"+process.arch+"@"+process.pid;
 	}
-}else if("document" in globalThis) RpcId="web@"+document.location+"@"+Date.now().toString(36)+"X"+Math.random().toString(36).substring(2);
-else throw new Error("Unknown Platform");
+else if("document" in globalThis) RpcId="web@"+document.location+"#"+randomId();
+else//Unknown Platform
+	RpcId="js@"+randomId();

@@ -1,7 +1,9 @@
-import {isConnected} from "../connection/WebSocketConnection";
-import {RpcId} from "../connection/RpcId";
-import {callRemoteFunction} from "../types/functions/FunctionCallContext";
-import {RpcObjectGetMethods} from "../types/RpcObject";
+import {isConnected} from "../connection/WebSocketConnection.js";
+import {RpcId} from "../connection/RpcId.js";
+import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
+import {RpcObjectGetMethods} from "../types/RpcObject.js";
+import {RpcError,rpcMarkInternal} from "../types/RpcError.js";
+import {RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/PredefinedErrors.js";
 
 
 export type Func=(...args:any[])=>Promise<any>;
@@ -47,15 +49,10 @@ async function getMethods(invoker:Invoker):Promise<string[]>{
 	const getter=invoker[RpcObjectGetMethods];
 	if(getter) return await getter.call(invoker);
 
-	const arr=[];
-	for(let key in invoker)
-		if(typeof invoker[key]=="function")
-			arr.push(key);
-
-	return arr;
+	return Object.getOwnPropertyNames(invoker).filter(key=>typeof invoker[key]=="function");
 }
 
-export async function invoke(invoker:Invoker,type:string,method:string | null,...args:any[]){
+export async function invoke(invoker:Invoker,type:string,method:string | null,...args:any[]):Promise<any>{
 	if(method!=null){
 		let func=invoker[method];
 		if(func==null){
@@ -65,14 +62,19 @@ export async function invoke(invoker:Invoker,type:string,method:string | null,..
 		//Try finding the same method on a default object, if it is reference equals, then it is a builtin function, that should not be available via RPC
 		const reference=({})[method];
 
-		if(func==null||func===reference) throw new Error(`Method \"${method}\" not found in \"${type}\"`);
-		return func.call(invoker,...args);
+		if(func==null||func===reference)throw RpcMethodNotFoundError.new(type,method);
+		try{
+			return await rpcMarkInternal(async()=>await func.call(invoker,...args));
+		}catch(e){
+			throw RpcError.wrapAndFreeze(e as Error);
+		}
 	}
 
-	switch(args.length==0?null:args[0]){
+	const meta=args.length==0?null:args[0];
+	switch(meta){
 		case "M":
 			return getMethods(invoker);
 		default:
-			throw new Error("Invalid meta-call");
+			throw RpcMetaMethodNotFoundError.new(type,meta);
 	}
 }

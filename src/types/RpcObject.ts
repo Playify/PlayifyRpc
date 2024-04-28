@@ -1,5 +1,5 @@
-import {RpcFunction} from "./RpcFunction";
-import {callRemoteFunction} from "./functions/FunctionCallContext";
+import {RpcFunction} from "./RpcFunction.js";
+import {callRemoteFunction} from "./functions/FunctionCallContext.js";
 
 export const RpcObjectType=Symbol("RpcObjectType");
 export const RpcObjectExists=Symbol("RpcObjectExists");

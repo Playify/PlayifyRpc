@@ -1,9 +1,8 @@
 // noinspection ExceptionCaughtLocallyJS
 
-import {_webSocket} from "./WebSocketConnection";
-import {RpcNameOrId} from "./IdAndName";
-import {DataOutput} from "../types/data/DataOutput";
-import {DataInput} from "../types/data/DataInput";
+import {_webSocket} from "./WebSocketConnection.js";
+import {DataOutput} from "../types/data/DataOutput.js";
+import {DataInput} from "../types/data/DataInput.js";
 import {
 	getAsyncIterator,
 	PendingCall,
@@ -11,35 +10,34 @@ import {
 	rejectCall,
 	resolveCall,
 	runReceiveMessage
-} from "../types/functions/PendingCall";
-import {invoke,registeredTypes} from "../internal/RegisteredTypes";
-import {FunctionCallContext,runWithContext} from "../types/functions/FunctionCallContext";
-import {RpcError} from "../types/RpcError";
-import {isNodeJs} from "./RpcId";
-import {freeDynamic} from "../types/data/DynamicData";
+} from "../types/functions/PendingCall.js";
+import {invoke,registeredTypes} from "../internal/RegisteredTypes.js";
+import {FunctionCallContext,invokeForPromise} from "../types/functions/FunctionCallContext.js";
+import {freeDynamic} from "../types/data/DynamicData.js";
+import {Rpc,RpcConnectionError,RpcTypeNotFoundError} from "../rpc.js";
 
 
 const activeRequests=new Map<number,PendingCall>();
 const currentlyExecuting=new Map<number,FunctionCallContext>();
 
-export function disposeConnection(e: Error){
+export function disposeConnection(e:Error){
 	for(let pending of activeRequests.values()) rejectCall.get(pending)?.(e);
 	activeRequests.clear();
 
 	for(let ctx of currentlyExecuting.values()) ctx.cancelSelf();
 }
 
-export function sendRaw(buff: DataOutput){
-	if(_webSocket==null) throw new Error("Not connected");
+export function sendRaw(buff:DataOutput){
+	if(_webSocket==null) throw RpcConnectionError.new("Not connected");
 	_webSocket.send(buff.toBuffer());
 }
 
-export function sendCall(callId: number,call: PendingCall,buff: DataOutput){
+export function sendCall(callId:number,call:PendingCall,buff:DataOutput){
 	activeRequests.set(callId,call);
 	try{
 		sendRaw(buff);
 	}catch(e){
-		rejectCall.get(call)?.(e as Error);
+		rejectCall.get(call)?.(e);
 	}
 }
 
@@ -52,19 +50,7 @@ export enum PacketType{
 	MessageToCaller=5,
 }
 
-//receiving FunctionError results in an Uncaught in promise warning, that doesn't make sense, therefore it gets blocked here
-let ignoreUnhandledRejections=false;
-if(isNodeJs) process.on("unhandledRejection",()=>{
-	ignoreUnhandledRejections=false;
-});
-else window.addEventListener("unhandledrejection",e=>{
-	if(ignoreUnhandledRejections&&e.reason instanceof RpcError){
-		ignoreUnhandledRejections=false;
-		e.preventDefault();
-	}
-});
-
-export async function receiveRpc(data: DataInput){
+export async function receiveRpc(data:DataInput){
 	try{
 		const packetType=data.readByte() as PacketType;
 
@@ -73,11 +59,11 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 
 
-				const already: unknown[]=[];
+				const already:unknown[]=[];
 
-				let finished: boolean=false;
-				let resolve: (t: unknown)=>void=null!;
-				let reject: (e: Error)=>void=null!;
+				let finished:boolean=false;
+				let resolve:(t:unknown)=>void=null!;
+				let reject:(e:Error)=>void=null!;
 
 				const promise=new Promise((res,rej)=>{
 					resolve=t=>{
@@ -107,13 +93,18 @@ export async function receiveRpc(data: DataInput){
 						freeDynamic(already);
 					};
 				});
+				promise.catch(()=>{
+				});//Prevent uncaught error warning
+
 
 				try{
 					const type=data.readString();
 
-					if(type==null) throw new Error("Client can't use null as a type for function calls");
+					if(type==null)
+						throw RpcTypeNotFoundError.new(null);
 					const local=registeredTypes.get(type);
-					if(!local) throw new Error(`Type "${type}" is not registered on client ${RpcNameOrId}`);
+					if(!local)
+						throw RpcTypeNotFoundError.new(type);
 
 					const method=data.readString();
 
@@ -121,7 +112,7 @@ export async function receiveRpc(data: DataInput){
 
 
 					const controller=new AbortController();
-					const context: FunctionCallContext={
+					const context:FunctionCallContext={
 						type,
 						method,
 						get finished(){
@@ -133,14 +124,14 @@ export async function receiveRpc(data: DataInput){
 							const msg=new DataOutput();
 							msg.writeByte(PacketType.MessageToCaller);
 							msg.writeLength(callId);
-							const list: unknown[]=[];
+							const list:unknown[]=[];
 							msg.writeArray(sending,d=>msg.writeDynamic(d,list));
 							already.push(...list);
 
 							sendRaw(msg);
 							return context;
 						},
-						addMessageListener(func: (...args: any[])=>void){
+						addMessageListener(func:(...args:any[])=>void){
 							registerReceive(context,func);
 							return context;
 						},
@@ -151,10 +142,7 @@ export async function receiveRpc(data: DataInput){
 					currentlyExecuting.set(callId,context);
 
 
-					const result: Promise<any> | any=runWithContext(()=>invoke(local,type,method,...args),context);
-
-					if(result instanceof Promise) result.then(r=>resolve(r),e=>reject(e));
-					else resolve(result);
+					await invokeForPromise(invoke.bind(null,local,type,method,...args),context,resolve,reject,type,method,args);
 				}catch(e){
 					reject(e as Error);
 				}
@@ -165,17 +153,15 @@ export async function receiveRpc(data: DataInput){
 
 				const pending=activeRequests.get(callId);
 				if(pending==null){
-					console.log(`${RpcNameOrId} has no activeRequest with id: ${callId}`);
+					console.warn(`${Rpc.prettyName} has no activeRequest with id: ${callId}`);
 					break;
 				}
 				try{
 					resolveCall.get(pending)?.(data.readDynamic());
 				}catch(e){
-					rejectCall.get(pending)?.(e as Error);
+					rejectCall.get(pending)?.(e);
 				}finally{
 					activeRequests.delete(callId);
-					resolveCall.delete(pending);
-					rejectCall.delete(pending);
 				}
 				break;
 			}
@@ -184,19 +170,16 @@ export async function receiveRpc(data: DataInput){
 
 				const pending=activeRequests.get(callId);
 				if(pending==null){
-					console.log(`${RpcNameOrId} has no activeRequest with id: ${callId}`);
+					console.warn(`${Rpc.prettyName} has no activeRequest with id: ${callId}`);
 					break;
 				}
 
 				try{
-					ignoreUnhandledRejections=true;
-					rejectCall.get(pending)?.(data.readError());
+					throw data.readError();
 				}catch(e){
-					rejectCall.get(pending)?.(e as Error);
+					rejectCall.get(pending)?.(e);
 				}finally{
 					activeRequests.delete(callId);
-					resolveCall.delete(pending);
-					rejectCall.delete(pending);
 				}
 				break;
 			}
@@ -204,7 +187,7 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 				let ctx=currentlyExecuting.get(callId);
 				if(!ctx){
-					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: ${callId}`);
+					console.warn(`${Rpc.prettyName} has no CurrentlyExecuting with id: ${callId}`);
 					break;
 				}
 				ctx.cancelSelf();
@@ -214,10 +197,10 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 				let ctx=currentlyExecuting.get(callId);
 				if(!ctx){
-					console.log(`${RpcNameOrId} has no CurrentlyExecuting with id: ${callId}`);
+					console.warn(`${Rpc.prettyName} has no CurrentlyExecuting with id: ${callId}`);
 					break;
 				}
-				const already: unknown[]=[];
+				const already:unknown[]=[];
 				const args=data.readArray(()=>data.readDynamic(already))??[];
 				runReceiveMessage(ctx,args);
 				break;
@@ -226,12 +209,11 @@ export async function receiveRpc(data: DataInput){
 				const callId=data.readLength();
 				let pending=activeRequests.get(callId);
 				if(!pending){
-					console.log(`${RpcNameOrId} has no ActiveRequest with id: ${callId}`);
+					console.warn(`${Rpc.prettyName} has no ActiveRequest with id: ${callId}`);
 					break;
 				}
-				const already: unknown[]=[];
+				const already:unknown[]=[];
 				const args=data.readArray(()=>data.readDynamic(already))??[];
-
 				runReceiveMessage(pending,args);
 				break;
 			}

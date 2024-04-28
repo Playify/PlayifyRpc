@@ -1,9 +1,11 @@
-import {RpcNameOrId} from "./IdAndName";
-import {disposeConnection,receiveRpc} from "./Connection";
-import {DataInput} from "../types/data/DataInput";
-import {callRemoteFunction} from "../types/functions/FunctionCallContext";
-import {registeredTypes} from "../internal/RegisteredTypes";
-import {isNodeJs} from "./RpcId";
+import {RpcName} from "./RpcName.js";
+import {disposeConnection,receiveRpc} from "./Connection.js";
+import {DataInput} from "../types/data/DataInput.js";
+import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
+import {registeredTypes} from "../internal/RegisteredTypes.js";
+import {isNodeJs,RpcId} from "./RpcId.js";
+import {RpcConnectionError} from "../types/errors/PredefinedErrors.js";
+import {Rpc} from "../rpc.js";
 
 
 export let isConnected=false;
@@ -11,6 +13,7 @@ export let isConnected=false;
 
 let resolveWaitUntilConnected: VoidFunction,rejectWaitUntilConnected: (e: Error)=>void;
 let waitUntilConnectedAttempt=new Promise<void>((res,rej)=>[resolveWaitUntilConnected,rejectWaitUntilConnected]=[res,rej]);
+waitUntilConnectedAttempt.catch(()=>{});//Prevent uncaught error warning
 
 export async function waitConnected(){
 	while(true)
@@ -18,31 +21,48 @@ export async function waitConnected(){
 			return;
 }
 
-
 let createWebSocket: (query: URLSearchParams)=>Promise<WebSocket>;
 if(isNodeJs){
-	const url=process.env.RPC_URL;
-	if(!url){
+	const RPC_URL="RPC_URL" in globalThis?(globalThis as any)["RPC_URL"]:process.env.RPC_URL;
+	const RPC_TOKEN="RPC_TOKEN" in globalThis?(globalThis as any)["RPC_TOKEN"]:process.env.RPC_TOKEN;
+	if(!RPC_URL){
 		console.warn("RPC_URL is not defined => RPC will not connect");
 		createWebSocket=async()=>({} as any as WebSocket);
 	}else
 		createWebSocket=async(query)=>{
-			const uri=new URL(url);
+			const uri=new URL(RPC_URL);
 			uri.search=query.toString();
-			return new (await import("ws")).WebSocket(uri,process.env.RPC_TOKEN==null?{}: {
+			return new (await import("ws")).WebSocket(uri,RPC_TOKEN==null?{}: {
 				headers:{
-					Cookie:"RPC_TOKEN="+process.env.RPC_TOKEN,
+					Cookie:"RPC_TOKEN="+RPC_TOKEN,
 				},
 			}) as unknown as WebSocket;
 		};
 }else if("document" in globalThis)
 	createWebSocket=async(query)=>new WebSocket("ws"+document.location.origin.substring(4)+"/rpc?"+query);
-else throw new Error("Unknown Platform");
+else{//Unknown Platform
+	const RPC_URL="RPC_URL" in globalThis?(globalThis as any)["RPC_URL"]:process.env.RPC_URL;
+	const RPC_TOKEN="RPC_TOKEN" in globalThis?(globalThis as any)["RPC_TOKEN"]:process.env.RPC_TOKEN;
+	if(!RPC_URL){
+		console.warn("RPC_URL is not defined => RPC will not connect");
+		createWebSocket=async()=>({} as any as WebSocket);
+	}else
+		createWebSocket=async(query)=>{
+			const uri=new URL(RPC_URL);
+			uri.search=query.toString();
+			return new WebSocket(uri,RPC_TOKEN==null?{}: {
+				headers:{
+					Cookie:"RPC_TOKEN="+RPC_TOKEN,
+				},
+			} as any) as unknown as WebSocket;
+		};
+}
 
 
 function closeRpc(e: Error){
 	const reject=rejectWaitUntilConnected;
 	waitUntilConnectedAttempt=new Promise<void>((res,rej)=>[resolveWaitUntilConnected,rejectWaitUntilConnected]=[res,rej]);
+	waitUntilConnectedAttempt.catch(()=>{});//Prevent uncaught error warning
 	reject(e);
 
 	disposeConnection(e);
@@ -53,31 +73,38 @@ function closeRpc(e: Error){
 
 export let _webSocket: WebSocket | null=null;
 (async function reconnect(){
-	await Promise.resolve();
+	await Promise.resolve();//Moves from main into the event loop
 
-	let reportedName=RpcNameOrId;
+	let reportedName=RpcName;
 	let reportedTypes=new Set<string>();
 
 	const query=new URLSearchParams();
-	query.set("name",reportedName);
-	for(let key of registeredTypes.keys()){
-		reportedTypes.add(key);
-		query.append("type",key);
-	}
+	query.set("id",RpcId);
+	reportedTypes.add("$"+RpcId);
+	
+	if(reportedName!=null)
+		query.set("name",reportedName);
+	
+	for(let key of registeredTypes.keys())
+		if(!reportedTypes.has(key)){
+			reportedTypes.add(key);
+			query.append("type",key);
+		}
 
 
 	const webSocket=await createWebSocket(query);
 
 	webSocket.onclose=()=>{
+		setTimeout(reconnect,1000);
+
+		if(!_webSocket) return;
 		_webSocket=null;
 		isConnected=false;
-		console.log("Websocket disconnected");
-		const e=new Error("Connection closed");
-		closeRpc(e);
-		setTimeout(reconnect,1000);
+		console.log("Reconnecting to RPC");
+		closeRpc(RpcConnectionError.new("Connection closed by "+Rpc.prettyName));
 	};
 	webSocket.onopen=async()=>{
-		console.log("Websocket connected");
+		console.log("Connected to RPC");
 
 		try{
 			_webSocket=webSocket;
@@ -90,9 +117,9 @@ export let _webSocket: WebSocket | null=null;
 					toRegister.delete(type);
 
 			if(toRegister.size||toDelete.size)
-				if(RpcNameOrId!=reportedName) await callRemoteFunction(null,'H',RpcNameOrId,[...toRegister.keys()],[...toDelete.keys()]);
+				if(RpcName!=reportedName) await callRemoteFunction(null,'H',RpcName,[...toRegister.keys()],[...toDelete.keys()]);
 				else await callRemoteFunction(null,'H',[...toRegister.keys()],[...toDelete.keys()]);
-			else if(RpcNameOrId!=reportedName) await callRemoteFunction(null,'H',RpcNameOrId);
+			else if(RpcName!=reportedName) await callRemoteFunction(null,'H',RpcName);
 			
 
 

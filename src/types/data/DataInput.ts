@@ -1,5 +1,5 @@
-import {RpcError} from "../RpcError";
-import {readDynamic} from "./DynamicData";
+import {RpcError} from "../RpcError.js";
+import {readDynamic} from "./DynamicData.js";
 
 
 export class DataInput{
@@ -130,7 +130,7 @@ export class DataInput{
 	}
 
 	readError(){
-		return new RpcError(this.readString(),this.readString()??"???",this.readString(),this.readString());
+		return RpcError.read(this);
 	}
 
 	readDynamic(already: unknown[]=[]){

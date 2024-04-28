@@ -1,6 +1,6 @@
-import {DataOutput} from "./DataOutput";
-import {DataInput} from "./DataInput";
-import {readRegistry,writeRegistry} from "./DynamicData";
+import {DataOutput} from "./DataOutput.js";
+import {DataInput} from "./DataInput.js";
+import {readRegistry,writeRegistry} from "./DynamicData.js";
 
 
 interface CustomDynamicTypeInstance{

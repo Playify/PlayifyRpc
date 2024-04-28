@@ -1,7 +1,7 @@
-import {RpcId} from "../connection/RpcId";
-import {callRemoteFunction} from "./functions/FunctionCallContext";
-import {PendingCall} from "./functions/PendingCall";
-import {registeredFunctions} from "../internal/RegisteredTypes";
+import {RpcId} from "../connection/RpcId.js";
+import {callRemoteFunction} from "./functions/FunctionCallContext.js";
+import {PendingCall} from "./functions/PendingCall.js";
+import {registeredFunctions} from "../internal/RegisteredTypes.js";
 
 
 type ParamsOrEmpty<T>=T extends (...args: infer Params)=>any?Params: unknown extends T?any[]: [];

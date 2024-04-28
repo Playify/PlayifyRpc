@@ -1,18 +1,17 @@
-import {RpcError} from "../RpcError";
-import {RpcNameOrId} from "../../connection/IdAndName";
-import {writeDynamic} from "./DynamicData";
+import {RpcError} from "../RpcError.js";
+import {writeDynamic} from "./DynamicData.js";
 
 export class DataOutput{
-	private _buf: Uint8Array;
-	private _data: DataView;
-	private _count: number=0;
+	private _buf:Uint8Array;
+	private _data:DataView;
+	private _count:number=0;
 
-	constructor(size:number|Uint8Array=32){
+	constructor(size:number | Uint8Array=32){
 		this._buf=typeof size==="number"?new Uint8Array(size):size;
 		this._data=new DataView(this._buf.buffer);
 	}
 
-	private ensureCapacity(additional: number){
+	private ensureCapacity(additional:number){
 		additional+=this._count;
 		if(additional>this._buf.byteLength){
 			let replacement=new Uint8Array(Math.max(this._buf.byteLength*2,additional));
@@ -23,13 +22,13 @@ export class DataOutput{
 		}
 	}
 
-	writeByte(b: number): void{
+	writeByte(b:number):void{
 		this.ensureCapacity(1);
 		this._buf[this._count]=b;
 		this._count++;
 	}
 
-	writeBytes(b: ArrayLike<number>): void{
+	writeBytes(b:ArrayLike<number>):void{
 		this.ensureCapacity(b.length);
 		this._buf.set(b,this._count);
 		this._count+=b.length;
@@ -39,24 +38,31 @@ export class DataOutput{
 		this.writeBytes(buf);
 	}
 
-	writeBoolean(b: boolean): void{this.writeByte(b?1: 0);}
-	writeNullBoolean(b: boolean|null): void{this.writeByte(b==null?2:b?1: 0);}
+	writeBoolean(b:boolean):void{
+		this.writeByte(b?1:0);
+	}
 
-	writeShort(n: number): void{
+	writeNullBoolean(b:boolean | null):void{
+		this.writeByte(b==null?2:b?1:0);
+	}
+
+	writeShort(n:number):void{
 		this.ensureCapacity(2);
 		this._data.setInt16(this._count,n);
 		this._count+=2;
 	}
 
-	writeChar(c: string): void{this.writeShort(c.charCodeAt(0));}
+	writeChar(c:string):void{
+		this.writeShort(c.charCodeAt(0));
+	}
 
-	writeInt(n: number): void{
+	writeInt(n:number):void{
 		this.ensureCapacity(4);
 		this._data.setInt32(this._count,n);
 		this._count+=4;
 	}
 
-	writeLong(n: bigint|number): void{
+	writeLong(n:bigint | number):void{
 		if(typeof n==="number"){
 			this.writeInt(n/(2**32));
 			this.writeInt(n%(2**32));
@@ -66,19 +72,19 @@ export class DataOutput{
 		}
 	}
 
-	writeFloat(n: number): void{
+	writeFloat(n:number):void{
 		this.ensureCapacity(4);
 		this._data.setFloat32(this._count,n);
 		this._count+=4;
 	}
 
-	writeDouble(n: number): void{
+	writeDouble(n:number):void{
 		this.ensureCapacity(8);
 		this._data.setFloat64(this._count,n);
 		this._count+=8;
 	}
 
-	writeString(s: string|null){
+	writeString(s:string | null){
 		if(s==null){
 			this.writeLength(-1);
 			return;
@@ -88,7 +94,7 @@ export class DataOutput{
 		this.writeBytes(array);
 	}
 
-	writeLength(i: number){
+	writeLength(i:number){
 		let u=(i<0?~i:i)>>>0;// ">>>0" : convert to unsigned
 		while(u>=0x80){
 			this.writeByte(u|0x80);
@@ -102,14 +108,15 @@ export class DataOutput{
 		}
 	}
 
-	writeByteArray(arr: ArrayLike<number>|null){
+	writeByteArray(arr:ArrayLike<number> | null){
 		if(!arr) this.writeLength(-1);
 		else{
 			this.writeLength(arr.length);
 			this.writeBytes(arr);
 		}
 	}
-	writeArray<T>(arr: ArrayLike<T>|null,writeFunction: (t: T)=>void){
+
+	writeArray<T>(arr:ArrayLike<T> | null,writeFunction:(t:T)=>void){
 		if(!arr) this.writeLength(-1);
 		else{
 			this.writeLength(arr.length);
@@ -118,21 +125,19 @@ export class DataOutput{
 		}
 	}
 
-	toBuffer(from=0): Uint8Array{
+	toBuffer(from=0):Uint8Array{
 		return this._buf.slice(from,this._count-from);
 	}
 
-	writeError(error: Error){
-		const remote=error instanceof RpcError?
-			error:
-			new RpcError(error.name,RpcNameOrId,error.message,error.stack!);
-		this.writeString(remote.name);
-		this.writeString(remote.from);
-		this.writeString(remote.message);
-		this.writeString(remote.stackTrace);
+	writeError(error:Error){
+		try{// noinspection ExceptionCaughtLocallyJS
+			throw RpcError.wrapAndFreeze(error)
+		}catch(e){
+			(e as RpcError).write(this);
+		}
 	}
 
-	writeDynamic(value: any,already: unknown[]=[]){
+	writeDynamic(value:any,already:unknown[]=[]){
 		writeDynamic(this,value,already);
 	}
 }

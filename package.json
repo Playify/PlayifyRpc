@@ -1,29 +1,30 @@
 {
-  "name": "playify-rpc",
-  "version": "1.2.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  },
-  "devDependencies": {
-    "@types/node":"^20.5.9",
-    "@types/web":"^0.0.114",
-    "@types/ws":"^8.5.5",
-    "typescript":"^5.2.2",
-    "vite":"^5.0.11"
-  },
-  "dependencies": {
-    "ws":"^8.13.0"
-  },
-  "main":"dist/rpc.js",
-  "types":"src/rpc.ts",
-  "exports":{
-    ".":{
-      "import":"./dist/rpc.js",
-      "require":"./dist/rpc.js",
-      "default":"./dist/rpc.js"
-    },
-    "./vite":"./dist_dev/vite.js"
-  }
+	"name":"playify-rpc",
+	"version":"1.2.0",
+	"type":"module",
+	"scripts":{
+		"dev":"vite",
+		"build":"vite build"
+	},
+	"devDependencies":{
+		"@types/node":"^20.5.9",
+		"@types/web":"^0.0.114",
+		"@types/ws":"^8.5.5",
+		"typescript":"^5.2.2",
+		"vite":"^5.0.11"
+	},
+	"dependencies":{
+		"ws":"^8.13.0",
+		"error-stack-parser":"^2.1.4"
+	},
+	"main":"dist/rpc.js",
+	"types":"src/rpc.ts",
+	"exports":{
+		".":{
+			"import":"./dist/rpc.js",
+			"require":"./dist/rpc.js",
+			"default":"./dist/rpc.js"
+		},
+		"./vite":"./dist_dev/vite.js"
+	}
 }
