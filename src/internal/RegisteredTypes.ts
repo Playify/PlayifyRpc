@@ -2,7 +2,7 @@ import {isConnected} from "../connection/WebSocketConnection.js";
 import {RpcId} from "../connection/RpcId.js";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
 import {RpcObjectGetMethods} from "../types/RpcObject.js";
-import {RpcError,rpcMarkInternal} from "../types/RpcError.js";
+import {RpcError} from "../types/RpcError.js";
 import {RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/PredefinedErrors.js";
 
 
@@ -64,7 +64,12 @@ export async function invoke(invoker:Invoker,type:string,method:string | null,..
 
 		if(func==null||func===reference)throw RpcMethodNotFoundError.new(type,method);
 		try{
-			return await rpcMarkInternal(async()=>await func.call(invoker,...args));
+			return await (({
+				async $RPC_MARKER_BEGIN$(){
+					return await func.call(invoker,...args);
+				}
+			})["$RPC_MARKER_BEGIN$"])();
+			//return await rpcMarkInternal(async()=>await func.call(invoker,...args));
 		}catch(e){
 			throw RpcError.wrapAndFreeze(e as Error);
 		}

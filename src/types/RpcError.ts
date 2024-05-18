@@ -3,21 +3,15 @@ import {RpcCustomErrors} from "./errors/RpcCustomErrorDecorator.js";
 import ErrorStackParser,{StackFrame} from "error-stack-parser";
 
 function fixString(s:string){
-	return s.replaceAll('\r','')
+	return s.replaceAll("\r","")
 		.replaceAll(/^\n+|\n+$/g,"")
-		.replaceAll(/^  +/gm,'\t')
-}
-
-const rpcBeginMarker="$RPC_MARKER_BEGIN$";
-
-export function rpcMarkInternal<T>(func:<T>()=>Promise<T>):Promise<T>{
-	return Object.defineProperty(func,"name",{value:rpcBeginMarker})();
+		.replaceAll(/^  +/gm,"\t");
 }
 
 function framesToString(frames:StackFrame[]):string{
 	let result="";
 	for(let frame of frames)
-		if(frame.functionName?.includes(rpcBeginMarker)) break;
+		if(frame.functionName?.includes("$RPC_MARKER_BEGIN$")) break;
 		else result+="\n\tat "+frame;
 	return result;
 }
@@ -32,6 +26,15 @@ function causeToString(cause:unknown):string{
 	return "\ncaused by: "+fixString(cause?.toString()??"null");
 }
 
+
+//Remove RpcError inheritance from stack trace
+function removeFromStackTrace(e:typeof RpcError & {__proto__:any},ownStack:StackFrame[]):boolean{
+	if((e===RpcError||removeFromStackTrace(e.__proto__,ownStack))
+		&&ownStack[0].functionName?.replace(/^new /,"")===e.name){
+		ownStack.shift();
+		return true;
+	}else return false;
+}
 
 export class RpcError extends Error{
 	//public get type(){return this.name}
@@ -107,6 +110,7 @@ export class RpcError extends Error{
 		if(stackTrace==null){
 			this._appendStack=true;
 			this._ownStack=ErrorStackParser.parse(this);
+			removeFromStackTrace(this.constructor as any,this._ownStack);
 		}else{
 			this._stackTrace="\n"+fixString(stackTrace);
 			const causeIndex=this._stackTrace.indexOf("\ncaused by: ");
@@ -116,7 +120,9 @@ export class RpcError extends Error{
 			}
 		}
 
-		this._causes=causeToString(cause);
+		this._causes+=causeToString(cause);
+
+		this.stack=this.toString();
 	}
 
 	toString(){
@@ -168,6 +174,7 @@ export class RpcError extends Error{
 			e._appendStack=false;
 			e._stackTrace+=framesToString(e._ownStack);
 			e._ownStack=[];
+			e.stack=e.toString();
 			return e;
 		}
 
@@ -177,7 +184,7 @@ export class RpcError extends Error{
 			e.message,
 			framesToString(ErrorStackParser.parse(e)).substring(1),
 			{},
-			e.cause as Error
+			e.cause as Error,
 		);
 	}
 
@@ -185,6 +192,7 @@ export class RpcError extends Error{
 		if(this._appendStack) return this;
 		this._appendStack=true;
 		this._ownStack=ErrorStackParser.parse(stackSource).slice(skip);
+		this.stack=this.toString();
 		return this;
 	}
 
@@ -193,6 +201,7 @@ export class RpcError extends Error{
 			?"<<callLocal>>"
 			:(type??"<<null>>")+"."+(method??"<<null>>")+"("+
 			args.map(a=>JSON.stringify(a)).join(",")+")");
+		this.stack=this.toString();
 		return this;
 	}
 }

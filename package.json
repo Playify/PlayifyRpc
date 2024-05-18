@@ -1,6 +1,6 @@
 {
 	"name":"playify-rpc",
-	"version":"1.2.0",
+	"version":"1.3.0",
 	"type":"module",
 	"scripts":{
 		"dev":"vite",
@@ -22,7 +22,7 @@
 	"exports":{
 		".":{
 			"import":"./dist/rpc.js",
-			"require":"./dist/rpc.js",
+			"require":"./dist/rpc.cjs",
 			"default":"./dist/rpc.js"
 		},
 		"./vite":"./dist_dev/vite.js"

@@ -11,7 +11,7 @@ import {
 } from "./types/functions/FunctionCallContext.js";
 import {registerType,unregisterType} from "./internal/RegisteredTypes.js";
 import {RpcId} from "./connection/RpcId.js";
-import {RpcProvider} from "./types/RpcProviderDecorator.js";
+import {PendingCall} from "./types/functions/PendingCall.js";
 
 
 export * from "./types/data/DataInput.js";
@@ -70,18 +70,23 @@ export class Rpc{
 	//Types
 	public static registerType=registerType;
 	public static unregisterType=unregisterType;
-
+	
 
 	public static getObjectWithFallback=async(type:string,...types:string[]):Promise<number>=>await callRemoteFunction("Rpc","getObjectWithFallback",type,...types);
 	public static checkTypes=async(...types:string[]):Promise<number>=>await callRemoteFunction("Rpc","checkTypes",...types);
 	public static checkType=async(type:string):Promise<boolean>=>await callRemoteFunction("Rpc","checkType",type);
 	public static getAllTypes=async():Promise<string[]>=>await callRemoteFunction("Rpc","getAllTypes");
 	public static getAllConnections=async():Promise<string[]>=>await callRemoteFunction("Rpc","getAllConnections");
-	public static getRegistrations=async():Promise<(Record<string,string[]>)>=>await callRemoteFunction("Rpc","getRegistrations");
-	public static eval=async(expression:string):Promise<string>=>await callRemoteFunction("Rpc","eval",expression);
+	public static getRegistrations=async(includeHidden:boolean=false):Promise<(Record<string,string[]>)>=>await callRemoteFunction("Rpc","getRegistrations",includeHidden);
+	public static evalObject=async(expression:string):Promise<any>=>await callRemoteFunction("Rpc","evalObject",expression);
+	public static evalString=async(expression:string):Promise<string>=>await callRemoteFunction("Rpc","evalString",expression);
+	public static listenCalls=():PendingCall=>callRemoteFunction("Rpc","listenCalls");
 
 	public static root=RPC_ROOT;
 	public static type=RpcObjectType;
 	public static exists=RpcObjectExists;
 	public static getMethods=RpcObjectGetMethods;
 }
+
+
+//import "./_test/webTest.js"

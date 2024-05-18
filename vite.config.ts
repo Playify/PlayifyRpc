@@ -1,9 +1,9 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {defineConfig,PluginOption} from 'vite';
-import {fileURLToPath} from 'url';
-import fs from 'fs';
-import {promisify} from 'util';
+import {defineConfig,PluginOption} from "vite";
+import {fileURLToPath} from "url";
+import fs from "fs";
+import {promisify} from "util";
 
 const exists=promisify(fs.exists);
 
@@ -53,8 +53,15 @@ export default defineConfig({
 			output:[
 				{
 					dir:".",
-					format:"es",
+					format:"esm",
 					entryFileNames:c=>c.name=="vite"?"dist_dev/[name].js":"dist/[name].js",
+					chunkFileNames:"dist/rpc/[hash].js",
+					assetFileNames:"dist/rpc/[name].[ext]",
+				},
+				{
+					dir:".",
+					format:"cjs",
+					entryFileNames:c=>c.name=="vite"?"dist_dev/[name].cjs":"dist/[name].cjs",
 					chunkFileNames:"dist/rpc/[hash].js",
 					assetFileNames:"dist/rpc/[name].[ext]",
 				},

@@ -3,7 +3,7 @@ import {getAsyncIterator,PendingCall,registerReceive,rejectCall,resolveCall,runR
 import {DataOutput} from "../data/DataOutput.js";
 import {PacketType,sendCall,sendRaw} from "../../connection/Connection.js";
 import {_webSocket,isConnected} from "../../connection/WebSocketConnection.js";
-import {RpcError,rpcMarkInternal} from "../RpcError.js";
+import {RpcError} from "../RpcError.js";
 import {RpcConnectionError} from "../errors/PredefinedErrors.js";
 
 
@@ -123,7 +123,11 @@ export async function invokeForPromise<T>(func:()=>T,context:FunctionCallContext
 		const previous:FunctionCallContext | null=currentContext;
 		currentContext=context;
 		try{
-			result=rpcMarkInternal(async()=>await func() as any);
+			result=await (({
+				async $RPC_MARKER_BEGIN$(){
+					return await func() as any;
+				}
+			})["$RPC_MARKER_BEGIN$"])();
 		}finally{
 			currentContext=previous;
 		}

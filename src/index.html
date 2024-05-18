@@ -12,7 +12,7 @@
 		try{
 			pre.style.color="blue";
 			const now=++curr;
-			pre.textContent= await Rpc.eval(input.value);
+			pre.textContent= await Rpc.evalString(input.value);
 			if(now!=curr) return;//Don't update if another call was started just now
 			pre.style.color="green";
 		}catch(e){

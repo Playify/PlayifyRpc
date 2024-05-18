@@ -1,8 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 import {isNodeJs} from "../connection/RpcId.js";
-import {Rpc,RpcConnectionError,RpcError,RpcProvider} from "../rpc.js";
+import {Rpc,RpcConnectionError,RpcError,RpcMethodNotFoundError,RpcProvider} from "../rpc.js";
 
-@RpcProvider(isNodeJs?"bun":"web")
+@RpcProvider(isNodeJs?"bun":"chrome" in globalThis?"chrome":"firefox")
 export class TestType{
 
 
@@ -20,7 +20,7 @@ export class TestType{
 	}
 
 	static Test3() {
-		const ex = new RpcError("TEST");
+		const ex = new RpcMethodNotFoundError("TEST");
 		throw new RpcError("T3", ex);
 	}
 
@@ -161,7 +161,7 @@ export class TestType{
 
 	static async clock() {
 		const ctx = Rpc.getContext();
-		while (true) {
+		while (!ctx.cancelToken.aborted) {
 			ctx.sendMessage(new Date());
 			await new Promise<void>(resolve => setTimeout(resolve, 1000));
 		}
