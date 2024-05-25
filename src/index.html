@@ -16,7 +16,7 @@
 			if(now!=curr) return;//Don't update if another call was started just now
 			pre.style.color="green";
 		}catch(e){
-			pre.textContent=""+e;
+			pre.textContent=""+e.trashLocalStack();
 			pre.style.color="red";
 		}
 	});

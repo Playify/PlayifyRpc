@@ -195,6 +195,13 @@ export class RpcError extends Error{
 		this.stack=this.toString();
 		return this;
 	}
+	
+	trashLocalStack(){
+		this._appendStack=false;
+		this._ownStack=[];
+		this.stack=this.toString();
+		return this;
+	}
 
 	append(type:string | null,method:string | null,args:any[] | null){
 		this._stackTrace+="\n\trpc "+(args==null
