@@ -3,7 +3,7 @@
 import {Alias,AliasOptions,PluginOption,TransformResult} from "vite";
 
 
-const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590",rpcToken:string|undefined=process.env.RPC_TOKEN): PluginOption=>({
+export const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590",rpcToken:string|undefined=process.env.RPC_TOKEN): PluginOption=>({
 	name:"playify-rpc",
 
 	transform(code,_,cfg): TransformResult | undefined{
@@ -56,4 +56,4 @@ const playifyRpcPlugin=(devRpcServer: string="http://127.0.0.1:4590",rpcToken:st
 		}
 	},
 });
-export default playifyRpcPlugin;
+//export default playifyRpcPlugin;
