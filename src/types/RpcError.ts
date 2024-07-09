@@ -41,18 +41,18 @@ export class RpcError extends Error{
 
 	public readonly from:string;
 	public readonly data:Record<string,any>={};
-	private _ownStack:StackFrame[]=[];
+	#ownStack:StackFrame[]=[];
 
 	public get stackTrace(){
-		let result=this._stackTrace;
-		result+=framesToString(this._ownStack);
-		result+=this._causes;
+		let result=this.#stackTrace;
+		result+=framesToString(this.#ownStack);
+		result+=this.#causes;
 		return result.replaceAll(/^\n+/g,"");
 	}
 
-	private _stackTrace:string="";
-	private _appendStack=false;
-	private readonly _causes:string="";
+	#stackTrace:string="";
+	#appendStack=false;
+	readonly #causes:string="";
 
 	constructor(message:string);
 	constructor(message:string,cause:Error | unknown);
@@ -108,19 +108,19 @@ export class RpcError extends Error{
 
 
 		if(stackTrace==null){
-			this._appendStack=true;
-			this._ownStack=ErrorStackParser.parse(this);
-			removeFromStackTrace(this.constructor as any,this._ownStack);
+			this.#appendStack=true;
+			this.#ownStack=ErrorStackParser.parse(this);
+			removeFromStackTrace(this.constructor as any,this.#ownStack);
 		}else{
-			this._stackTrace="\n"+fixString(stackTrace);
-			const causeIndex=this._stackTrace.indexOf("\ncaused by: ");
+			this.#stackTrace="\n"+fixString(stackTrace);
+			const causeIndex=this.#stackTrace.indexOf("\ncaused by: ");
 			if(causeIndex!= -1){
-				this._causes+=this._stackTrace.substring(causeIndex);
-				this._stackTrace=this._stackTrace.substring(0,causeIndex);
+				this.#causes+=this.#stackTrace.substring(causeIndex);
+				this.#stackTrace=this.#stackTrace.substring(0,causeIndex);
 			}
 		}
 
-		this._causes+=causeToString(cause);
+		this.#causes+=causeToString(cause);
 
 		this.stack=this.toString();
 	}
@@ -170,10 +170,10 @@ export class RpcError extends Error{
 
 	static wrapAndFreeze(e:Error):RpcError{
 		if(e instanceof RpcError){
-			if(!e._appendStack) return e;
-			e._appendStack=false;
-			e._stackTrace+=framesToString(e._ownStack);
-			e._ownStack=[];
+			if(!e.#appendStack) return e;
+			e.#appendStack=false;
+			e.#stackTrace+=framesToString(e.#ownStack);
+			e.#ownStack=[];
 			e.stack=e.toString();
 			return e;
 		}
@@ -189,22 +189,22 @@ export class RpcError extends Error{
 	}
 
 	unfreeze(stackSource:Error,skip:number){
-		if(this._appendStack) return this;
-		this._appendStack=true;
-		this._ownStack=ErrorStackParser.parse(stackSource).slice(skip);
+		if(this.#appendStack) return this;
+		this.#appendStack=true;
+		this.#ownStack=ErrorStackParser.parse(stackSource).slice(skip);
 		this.stack=this.toString();
 		return this;
 	}
 	
 	trashLocalStack(){
-		this._appendStack=false;
-		this._ownStack=[];
+		this.#appendStack=false;
+		this.#ownStack=[];
 		this.stack=this.toString();
 		return this;
 	}
 
 	append(type:string | null,method:string | null,args:any[] | null){
-		this._stackTrace+="\n\trpc "+(args==null
+		this.#stackTrace+="\n\trpc "+(args==null
 			?"<<callLocal>>"
 			:(type??"<<null>>")+"."+(method??"<<null>>")+"("+
 			args.map(a=>JSON.stringify(a)).join(",")+")");

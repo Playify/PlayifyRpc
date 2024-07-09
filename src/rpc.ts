@@ -9,7 +9,7 @@ import {
 	getFunctionContext,
 	runWithContext,
 } from "./types/functions/FunctionCallContext.js";
-import {registerType,unregisterType} from "./internal/RegisteredTypes.js";
+import {generateTypeName,registerType,unregisterType} from "./internal/RegisteredTypes.js";
 import {RpcId} from "./connection/RpcId.js";
 import {PendingCall} from "./types/functions/PendingCall.js";
 
@@ -70,6 +70,7 @@ export class Rpc{
 	//Types
 	public static registerType=registerType;
 	public static unregisterType=unregisterType;
+	public static generateTypeName=generateTypeName;
 	
 
 	public static getObjectWithFallback=async(type:string,...types:string[]):Promise<number>=>await callRemoteFunction("Rpc","getObjectWithFallback",type,...types);

@@ -61,9 +61,9 @@ export default defineConfig({
 				{
 					dir:".",
 					format:"cjs",
-					entryFileNames:c=>c.name=="vite"?"dist_dev/[name].cjs":"dist/[name].cjs",
-					chunkFileNames:"dist/rpc/[hash].js",
-					assetFileNames:"dist/rpc/[name].[ext]",
+					entryFileNames:c=>c.name=="vite"?"dist_dev/[name].cjs":"dist_cjs/[name].cjs",
+					chunkFileNames:"dist_cjs/rpc/[hash].js",
+					assetFileNames:"dist_cjs/rpc/[name].[ext]",
 				},
 			],
 		},
@@ -85,4 +85,7 @@ export default defineConfig({
 			},
 		},
 	},
+	esbuild:{
+		keepNames:true,
+	}
 });

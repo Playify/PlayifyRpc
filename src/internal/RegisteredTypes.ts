@@ -1,5 +1,5 @@
 import {isConnected} from "../connection/WebSocketConnection.js";
-import {RpcId} from "../connection/RpcId.js";
+import {randomId,RpcId} from "../connection/RpcId.js";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
 import {RpcObjectGetMethods} from "../types/RpcObject.js";
 import {RpcError} from "../types/RpcError.js";
@@ -15,6 +15,10 @@ export const registeredFunctions:Invoker=Object.create(null);
 export const registeredTypes=new Map<string,Invoker>();
 registeredTypes.set("$"+RpcId,registeredFunctions);
 
+
+export async function generateTypeName(){
+	return "$"+RpcId+"$"+randomId();
+}
 
 export async function registerType(type:string,invoker:Invoker):Promise<void>{
 	if(registeredTypes.has(type)) return;

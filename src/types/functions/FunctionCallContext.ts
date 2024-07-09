@@ -73,6 +73,7 @@ export function callRemoteFunction<T=unknown>(type:string | null,method:string |
 
 		sendRaw(msg);
 	};
+	call.getCaller=()=>callRemoteFunction(null,"c",callId);
 
 	sendCall(callId,call,buff);
 

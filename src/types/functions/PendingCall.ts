@@ -1,6 +1,7 @@
 import {FunctionCallContext} from "./FunctionCallContext.js";
 import {RpcError} from "../RpcError.js";
 import {freeDynamic} from "../data/DynamicData.js";
+import {Rpc} from "../../rpc";
 
 type Action<T>=(t:T)=>void;
 
@@ -54,6 +55,10 @@ export class PendingCall<T=unknown> implements Promise<T>{
 	}
 
 	cancel(){
+	}//overridden by callFunction and callLocal
+	
+	getCaller():Promise<string>{
+		return Promise.resolve(Rpc.prettyName);
 	}//overridden by callFunction and callLocal
 
 	[Symbol.asyncIterator]():AsyncIterator<any[]>{

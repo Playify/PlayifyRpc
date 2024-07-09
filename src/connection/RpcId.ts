@@ -1,7 +1,7 @@
 export const isNodeJs=globalThis?.process?.versions?.node!=null;
 
 const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-const randomId=()=>Date.now().toString(36)+Array(10)
+export const randomId=()=>Date.now().toString(36)+Array(10)
 	.fill(undefined)
 	.map(()=>chars[Math.floor(Math.random()*chars.length)])
 	.join("");

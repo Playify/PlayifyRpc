@@ -1,102 +1,110 @@
-const oe = [/* @__PURE__ */ new Map(), /* @__PURE__ */ new Map()];
-function K(t) {
+var ze = Object.defineProperty;
+var a = (t, e) => ze(t, "name", { value: e, configurable: !0 });
+const ce = [/* @__PURE__ */ new Map(), /* @__PURE__ */ new Map()];
+function W(t) {
   return function(e) {
-    const [n, r] = oe;
+    const [n, r] = ce;
     n.set(t, e), r.set(e, t);
   };
 }
-var Ce = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
-function qe(t) {
+a(W, "RpcCustomError");
+var Ne = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
+function Ve(t) {
   return t && t.__esModule && Object.prototype.hasOwnProperty.call(t, "default") ? t.default : t;
 }
-var Ne = { exports: {} }, ae = { exports: {} }, _e;
-function ze() {
-  return _e || (_e = 1, function(t, e) {
+a(Ve, "getDefaultExportFromCjs");
+var Oe = { exports: {} }, oe = { exports: {} }, Ce;
+function He() {
+  return Ce || (Ce = 1, function(t, e) {
     (function(n, r) {
       t.exports = r();
-    })(Ce, function() {
-      function n(u) {
-        return !isNaN(parseFloat(u)) && isFinite(u);
+    })(Ne, function() {
+      function n(f) {
+        return !isNaN(parseFloat(f)) && isFinite(f);
       }
-      function r(u) {
-        return u.charAt(0).toUpperCase() + u.substring(1);
+      a(n, "_isNumber");
+      function r(f) {
+        return f.charAt(0).toUpperCase() + f.substring(1);
       }
-      function s(u) {
+      a(r, "_capitalize");
+      function i(f) {
         return function() {
-          return this[u];
+          return this[f];
         };
       }
-      var i = ["isConstructor", "isEval", "isNative", "isToplevel"], o = ["columnNumber", "lineNumber"], c = ["fileName", "functionName", "source"], a = ["args"], p = ["evalOrigin"], l = i.concat(o, c, a, p);
-      function f(u) {
-        if (u)
-          for (var w = 0; w < l.length; w++)
-            u[l[w]] !== void 0 && this["set" + r(l[w])](u[l[w]]);
+      a(i, "_getter");
+      var s = ["isConstructor", "isEval", "isNative", "isToplevel"], o = ["columnNumber", "lineNumber"], l = ["fileName", "functionName", "source"], c = ["args"], y = ["evalOrigin"], u = s.concat(o, l, c, y);
+      function h(f) {
+        if (f)
+          for (var d = 0; d < u.length; d++)
+            f[u[d]] !== void 0 && this["set" + r(u[d])](f[u[d]]);
       }
-      f.prototype = {
+      a(h, "StackFrame"), h.prototype = {
         getArgs: function() {
           return this.args;
         },
-        setArgs: function(u) {
-          if (Object.prototype.toString.call(u) !== "[object Array]")
+        setArgs: function(f) {
+          if (Object.prototype.toString.call(f) !== "[object Array]")
             throw new TypeError("Args must be an Array");
-          this.args = u;
+          this.args = f;
         },
         getEvalOrigin: function() {
           return this.evalOrigin;
         },
-        setEvalOrigin: function(u) {
-          if (u instanceof f)
-            this.evalOrigin = u;
-          else if (u instanceof Object)
-            this.evalOrigin = new f(u);
+        setEvalOrigin: function(f) {
+          if (f instanceof h)
+            this.evalOrigin = f;
+          else if (f instanceof Object)
+            this.evalOrigin = new h(f);
           else
             throw new TypeError("Eval Origin must be an Object or StackFrame");
         },
         toString: function() {
-          var u = this.getFileName() || "", w = this.getLineNumber() || "", E = this.getColumnNumber() || "", W = this.getFunctionName() || "";
-          return this.getIsEval() ? u ? "[eval] (" + u + ":" + w + ":" + E + ")" : "[eval]:" + w + ":" + E : W ? W + " (" + u + ":" + w + ":" + E + ")" : u + ":" + w + ":" + E;
+          var f = this.getFileName() || "", d = this.getLineNumber() || "", R = this.getColumnNumber() || "", G = this.getFunctionName() || "";
+          return this.getIsEval() ? f ? "[eval] (" + f + ":" + d + ":" + R + ")" : "[eval]:" + d + ":" + R : G ? G + " (" + f + ":" + d + ":" + R + ")" : f + ":" + d + ":" + R;
         }
-      }, f.fromString = function(w) {
-        var E = w.indexOf("("), W = w.lastIndexOf(")"), je = w.substring(0, E), Ue = w.substring(E + 1, W).split(","), be = w.substring(W + 1);
-        if (be.indexOf("@") === 0)
-          var ie = /@(.+?)(?::(\d+))?(?::(\d+))?$/.exec(be, ""), Ke = ie[1], We = ie[2], Ge = ie[3];
-        return new f({
-          functionName: je,
-          args: Ue || void 0,
-          fileName: Ke,
-          lineNumber: We || void 0,
-          columnNumber: Ge || void 0
+      }, h.fromString = /* @__PURE__ */ a(function(d) {
+        var R = d.indexOf("("), G = d.lastIndexOf(")"), Ue = d.substring(0, R), Ke = d.substring(R + 1, G).split(","), _e = d.substring(G + 1);
+        if (_e.indexOf("@") === 0)
+          var ae = /@(.+?)(?::(\d+))?(?::(\d+))?$/.exec(_e, ""), We = ae[1], Ge = ae[2], qe = ae[3];
+        return new h({
+          functionName: Ue,
+          args: Ke || void 0,
+          fileName: We,
+          lineNumber: Ge || void 0,
+          columnNumber: qe || void 0
         });
-      };
-      for (var h = 0; h < i.length; h++)
-        f.prototype["get" + r(i[h])] = s(i[h]), f.prototype["set" + r(i[h])] = /* @__PURE__ */ function(u) {
-          return function(w) {
-            this[u] = !!w;
+      }, "StackFrame$$fromString");
+      for (var g = 0; g < s.length; g++)
+        h.prototype["get" + r(s[g])] = i(s[g]), h.prototype["set" + r(s[g])] = /* @__PURE__ */ function(f) {
+          return function(d) {
+            this[f] = !!d;
           };
-        }(i[h]);
-      for (var g = 0; g < o.length; g++)
-        f.prototype["get" + r(o[g])] = s(o[g]), f.prototype["set" + r(o[g])] = /* @__PURE__ */ function(u) {
-          return function(w) {
-            if (!n(w))
-              throw new TypeError(u + " must be a Number");
-            this[u] = Number(w);
+        }(s[g]);
+      for (var w = 0; w < o.length; w++)
+        h.prototype["get" + r(o[w])] = i(o[w]), h.prototype["set" + r(o[w])] = /* @__PURE__ */ function(f) {
+          return function(d) {
+            if (!n(d))
+              throw new TypeError(f + " must be a Number");
+            this[f] = Number(d);
           };
-        }(o[g]);
-      for (var d = 0; d < c.length; d++)
-        f.prototype["get" + r(c[d])] = s(c[d]), f.prototype["set" + r(c[d])] = /* @__PURE__ */ function(u) {
-          return function(w) {
-            this[u] = String(w);
+        }(o[w]);
+      for (var p = 0; p < l.length; p++)
+        h.prototype["get" + r(l[p])] = i(l[p]), h.prototype["set" + r(l[p])] = /* @__PURE__ */ function(f) {
+          return function(d) {
+            this[f] = String(d);
           };
-        }(c[d]);
-      return f;
+        }(l[p]);
+      return h;
     });
-  }(ae)), ae.exports;
+  }(oe)), oe.exports;
 }
+a(He, "requireStackframe");
 (function(t, e) {
   (function(n, r) {
-    t.exports = r(ze());
-  })(Ce, function(r) {
-    var s = /(^|@)\S+:\d+/, i = /^\s*at .*(\S+:\d+|\(native\))/m, o = /^(eval@)?(\[native code])?$/;
+    t.exports = r(He());
+  })(Ne, /* @__PURE__ */ a(function(r) {
+    var i = /(^|@)\S+:\d+/, s = /^\s*at .*(\S+:\d+|\(native\))/m, o = /^(eval@)?(\[native code])?$/;
     return {
       /**
        * Given an Error object, extract the most information from it.
@@ -104,123 +112,124 @@ function ze() {
        * @param {Error} error object
        * @return {Array} of StackFrames
        */
-      parse: function(a) {
-        if (typeof a.stacktrace < "u" || typeof a["opera#sourceloc"] < "u")
-          return this.parseOpera(a);
-        if (a.stack && a.stack.match(i))
-          return this.parseV8OrIE(a);
-        if (a.stack)
-          return this.parseFFOrSafari(a);
+      parse: /* @__PURE__ */ a(function(c) {
+        if (typeof c.stacktrace < "u" || typeof c["opera#sourceloc"] < "u")
+          return this.parseOpera(c);
+        if (c.stack && c.stack.match(s))
+          return this.parseV8OrIE(c);
+        if (c.stack)
+          return this.parseFFOrSafari(c);
         throw new Error("Cannot parse given Error object");
-      },
+      }, "ErrorStackParser$$parse"),
       // Separate line and column numbers from a string of the form: (URI:Line:Column)
-      extractLocation: function(a) {
-        if (a.indexOf(":") === -1)
-          return [a];
-        var p = /(.+?)(?::(\d+))?(?::(\d+))?$/, l = p.exec(a.replace(/[()]/g, ""));
-        return [l[1], l[2] || void 0, l[3] || void 0];
-      },
-      parseV8OrIE: function(a) {
-        var p = a.stack.split(`
-`).filter(function(l) {
-          return !!l.match(i);
+      extractLocation: /* @__PURE__ */ a(function(c) {
+        if (c.indexOf(":") === -1)
+          return [c];
+        var y = /(.+?)(?::(\d+))?(?::(\d+))?$/, u = y.exec(c.replace(/[()]/g, ""));
+        return [u[1], u[2] || void 0, u[3] || void 0];
+      }, "ErrorStackParser$$extractLocation"),
+      parseV8OrIE: /* @__PURE__ */ a(function(c) {
+        var y = c.stack.split(`
+`).filter(function(u) {
+          return !!u.match(s);
         }, this);
-        return p.map(function(l) {
-          l.indexOf("(eval ") > -1 && (l = l.replace(/eval code/g, "eval").replace(/(\(eval at [^()]*)|(,.*$)/g, ""));
-          var f = l.replace(/^\s+/, "").replace(/\(eval code/g, "(").replace(/^.*?\s+/, ""), h = f.match(/ (\(.+\)$)/);
-          f = h ? f.replace(h[0], "") : f;
-          var g = this.extractLocation(h ? h[1] : f), d = h && f || void 0, u = ["eval", "<anonymous>"].indexOf(g[0]) > -1 ? void 0 : g[0];
+        return y.map(function(u) {
+          u.indexOf("(eval ") > -1 && (u = u.replace(/eval code/g, "eval").replace(/(\(eval at [^()]*)|(,.*$)/g, ""));
+          var h = u.replace(/^\s+/, "").replace(/\(eval code/g, "(").replace(/^.*?\s+/, ""), g = h.match(/ (\(.+\)$)/);
+          h = g ? h.replace(g[0], "") : h;
+          var w = this.extractLocation(g ? g[1] : h), p = g && h || void 0, f = ["eval", "<anonymous>"].indexOf(w[0]) > -1 ? void 0 : w[0];
           return new r({
-            functionName: d,
-            fileName: u,
-            lineNumber: g[1],
-            columnNumber: g[2],
-            source: l
+            functionName: p,
+            fileName: f,
+            lineNumber: w[1],
+            columnNumber: w[2],
+            source: u
           });
         }, this);
-      },
-      parseFFOrSafari: function(a) {
-        var p = a.stack.split(`
-`).filter(function(l) {
-          return !l.match(o);
+      }, "ErrorStackParser$$parseV8OrIE"),
+      parseFFOrSafari: /* @__PURE__ */ a(function(c) {
+        var y = c.stack.split(`
+`).filter(function(u) {
+          return !u.match(o);
         }, this);
-        return p.map(function(l) {
-          if (l.indexOf(" > eval") > -1 && (l = l.replace(/ line (\d+)(?: > eval line \d+)* > eval:\d+:\d+/g, ":$1")), l.indexOf("@") === -1 && l.indexOf(":") === -1)
+        return y.map(function(u) {
+          if (u.indexOf(" > eval") > -1 && (u = u.replace(/ line (\d+)(?: > eval line \d+)* > eval:\d+:\d+/g, ":$1")), u.indexOf("@") === -1 && u.indexOf(":") === -1)
             return new r({
-              functionName: l
+              functionName: u
             });
-          var f = /((.*".+"[^@]*)?[^@]*)(?:@)/, h = l.match(f), g = h && h[1] ? h[1] : void 0, d = this.extractLocation(l.replace(f, ""));
+          var h = /((.*".+"[^@]*)?[^@]*)(?:@)/, g = u.match(h), w = g && g[1] ? g[1] : void 0, p = this.extractLocation(u.replace(h, ""));
           return new r({
-            functionName: g,
-            fileName: d[0],
-            lineNumber: d[1],
-            columnNumber: d[2],
-            source: l
+            functionName: w,
+            fileName: p[0],
+            lineNumber: p[1],
+            columnNumber: p[2],
+            source: u
           });
         }, this);
-      },
-      parseOpera: function(a) {
-        return !a.stacktrace || a.message.indexOf(`
-`) > -1 && a.message.split(`
-`).length > a.stacktrace.split(`
-`).length ? this.parseOpera9(a) : a.stack ? this.parseOpera11(a) : this.parseOpera10(a);
-      },
-      parseOpera9: function(a) {
-        for (var p = /Line (\d+).*script (?:in )?(\S+)/i, l = a.message.split(`
-`), f = [], h = 2, g = l.length; h < g; h += 2) {
-          var d = p.exec(l[h]);
-          d && f.push(new r({
-            fileName: d[2],
-            lineNumber: d[1],
-            source: l[h]
+      }, "ErrorStackParser$$parseFFOrSafari"),
+      parseOpera: /* @__PURE__ */ a(function(c) {
+        return !c.stacktrace || c.message.indexOf(`
+`) > -1 && c.message.split(`
+`).length > c.stacktrace.split(`
+`).length ? this.parseOpera9(c) : c.stack ? this.parseOpera11(c) : this.parseOpera10(c);
+      }, "ErrorStackParser$$parseOpera"),
+      parseOpera9: /* @__PURE__ */ a(function(c) {
+        for (var y = /Line (\d+).*script (?:in )?(\S+)/i, u = c.message.split(`
+`), h = [], g = 2, w = u.length; g < w; g += 2) {
+          var p = y.exec(u[g]);
+          p && h.push(new r({
+            fileName: p[2],
+            lineNumber: p[1],
+            source: u[g]
           }));
         }
-        return f;
-      },
-      parseOpera10: function(a) {
-        for (var p = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i, l = a.stacktrace.split(`
-`), f = [], h = 0, g = l.length; h < g; h += 2) {
-          var d = p.exec(l[h]);
-          d && f.push(
+        return h;
+      }, "ErrorStackParser$$parseOpera9"),
+      parseOpera10: /* @__PURE__ */ a(function(c) {
+        for (var y = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i, u = c.stacktrace.split(`
+`), h = [], g = 0, w = u.length; g < w; g += 2) {
+          var p = y.exec(u[g]);
+          p && h.push(
             new r({
-              functionName: d[3] || void 0,
-              fileName: d[2],
-              lineNumber: d[1],
-              source: l[h]
+              functionName: p[3] || void 0,
+              fileName: p[2],
+              lineNumber: p[1],
+              source: u[g]
             })
           );
         }
-        return f;
-      },
+        return h;
+      }, "ErrorStackParser$$parseOpera10"),
       // Opera 10.65+ Error.stack very similar to FF/Safari
-      parseOpera11: function(a) {
-        var p = a.stack.split(`
-`).filter(function(l) {
-          return !!l.match(s) && !l.match(/^Error created at/);
+      parseOpera11: /* @__PURE__ */ a(function(c) {
+        var y = c.stack.split(`
+`).filter(function(u) {
+          return !!u.match(i) && !u.match(/^Error created at/);
         }, this);
-        return p.map(function(l) {
-          var f = l.split("@"), h = this.extractLocation(f.pop()), g = f.shift() || "", d = g.replace(/<anonymous function(: (\w+))?>/, "$2").replace(/\([^)]*\)/g, "") || void 0, u;
-          g.match(/\(([^)]*)\)/) && (u = g.replace(/^[^(]+\(([^)]*)\)$/, "$1"));
-          var w = u === void 0 || u === "[arguments not available]" ? void 0 : u.split(",");
+        return y.map(function(u) {
+          var h = u.split("@"), g = this.extractLocation(h.pop()), w = h.shift() || "", p = w.replace(/<anonymous function(: (\w+))?>/, "$2").replace(/\([^)]*\)/g, "") || void 0, f;
+          w.match(/\(([^)]*)\)/) && (f = w.replace(/^[^(]+\(([^)]*)\)$/, "$1"));
+          var d = f === void 0 || f === "[arguments not available]" ? void 0 : f.split(",");
           return new r({
-            functionName: d,
-            args: w,
-            fileName: h[0],
-            lineNumber: h[1],
-            columnNumber: h[2],
-            source: l
+            functionName: p,
+            args: d,
+            fileName: g[0],
+            lineNumber: g[1],
+            columnNumber: g[2],
+            source: u
           });
         }, this);
-      }
+      }, "ErrorStackParser$$parseOpera11")
     };
-  });
-})(Ne);
-var Ve = Ne.exports;
-const J = /* @__PURE__ */ qe(Ve);
-function ce(t) {
+  }, "ErrorStackParser"));
+})(Oe);
+var Je = Oe.exports;
+const X = /* @__PURE__ */ Ve(Je);
+function le(t) {
   return t.replaceAll("\r", "").replaceAll(/^\n+|\n+$/g, "").replaceAll(/^  +/gm, "	");
 }
-function X(t) {
+a(le, "fixString");
+function Q(t) {
   let e = "";
   for (let n of t) {
     if (n.functionName?.includes("$RPC_MARKER_BEGIN$"))
@@ -230,29 +239,35 @@ function X(t) {
   }
   return e;
 }
-function Oe(t) {
-  return t === void 0 ? "" : t instanceof m ? `
+a(Q, "framesToString");
+function Le(t) {
+  return t === void 0 ? "" : t instanceof b ? `
 caused by: ` + t.toString() : t instanceof Error ? `
-caused by: ` + ce(t.toString()) + X(J.parse(t)) + Oe(t.cause) : `
-caused by: ` + ce(t?.toString() ?? "null");
+caused by: ` + le(t.toString()) + Q(X.parse(t)) + Le(t.cause) : `
+caused by: ` + le(t?.toString() ?? "null");
 }
-function Te(t, e) {
-  return (t === m || Te(t.__proto__, e)) && e[0].functionName?.replace(/^new /, "") === t.name ? (e.shift(), !0) : !1;
+a(Le, "causeToString");
+function xe(t, e) {
+  return (t === b || xe(t.__proto__, e)) && e[0].functionName?.replace(/^new /, "") === t.name ? (e.shift(), !0) : !1;
 }
-class m extends Error {
+a(xe, "removeFromStackTrace");
+class b extends Error {
+  static {
+    a(this, "RpcError");
+  }
   //public get type(){return this.name}
   from;
   data = {};
-  _ownStack = [];
+  #t = [];
   get stackTrace() {
-    let e = this._stackTrace;
-    return e += X(this._ownStack), e += this._causes, e.replaceAll(/^\n+/g, "");
+    let e = this.#e;
+    return e += Q(this.#t), e += this.#r, e.replaceAll(/^\n+/g, "");
   }
-  _stackTrace = "";
-  _appendStack = !1;
-  _causes = "";
+  #e = "";
+  #n = !1;
+  #r = "";
   constructor(...e) {
-    let n = null, r = null, s = null, i = {}, o;
+    let n = null, r = null, i = null, s = {}, o;
     switch (e.length) {
       case 1:
         [r] = e;
@@ -261,29 +276,29 @@ class m extends Error {
         [r, o] = e;
         break;
       case 4:
-        [r, n, r, s] = e;
+        [r, n, r, i] = e;
         break;
       case 5:
-        e[4] instanceof m ? [r, n, r, s, o] = e : [r, n, r, s, i] = e;
+        e[4] instanceof b ? [r, n, r, i, o] = e : [r, n, r, i, s] = e;
         break;
       case 6:
-        [r, n, r, s, i, o] = e;
+        [r, n, r, i, s, o] = e;
         break;
       default:
         throw new Error("Invalid arg count");
     }
-    o != null ? super(r ?? void 0, { cause: o }) : super(r ?? void 0), this.name = this.constructor.name, this.from = n ?? b.prettyName;
-    const c = oe[1].get(this.constructor);
-    if (c != null && (this.data.$type = c), Object.assign(this.data, i ?? {}), s == null)
-      this._appendStack = !0, this._ownStack = J.parse(this), Te(this.constructor, this._ownStack);
+    o != null ? super(r ?? void 0, { cause: o }) : super(r ?? void 0), this.name = this.constructor.name, this.from = n ?? v.prettyName;
+    const l = ce[1].get(this.constructor);
+    if (l != null && (this.data.$type = l), Object.assign(this.data, s ?? {}), i == null)
+      this.#n = !0, this.#t = X.parse(this), xe(this.constructor, this.#t);
     else {
-      this._stackTrace = `
-` + ce(s);
-      const a = this._stackTrace.indexOf(`
+      this.#e = `
+` + le(i);
+      const c = this.#e.indexOf(`
 caused by: `);
-      a != -1 && (this._causes += this._stackTrace.substring(a), this._stackTrace = this._stackTrace.substring(0, a));
+      c != -1 && (this.#r += this.#e.substring(c), this.#e = this.#e.substring(0, c));
     }
-    this._causes += Oe(o), this.stack = this.toString();
+    this.#r += Le(o), this.stack = this.toString();
   }
   toString() {
     let e = this.name + "(" + this.from + ")";
@@ -296,160 +311,192 @@ caused by: `);
     e.writeString(this.name), e.writeString(this.from), e.writeString(this.message), e.writeString(this.stackTrace), e.writeString(Object.keys(this.data).length == 0 ? null : JSON.stringify(this.data));
   }
   static read(e) {
-    const n = e.readString(), r = e.readString() ?? "???", s = e.readString(), i = e.readString() ?? "";
+    const n = e.readString(), r = e.readString() ?? "???", i = e.readString(), s = e.readString() ?? "";
     let o;
     try {
       o = JSON.parse(e.readString() ?? "null");
-    } catch (c) {
-      if (c instanceof RangeError)
+    } catch (l) {
+      if (l instanceof RangeError)
         o = { $info: "JsonData was not included, due to an old PlayifyRpc version" };
       else
-        throw c;
+        throw l;
     }
-    return m.create(n, r, s, i, o);
+    return b.create(n, r, i, s, o);
   }
-  static create(e, n, r, s, i) {
-    const o = i?.$type, c = oe[0].get(o) ?? m;
-    return new c(e, n, r, s, i);
+  static create(e, n, r, i, s) {
+    const o = s?.$type, l = ce[0].get(o) ?? b;
+    return new l(e, n, r, i, s);
   }
   static wrapAndFreeze(e) {
-    return e instanceof m ? (e._appendStack && (e._appendStack = !1, e._stackTrace += X(e._ownStack), e._ownStack = [], e.stack = e.toString()), e) : new m(
+    return e instanceof b ? (e.#n && (e.#n = !1, e.#e += Q(e.#t), e.#t = [], e.stack = e.toString()), e) : new b(
       e.name,
-      e instanceof m ? e.from : null,
+      e instanceof b ? e.from : null,
       e.message,
-      X(J.parse(e)).substring(1),
+      Q(X.parse(e)).substring(1),
       {},
       e.cause
     );
   }
   unfreeze(e, n) {
-    return this._appendStack ? this : (this._appendStack = !0, this._ownStack = J.parse(e).slice(n), this.stack = this.toString(), this);
+    return this.#n ? this : (this.#n = !0, this.#t = X.parse(e).slice(n), this.stack = this.toString(), this);
+  }
+  trashLocalStack() {
+    return this.#n = !1, this.#t = [], this.stack = this.toString(), this;
   }
   append(e, n, r) {
-    return this._stackTrace += `
-	rpc ` + (r == null ? "<<callLocal>>" : (e ?? "<<null>>") + "." + (n ?? "<<null>>") + "(" + r.map((s) => JSON.stringify(s)).join(",") + ")"), this.stack = this.toString(), this;
+    return this.#e += `
+	rpc ` + (r == null ? "<<callLocal>>" : (e ?? "<<null>>") + "." + (n ?? "<<null>>") + "(" + r.map((i) => JSON.stringify(i)).join(",") + ")"), this.stack = this.toString(), this;
   }
 }
-const ke = globalThis?.process?.versions?.node != null, ve = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", Se = () => Date.now().toString(36) + Array(10).fill(void 0).map(() => ve[Math.floor(Math.random() * ve.length)]).join("");
+const Te = globalThis?.process?.versions?.node != null, Ee = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", ue = /* @__PURE__ */ a(() => Date.now().toString(36) + Array(10).fill(void 0).map(() => Ee[Math.floor(Math.random() * Ee.length)]).join(""), "randomId");
 let _;
-if (ke)
+if (Te)
   try {
     process?.versions.bun ? _ = "bun@" + require("os").hostname() + "@" + process.pid : _ = "node@" + process.binding("os").getHostname() + "@" + process.pid;
   } catch {
     _ = "node-alternative@" + process.platform + ":" + process.arch + "@" + process.pid;
   }
 else
-  "document" in globalThis ? _ = "web@" + document.location + "#" + Se() : _ = "js@" + Se();
-var Le = Object.defineProperty, He = Object.getOwnPropertyDescriptor, Je = (t, e, n) => e in t ? Le(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n, V = (t, e, n, r) => {
-  for (var s = r > 1 ? void 0 : r ? He(e, n) : e, i = t.length - 1, o; i >= 0; i--)
-    (o = t[i]) && (s = (r ? o(e, n, s) : o(s)) || s);
-  return r && s && Le(e, n, s), s;
-}, te = (t, e, n) => (Je(t, typeof e != "symbol" ? e + "" : e, n), n);
-const G = (t) => t == null ? "null" : '"' + t + '"';
-class H extends m {
+  "document" in globalThis ? _ = "web@" + document.location + "#" + ue() : _ = "js@" + ue();
+var $e = Object.defineProperty, Xe = Object.getOwnPropertyDescriptor, Qe = /* @__PURE__ */ a((t, e, n) => e in t ? $e(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n, "__defNormalProp"), H = /* @__PURE__ */ a((t, e, n, r) => {
+  for (var i = r > 1 ? void 0 : r ? Xe(e, n) : e, s = t.length - 1, o; s >= 0; s--)
+    (o = t[s]) && (i = (r ? o(e, n, i) : o(i)) || i);
+  return r && i && $e(e, n, i), i;
+}, "__decorateClass"), ne = /* @__PURE__ */ a((t, e, n) => (Qe(t, typeof e != "symbol" ? e + "" : e, n), n), "__publicField");
+const q = /* @__PURE__ */ a((t) => t == null ? "null" : '"' + t + '"', "quoted");
+class J extends b {
+  static {
+    a(this, "RpcCallError");
+  }
 }
-let x = class extends H {
+let A = class extends J {
+  static {
+    a(this, "RpcTypeNotFoundError");
+  }
 };
-te(x, "new", (t) => new x(
+ne(A, "new", (t) => new A(
   null,
   null,
-  `Type ${G(t)} does not exist`,
+  `Type ${q(t)} does not exist`,
   "",
   { type: t }
 ));
-x = V([
-  K("$type")
-], x);
-let $ = class extends H {
+A = H([
+  W("$type")
+], A);
+let P = class extends J {
+  static {
+    a(this, "RpcMethodNotFoundError");
+  }
 };
-te($, "new", (t, e) => new $(
+ne(P, "new", (t, e) => new P(
   null,
   null,
-  `Method ${G(e)} does not exist on type ${G(t)}`,
+  `Method ${q(e)} does not exist on type ${q(t)}`,
   "",
   { type: t, method: e }
 ));
-$ = V([
-  K("$method")
-], $);
-let U = class extends $ {
+P = H([
+  W("$method")
+], P);
+let K = class extends P {
+  static {
+    a(this, "RpcMetaMethodNotFoundError");
+  }
 };
-te(U, "new", (t, e) => new U(
+ne(K, "new", (t, e) => new K(
   null,
   null,
-  `Meta-Method ${G(e)} does not exist on type ${G(t)}`,
+  `Meta-Method ${q(e)} does not exist on type ${q(t)}`,
   "",
   { type: t, method: null, meta: e }
 ));
-U = V([
-  K("$method-meta")
-], U);
-let O = class extends H {
+K = H([
+  W("$method-meta")
+], K);
+let L = class extends J {
+  static {
+    a(this, "RpcConnectionError");
+  }
 };
-te(O, "new", (t) => new O(null, null, t, ""));
-O = V([
-  K("$connection")
-], O);
-let le = class extends H {
+ne(L, "new", (t) => new L(null, null, t, ""));
+L = H([
+  W("$connection")
+], L);
+let fe = class extends J {
+  static {
+    a(this, "RpcEvalError");
+  }
 };
-le = V([
-  K("$eval")
-], le);
-const we = /* @__PURE__ */ Object.create(null), S = /* @__PURE__ */ new Map();
-S.set("$" + _, we);
-async function xe(t, e) {
-  if (!S.has(t)) {
-    S.set(t, e);
+fe = H([
+  W("$eval")
+], fe);
+const pe = /* @__PURE__ */ Object.create(null), E = /* @__PURE__ */ new Map();
+E.set("$" + _, pe);
+async function Ye() {
+  return "$" + _ + "$" + ue();
+}
+a(Ye, "generateTypeName");
+async function Ae(t, e) {
+  if (!E.has(t)) {
+    E.set(t, e);
     try {
-      A && await y(null, "+", t);
+      k && await m(null, "+", t);
     } catch (n) {
-      console.warn(n), S.delete(t);
+      console.warn(n), E.delete(t);
     }
   }
 }
-async function Xe(t) {
-  if (S.has(t)) {
+a(Ae, "registerType");
+async function Ze(t) {
+  if (E.has(t)) {
     try {
-      A && await y(null, "-", t);
+      k && await m(null, "-", t);
     } catch (e) {
       console.warn(e);
     }
-    S.delete(t);
+    E.delete(t);
   }
 }
-async function Ee(t) {
-  const e = t[z];
+a(Ze, "unregisterType");
+async function Re(t) {
+  const e = t[V];
   return e ? await e.call(t) : Object.getOwnPropertyNames(t).filter((n) => typeof t[n] == "function");
 }
-async function $e(t, e, n, ...r) {
+a(Re, "getMethods");
+async function Pe(t, e, n, ...r) {
   if (n != null) {
-    let i = t[n];
-    if (i == null) {
-      let c = (await Ee(t)).find((a) => a.toLowerCase() == n.toLowerCase());
-      c != null && (i = t[c]);
+    let s = t[n];
+    if (s == null) {
+      let l = (await Re(t)).find((c) => c.toLowerCase() == n.toLowerCase());
+      l != null && (s = t[l]);
     }
     const o = {}[n];
-    if (i == null || i === o)
-      throw $.new(e, n);
+    if (s == null || s === o)
+      throw P.new(e, n);
     try {
       return await {
         async $RPC_MARKER_BEGIN$() {
-          return await i.call(t, ...r);
+          return await s.call(t, ...r);
         }
       }.$RPC_MARKER_BEGIN$();
-    } catch (c) {
-      throw m.wrapAndFreeze(c);
+    } catch (l) {
+      throw b.wrapAndFreeze(l);
     }
   }
-  const s = r.length == 0 ? null : r[0];
-  switch (s) {
+  const i = r.length == 0 ? null : r[0];
+  switch (i) {
     case "M":
-      return Ee(t);
+      return Re(t);
     default:
-      throw U.new(e, s);
+      throw K.new(e, i);
   }
 }
-class de {
+a(Pe, "invoke");
+class ye {
+  static {
+    a(this, "PendingCall");
+  }
   [Symbol.toStringTag] = "PendingCall";
   finished = !1;
   promise;
@@ -457,11 +504,11 @@ class de {
     try {
       throw new Error();
     } catch (r) {
-      this.promise = new Promise((s, i) => {
-        I.set(this, (o) => {
-          I.delete(this), v.delete(this), this.finished = !0, s(o), Z(n);
-        }), v.set(this, (o) => {
-          I.delete(this), v.delete(this), this.finished = !0, i(o instanceof m ? o.unfreeze(r, e) : o), Z(n);
+      this.promise = new Promise((i, s) => {
+        B.set(this, (o) => {
+          B.delete(this), C.delete(this), this.finished = !0, i(o), ee(n);
+        }), C.set(this, (o) => {
+          B.delete(this), C.delete(this), this.finished = !0, s(o instanceof b ? o.unfreeze(r, e) : o), ee(n);
         });
       });
     }
@@ -479,16 +526,20 @@ class de {
     return this;
   }
   addMessageListener(e) {
-    return re(this, e);
+    return ie(this, e);
   }
   cancel() {
   }
   //overridden by callFunction and callLocal
+  getCaller() {
+    return Promise.resolve(v.prettyName);
+  }
+  //overridden by callFunction and callLocal
   [Symbol.asyncIterator]() {
-    return ne(this);
+    return re(this);
   }
 }
-function ne(t) {
+function re(t) {
   let e = [], n = [];
   return t.promise.catch(() => {
   }), t.promise.finally(() => {
@@ -502,179 +553,197 @@ function ne(t) {
     }
   };
 }
-const I = /* @__PURE__ */ new WeakMap(), v = /* @__PURE__ */ new WeakMap(), M = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new WeakMap();
-function re(t, e) {
-  if (B.has(t))
-    B.get(t).push(e);
+a(re, "getAsyncIterator");
+const B = /* @__PURE__ */ new WeakMap(), C = /* @__PURE__ */ new WeakMap(), I = /* @__PURE__ */ new WeakMap(), D = /* @__PURE__ */ new WeakMap();
+function ie(t, e) {
+  if (D.has(t))
+    D.get(t).push(e);
   else {
-    B.set(t, [e]);
-    const n = M.get(t) ?? [];
+    D.set(t, [e]);
+    const n = I.get(t) ?? [];
     for (let r of n)
       try {
         e(...r);
-      } catch (s) {
-        console.warn("Error receiving pending: ", s);
+      } catch (i) {
+        console.warn("Error receiving pending: ", i);
       }
   }
   return t;
 }
-function q(t, e) {
+a(ie, "registerReceive");
+function z(t, e) {
   if (!t.finished)
-    if (B.has(t))
-      for (let n of B.get(t))
+    if (D.has(t))
+      for (let n of D.get(t))
         try {
           n(...e);
         } catch (r) {
           console.warn("Error receiving: ", r);
         }
     else
-      M.has(t) ? M.set(t, [...M.get(t), e]) : M.set(t, [e]);
+      I.has(t) ? I.set(t, [...I.get(t), e]) : I.set(t, [e]);
 }
-let C = null;
-function Qe(t, e) {
-  const n = C;
-  C = e;
+a(z, "runReceiveMessage");
+let N = null;
+function et(t, e) {
+  const n = N;
+  N = e;
   try {
     return t();
   } finally {
-    C = n;
+    N = n;
   }
 }
-function Ye() {
-  if (C == null)
+a(et, "runWithContext");
+function tt() {
+  if (N == null)
     throw new Error("FunctionCallContext not available");
-  return C;
+  return N;
 }
-let Ze = 0;
-function y(t, e, ...n) {
+a(tt, "getFunctionContext");
+let nt = 0;
+function m(t, e, ...n) {
   if (t != null) {
-    const c = S.get(t);
-    if (c)
-      return Ae($e.bind(null, c, t, e, ...n), t, e, n, 3);
+    const l = E.get(t);
+    if (l)
+      return ke(Pe.bind(null, l, t, e, ...n), t, e, n, 3);
   }
-  const r = [], s = new de(2, r), i = new L(), o = Ze++;
+  const r = [], i = new ye(2, r), s = new $(), o = nt++;
   try {
-    i.writeByte(Q.FunctionCall), i.writeLength(o), i.writeString(t), i.writeString(e), i.writeArray(n, (c) => i.writeDynamic(c, r));
-  } catch (c) {
-    return v.get(s)?.(c), s;
+    s.writeByte(Y.FunctionCall), s.writeLength(o), s.writeString(t), s.writeString(e), s.writeArray(n, (l) => s.writeDynamic(l, r));
+  } catch (l) {
+    return C.get(i)?.(l), i;
   }
-  return A || t == null && j != null ? (s.sendMessage = (...c) => {
-    if (s.finished)
-      return s;
-    const a = new L();
-    a.writeByte(Q.MessageToExecutor), a.writeLength(o);
-    const p = [];
-    return a.writeArray(c, (l) => a.writeDynamic(l, p)), r.push(...p), D(a), s;
-  }, s.cancel = () => {
-    if (s.finished)
+  return k || t == null && U != null ? (i.sendMessage = (...l) => {
+    if (i.finished)
+      return i;
+    const c = new $();
+    c.writeByte(Y.MessageToExecutor), c.writeLength(o);
+    const y = [];
+    return c.writeArray(l, (u) => c.writeDynamic(u, y)), r.push(...y), j(c), i;
+  }, i.cancel = () => {
+    if (i.finished)
       return;
-    const c = new L();
-    c.writeByte(Q.FunctionCancel), c.writeLength(o), D(c);
-  }, rt(o, s, i), s) : (v.get(s)?.(O.new("Not connected")), s);
+    const l = new $();
+    l.writeByte(Y.FunctionCancel), l.writeLength(o), j(l);
+  }, i.getCaller = () => m(null, "c", o), at(o, i, s), i) : (C.get(i)?.(L.new("Not connected")), i);
 }
-function et(t) {
-  return Ae(t, null, null, null, 3);
+a(m, "callRemoteFunction");
+function rt(t) {
+  return ke(t, null, null, null, 3);
 }
-function Ae(t, e, n, r, s) {
-  const i = new de(s, []), o = new AbortController(), c = {
+a(rt, "callLocal");
+function ke(t, e, n, r, i) {
+  const s = new ye(i, []), o = new AbortController(), l = {
     type: e,
     method: n,
-    sendMessage: (...a) => (i.finished || q(i, a), c),
+    sendMessage: (...c) => (s.finished || z(s, c), l),
     get finished() {
-      return i.finished;
+      return s.finished;
     },
-    promise: i,
-    addMessageListener: (a) => re(c, a),
+    promise: s,
+    addMessageListener: (c) => ie(l, c),
     cancelToken: o.signal,
     cancelSelf: () => o.abort(),
-    [Symbol.asyncIterator]: () => ne(c)
+    [Symbol.asyncIterator]: () => re(l)
   };
-  return i.sendMessage = (...a) => (i.finished || q(c, a), i), i.cancel = () => i.finished || c.cancelSelf(), Pe(t, c, I.get(i), v.get(i), e, n, r), i;
+  return s.sendMessage = (...c) => (s.finished || z(l, c), s), s.cancel = () => s.finished || l.cancelSelf(), Fe(t, l, B.get(s), C.get(s), e, n, r), s;
 }
-async function Pe(t, e, n, r, s, i, o) {
+a(ke, "callLocalFunction");
+async function Fe(t, e, n, r, i, s, o) {
   try {
-    let c;
-    const a = C;
-    C = e;
+    let l;
+    const c = N;
+    N = e;
     try {
-      c = await {
+      l = await {
         async $RPC_MARKER_BEGIN$() {
           return await t();
         }
       }.$RPC_MARKER_BEGIN$();
     } finally {
-      C = a;
+      N = c;
     }
-    n?.(await c);
-  } catch (c) {
-    r?.(m.wrapAndFreeze(c).append(s, i, o));
+    n?.(await l);
+  } catch (l) {
+    r?.(b.wrapAndFreeze(l).append(i, s, o));
   }
 }
-const N = class extends function(n) {
+a(Fe, "invokeForPromise");
+const O = class extends (/* @__PURE__ */ a(function(n) {
   return Object.setPrototypeOf(n, new.target.prototype);
-} {
+}, "Extendable")) {
+  static {
+    a(this, "RpcFunction2");
+  }
   constructor(e, n) {
-    super(y.bind(null, e, n)), this.type = e, this.method = n;
+    super(m.bind(null, e, n)), this.type = e, this.method = n;
   }
   toString() {
     return `rpc (...params) => ${this.type ?? "null"}.${this.method}(...params)`;
   }
 };
-let tt = Date.now();
-const ue = /* @__PURE__ */ new WeakMap();
-function pe(t) {
-  if (t instanceof N)
+let it = Date.now();
+const he = /* @__PURE__ */ new WeakMap();
+function me(t) {
+  if (t instanceof O)
     return t;
-  const e = ue.get(t);
+  const e = he.get(t);
   if (e != null)
-    return new N("$" + _, e);
-  const n = (tt++).toString(16);
-  we[n] = t, ue.set(t, n);
+    return new O("$" + _, e);
+  const n = (it++).toString(16);
+  pe[n] = t, he.set(t, n);
   const r = "$" + _;
-  return new N(r, n);
+  return new O(r, n);
 }
-function ye(t) {
+a(me, "registerFunction");
+function be(t) {
   const e = "$" + _;
   if (t.type != e)
     throw new Error("Can't unregister RemoteFunction, that was not registered locally");
-  delete we[t.method], ue.delete(t);
+  delete pe[t.method], he.delete(t);
 }
-const k = Symbol("RpcObjectType"), Y = Symbol("RpcObjectExists"), z = Symbol("RpcObjectGetMethods");
+a(be, "unregisterFunction");
+const T = Symbol("RpcObjectType"), Z = Symbol("RpcObjectExists"), V = Symbol("RpcObjectGetMethods");
 function se(t, e = new class {
-  [k] = t;
+  static {
+    a(this, "RpcObject");
+  }
+  [T] = t;
 }()) {
   const n = /* @__PURE__ */ new Map();
   return new Proxy(e, {
-    get(r, s) {
-      if (s == k)
+    get(r, i) {
+      if (i == T)
         return t;
-      if (s == Y)
-        return () => y(null, "E", t);
-      if (s == z)
-        return () => y(t, null, "M");
-      if (typeof s != "string" || s == "then")
-        return e[s];
-      if (n.has(s))
-        return n.get(s);
-      const i = new N(
+      if (i == Z)
+        return () => m(null, "E", t);
+      if (i == V)
+        return () => m(t, null, "M");
+      if (typeof i != "string" || i == "then")
+        return e[i];
+      if (n.has(i))
+        return n.get(i);
+      const s = new O(
         t,
-        s
+        i
       );
-      return n.set(s, i), i;
+      return n.set(i, s), s;
     },
-    construct(r, s) {
-      return new r(...s);
+    construct(r, i) {
+      return new r(...i);
     },
-    has(r, s) {
-      return s == k || s == z || s == Y || s in e;
+    has(r, i) {
+      return i == T || i == V || i == Z || i in e;
     }
   });
 }
-const Fe = new Proxy({}, {
+a(se, "createRemoteObject");
+const Me = new Proxy({}, {
   get: (t, e) => typeof e == "string" ? se(e) : void 0,
   has: (t, e) => typeof e == "string" && e != "then"
-}), Me = [], Ie = /* @__PURE__ */ new Map();
-function fe(t, e) {
+}), Ie = [], Be = /* @__PURE__ */ new Map();
+function ge(t, e) {
   let n = t.readLength();
   if (n < 0) {
     switch (n = -n, n % 4) {
@@ -685,25 +754,25 @@ function fe(t, e) {
       case 2: {
         const r = {};
         e.push(r);
-        for (let s = 0; s < (n - 2) / 4; s++) {
-          const i = t.readString();
-          r[i] = fe(t, e);
+        for (let i = 0; i < (n - 2) / 4; i++) {
+          const s = t.readString();
+          r[s] = ge(t, e);
         }
         return r;
       }
       case 3: {
         const r = new Array((n - 3) / 4);
         e.push(r);
-        for (let s = 0; s < r.length; s++)
-          r[s] = fe(t, e);
+        for (let i = 0; i < r.length; i++)
+          r[i] = ge(t, e);
         return r;
       }
     }
     throw new Error("Unreachable code reached");
   } else if (n >= 128) {
-    const r = new TextDecoder().decode(t.readBuffer(n - 128)), s = Ie.get(r);
-    if (s)
-      return s(t, e);
+    const r = new TextDecoder().decode(t.readBuffer(n - 128)), i = Be.get(r);
+    if (i)
+      return i(t, e);
     throw new Error("Unknown data type: " + r);
   } else
     switch (String.fromCodePoint(n)) {
@@ -724,10 +793,10 @@ function fe(t, e) {
       case "D":
         return new Date(Number(t.readLong()));
       case "R": {
-        const c = t.readString(), a = t.readByte();
+        const l = t.readString(), c = t.readByte();
         return new RegExp(
-          c,
-          "g" + (a & 1 ? "i" : "") + (a & 2 ? "m" : "")
+          l,
+          "g" + (c & 1 ? "i" : "") + (c & 2 ? "m" : "")
         );
       }
       case "E":
@@ -738,19 +807,20 @@ function fe(t, e) {
           throw new Error("Type can't be null");
         return se(r);
       case "F":
-        const s = t.readString();
-        if (s == null)
-          throw new Error("Type can't be null");
         const i = t.readString();
         if (i == null)
+          throw new Error("Type can't be null");
+        const s = t.readString();
+        if (s == null)
           throw new Error("Method can't be null");
-        const o = new N(s, i);
+        const o = new O(i, s);
         return e.push(o), o;
       default:
         throw new Error("Unknown data type number: " + n);
     }
 }
-function he(t, e, n) {
+a(ge, "readDynamic");
+function we(t, e, n) {
   if (e == null)
     t.writeLength(110);
   else if (e === !0)
@@ -775,12 +845,12 @@ function he(t, e, n) {
     );
   } else if (e instanceof Error)
     t.writeLength(69), t.writeError(e);
-  else if (typeof e == "object" && k in e)
-    t.writeLength(79), t.writeString(e[k]);
+  else if (typeof e == "object" && T in e)
+    t.writeLength(79), t.writeString(e[T]);
   else if (typeof e == "function") {
     n.push(e), t.writeLength(70);
     let r;
-    e instanceof N ? r = e : (r = pe(e), Be.set(e, () => ye(r))), t.writeString(r.type), t.writeString(r.method);
+    e instanceof O ? r = e : (r = me(e), De.set(e, () => be(r))), t.writeString(r.type), t.writeString(r.method);
   } else if (n.includes(e))
     t.writeLength(-(n.indexOf(e) * 4));
   else if (typeof e == "string") {
@@ -789,31 +859,36 @@ function he(t, e, n) {
   } else if (Array.isArray(e)) {
     n.push(e), t.writeLength(-(e.length * 4 + 3));
     for (let r of e)
-      he(t, r, n);
+      we(t, r, n);
   } else {
-    for (let [r, s, i] of Me) {
-      if (!s(e))
+    for (let [r, i, s] of Ie) {
+      if (!i(e))
         continue;
       const o = new TextEncoder().encode(r);
-      t.writeLength(o.length + 128), t.writeBytes(o), i(t, e, n);
+      t.writeLength(o.length + 128), t.writeBytes(o), s(t, e, n);
       return;
     }
     if (typeof e == "object") {
       n.push(e);
       const r = Object.entries(e);
       t.writeLength(-(r.length * 4 + 2));
-      for (let [s, i] of r)
-        t.writeString(s), he(t, i, n);
+      for (let [i, s] of r)
+        t.writeString(i), we(t, s, n);
     } else
       throw new Error("Unknown type for " + e);
   }
 }
-const Be = /* @__PURE__ */ new WeakMap();
-function Z(t) {
+a(we, "writeDynamic");
+const De = /* @__PURE__ */ new WeakMap();
+function ee(t) {
   for (let e of t)
-    Be.get(e)?.();
+    De.get(e)?.();
 }
-class L {
+a(ee, "freeDynamic");
+class $ {
+  static {
+    a(this, "DataOutput");
+  }
   _buf;
   _data;
   _count = 0;
@@ -890,135 +965,138 @@ class L {
   }
   writeError(e) {
     try {
-      throw m.wrapAndFreeze(e);
+      throw b.wrapAndFreeze(e);
     } catch (n) {
       n.write(this);
     }
   }
   writeDynamic(e, n = []) {
-    he(this, e, n);
+    we(this, e, n);
   }
 }
-const R = /* @__PURE__ */ new Map(), P = /* @__PURE__ */ new Map();
-function nt(t) {
-  for (let e of R.values())
-    v.get(e)?.(t);
-  R.clear();
-  for (let e of P.values())
+const S = /* @__PURE__ */ new Map(), F = /* @__PURE__ */ new Map();
+function st(t) {
+  for (let e of S.values())
+    C.get(e)?.(t);
+  S.clear();
+  for (let e of F.values())
     e.cancelSelf();
 }
-function D(t) {
-  if (j == null)
-    throw O.new("Not connected");
-  j.send(t.toBuffer());
+a(st, "disposeConnection");
+function j(t) {
+  if (U == null)
+    throw L.new("Not connected");
+  U.send(t.toBuffer());
 }
-function rt(t, e, n) {
-  R.set(t, e);
+a(j, "sendRaw");
+function at(t, e, n) {
+  S.set(t, e);
   try {
-    D(n);
+    j(n);
   } catch (r) {
-    v.get(e)?.(r);
+    C.get(e)?.(r);
   }
 }
-var Q = /* @__PURE__ */ ((t) => (t[t.FunctionCall = 0] = "FunctionCall", t[t.FunctionSuccess = 1] = "FunctionSuccess", t[t.FunctionError = 2] = "FunctionError", t[t.FunctionCancel = 3] = "FunctionCancel", t[t.MessageToExecutor = 4] = "MessageToExecutor", t[t.MessageToCaller = 5] = "MessageToCaller", t))(Q || {});
-async function st(t) {
+a(at, "sendCall");
+var Y = /* @__PURE__ */ ((t) => (t[t.FunctionCall = 0] = "FunctionCall", t[t.FunctionSuccess = 1] = "FunctionSuccess", t[t.FunctionError = 2] = "FunctionError", t[t.FunctionCancel = 3] = "FunctionCancel", t[t.MessageToExecutor = 4] = "MessageToExecutor", t[t.MessageToCaller = 5] = "MessageToCaller", t))(Y || {});
+async function ot(t) {
   try {
     switch (t.readByte()) {
       case 0: {
         const n = t.readLength(), r = [];
-        let s = !1, i = null, o = null;
-        const c = new Promise((a, p) => {
-          i = (l) => {
-            a(l), s = !0;
-            const f = new L();
-            f.writeByte(
+        let i = !1, s = null, o = null;
+        const l = new Promise((c, y) => {
+          s = /* @__PURE__ */ a((u) => {
+            c(u), i = !0;
+            const h = new $();
+            h.writeByte(
               1
               /* FunctionSuccess */
-            ), f.writeLength(n), f.writeDynamic(l), D(f), P.delete(n), Z(r);
-          }, o = (l) => {
-            p(l), s = !0;
-            const f = new L();
-            f.writeByte(
+            ), h.writeLength(n), h.writeDynamic(u), j(h), F.delete(n), ee(r);
+          }, "resolve"), o = /* @__PURE__ */ a((u) => {
+            y(u), i = !0;
+            const h = new $();
+            h.writeByte(
               2
               /* FunctionError */
-            ), f.writeLength(n), f.writeError(l), D(f), P.delete(n), Z(r);
-          };
+            ), h.writeLength(n), h.writeError(u), j(h), F.delete(n), ee(r);
+          }, "reject");
         });
-        c.catch(() => {
+        l.catch(() => {
         });
         try {
-          const a = t.readString();
-          if (a == null)
-            throw x.new(null);
-          const p = S.get(a);
-          if (!p)
-            throw x.new(a);
-          const l = t.readString(), f = t.readArray(() => t.readDynamic(r)) ?? [], h = new AbortController(), g = {
-            type: a,
-            method: l,
+          const c = t.readString();
+          if (c == null)
+            throw A.new(null);
+          const y = E.get(c);
+          if (!y)
+            throw A.new(c);
+          const u = t.readString(), h = t.readArray(() => t.readDynamic(r)) ?? [], g = new AbortController(), w = {
+            type: c,
+            method: u,
             get finished() {
-              return s;
+              return i;
             },
-            promise: c,
-            sendMessage(...d) {
-              if (s)
-                return g;
-              const u = new L();
-              u.writeByte(
+            promise: l,
+            sendMessage(...p) {
+              if (i)
+                return w;
+              const f = new $();
+              f.writeByte(
                 5
                 /* MessageToCaller */
-              ), u.writeLength(n);
-              const w = [];
-              return u.writeArray(d, (E) => u.writeDynamic(E, w)), r.push(...w), D(u), g;
+              ), f.writeLength(n);
+              const d = [];
+              return f.writeArray(p, (R) => f.writeDynamic(R, d)), r.push(...d), j(f), w;
             },
-            addMessageListener(d) {
-              return re(g, d), g;
+            addMessageListener(p) {
+              return ie(w, p), w;
             },
-            cancelToken: h.signal,
-            cancelSelf: () => h.abort(),
-            [Symbol.asyncIterator]: () => ne(g)
+            cancelToken: g.signal,
+            cancelSelf: () => g.abort(),
+            [Symbol.asyncIterator]: () => re(w)
           };
-          P.set(n, g), await Pe($e.bind(null, p, a, l, ...f), g, i, o, a, l, f);
-        } catch (a) {
-          o(a);
+          F.set(n, w), await Fe(Pe.bind(null, y, c, u, ...h), w, s, o, c, u, h);
+        } catch (c) {
+          o(c);
         }
         break;
       }
       case 1: {
-        const n = t.readLength(), r = R.get(n);
+        const n = t.readLength(), r = S.get(n);
         if (r == null) {
-          console.warn(`${b.prettyName} has no activeRequest with id: ${n}`);
+          console.warn(`${v.prettyName} has no activeRequest with id: ${n}`);
           break;
         }
         try {
-          I.get(r)?.(t.readDynamic());
-        } catch (s) {
-          v.get(r)?.(s);
+          B.get(r)?.(t.readDynamic());
+        } catch (i) {
+          C.get(r)?.(i);
         } finally {
-          R.delete(n);
+          S.delete(n);
         }
         break;
       }
       case 2: {
-        const n = t.readLength(), r = R.get(n);
+        const n = t.readLength(), r = S.get(n);
         if (r == null) {
-          console.warn(`${b.prettyName} has no activeRequest with id: ${n}`);
+          console.warn(`${v.prettyName} has no activeRequest with id: ${n}`);
           break;
         }
         try {
           throw t.readError();
-        } catch (s) {
-          v.get(r)?.(s);
+        } catch (i) {
+          C.get(r)?.(i);
         } finally {
-          R.delete(n);
+          S.delete(n);
         }
         break;
       }
       case 3: {
         const n = t.readLength();
-        let r = P.get(n);
+        let r = F.get(n);
         if (!r) {
-          console.warn(`${b.prettyName} has no CurrentlyExecuting with id: ${n}`);
+          console.warn(`${v.prettyName} has no CurrentlyExecuting with id: ${n}`);
           break;
         }
         r.cancelSelf();
@@ -1026,24 +1104,24 @@ async function st(t) {
       }
       case 4: {
         const n = t.readLength();
-        let r = P.get(n);
+        let r = F.get(n);
         if (!r) {
-          console.warn(`${b.prettyName} has no CurrentlyExecuting with id: ${n}`);
+          console.warn(`${v.prettyName} has no CurrentlyExecuting with id: ${n}`);
           break;
         }
-        const s = [], i = t.readArray(() => t.readDynamic(s)) ?? [];
-        q(r, i);
+        const i = [], s = t.readArray(() => t.readDynamic(i)) ?? [];
+        z(r, s);
         break;
       }
       case 5: {
         const n = t.readLength();
-        let r = R.get(n);
+        let r = S.get(n);
         if (!r) {
-          console.warn(`${b.prettyName} has no ActiveRequest with id: ${n}`);
+          console.warn(`${v.prettyName} has no ActiveRequest with id: ${n}`);
           break;
         }
-        const s = [], i = t.readArray(() => t.readDynamic(s)) ?? [];
-        q(r, i);
+        const i = [], s = t.readArray(() => t.readDynamic(i)) ?? [];
+        z(r, s);
         break;
       }
     }
@@ -1051,7 +1129,11 @@ async function st(t) {
     console.error(e);
   }
 }
-class De {
+a(ot, "receiveRpc");
+class je {
+  static {
+    a(this, "DataInput");
+  }
   _buf;
   _data;
   _pos;
@@ -1060,12 +1142,12 @@ class De {
     this._buf = e, this._data = new DataView(e.buffer), this._pos = n, this._count = n + r;
   }
   readFully(e, n = 0, r = e.length) {
-    let s = this._pos;
-    if (this._count - s < r)
+    let i = this._pos;
+    if (this._count - i < r)
       throw new RangeError("not enough bytes available to use readFully");
     for (let o = n; o < n + r; o++)
-      e[o] = this._buf[s++];
-    this._pos = s;
+      e[o] = this._buf[i++];
+    this._pos = i;
   }
   skip(e) {
     let n = this.available();
@@ -1138,223 +1220,230 @@ class De {
     if (n == -1)
       return null;
     const r = [];
-    for (let s = 0; s < n; s++)
-      r[s] = e.call(this);
+    for (let i = 0; i < n; i++)
+      r[i] = e.call(this);
     return r;
   }
   readError() {
-    return m.read(this);
+    return b.read(this);
   }
   readDynamic(e = []) {
-    return fe(this, e);
+    return ge(this, e);
   }
 }
-let A = !1, me, ge, ee = new Promise((t, e) => [me, ge] = [t, e]);
-ee.catch(() => {
+let k = !1, ve, de, te = new Promise((t, e) => [ve, de] = [t, e]);
+te.catch(() => {
 });
-async function it() {
+async function ct() {
   for (; ; )
-    if (await ee.then(() => !0, () => !1))
+    if (await te.then(() => !0, () => !1))
       return;
 }
-let F;
-if (ke) {
+a(ct, "waitConnected");
+let M;
+if (Te) {
   const t = "RPC_URL" in globalThis ? globalThis.RPC_URL : process.env.RPC_URL, e = "RPC_TOKEN" in globalThis ? globalThis.RPC_TOKEN : process.env.RPC_TOKEN;
-  t ? F = async (n) => {
+  t ? M = /* @__PURE__ */ a(async (n) => {
     const r = new URL(t);
     return r.search = n.toString(), new (await import("ws")).WebSocket(r, e == null ? {} : {
       headers: {
         Cookie: "RPC_TOKEN=" + e
       }
     });
-  } : (console.warn("RPC_URL is not defined => RPC will not connect"), F = async () => ({}));
+  }, "createWebSocket") : (console.warn("RPC_URL is not defined => RPC will not connect"), M = /* @__PURE__ */ a(async () => ({}), "createWebSocket"));
 } else if ("document" in globalThis)
-  F = async (t) => new WebSocket("ws" + document.location.origin.substring(4) + "/rpc?" + t);
+  M = /* @__PURE__ */ a(async (t) => new WebSocket("ws" + document.location.origin.substring(4) + "/rpc?" + t), "createWebSocket");
 else {
   const t = "RPC_URL" in globalThis ? globalThis.RPC_URL : process.env.RPC_URL, e = "RPC_TOKEN" in globalThis ? globalThis.RPC_TOKEN : process.env.RPC_TOKEN;
-  t ? F = async (n) => {
+  t ? M = /* @__PURE__ */ a(async (n) => {
     const r = new URL(t);
     return r.search = n.toString(), new WebSocket(r, e == null ? {} : {
       headers: {
         Cookie: "RPC_TOKEN=" + e
       }
     });
-  } : (console.warn("RPC_URL is not defined => RPC will not connect"), F = async () => ({}));
+  }, "createWebSocket") : (console.warn("RPC_URL is not defined => RPC will not connect"), M = /* @__PURE__ */ a(async () => ({}), "createWebSocket"));
 }
-function Re(t) {
-  const e = ge;
-  ee = new Promise((n, r) => [me, ge] = [n, r]), ee.catch(() => {
-  }), e(t), nt(t);
+function Se(t) {
+  const e = de;
+  te = new Promise((n, r) => [ve, de] = [n, r]), te.catch(() => {
+  }), e(t), st(t);
 }
-let j = null;
-async function at(t) {
-  let e = T, n = /* @__PURE__ */ new Set();
+a(Se, "closeRpc");
+let U = null;
+async function lt(t) {
+  let e = x, n = /* @__PURE__ */ new Set();
   const r = new URLSearchParams();
   r.set("id", _), n.add("$" + _), e != null && r.set("name", e);
-  for (let i of S.keys())
-    n.has(i) || (n.add(i), r.append("type", i));
-  const s = await F(r);
-  s.onclose = () => {
-    setTimeout(t, 1e3), j && (j = null, A = !1, console.log("Reconnecting to RPC"), Re(O.new("Connection closed by " + b.prettyName)));
-  }, s.onopen = async () => {
+  for (let s of E.keys())
+    n.has(s) || (n.add(s), r.append("type", s));
+  const i = await M(r);
+  i.onclose = () => {
+    setTimeout(t, 1e3), U && (U = null, k = !1, console.log("Reconnecting to RPC"), Se(L.new("Connection closed by " + v.prettyName)));
+  }, i.onopen = async () => {
     console.log("Connected to RPC");
     try {
-      j = s;
-      const i = new Set(S.keys()), o = new Set(n);
-      for (let c of i)
-        o.delete(c) && i.delete(c);
-      i.size || o.size ? T != e ? await y(null, "H", T, [...i.keys()], [...o.keys()]) : await y(null, "H", [...i.keys()], [...o.keys()]) : T != e && await y(null, "H", T), A = !0, me();
-    } catch (i) {
-      console.error("Error registering types: ", i), Re(i), s?.close(4e3, "Error registering types");
+      U = i;
+      const s = new Set(E.keys()), o = new Set(n);
+      for (let l of s)
+        o.delete(l) && s.delete(l);
+      s.size || o.size ? x != e ? await m(null, "H", x, [...s.keys()], [...o.keys()]) : await m(null, "H", [...s.keys()], [...o.keys()]) : x != e && await m(null, "H", x), k = !0, ve();
+    } catch (s) {
+      console.error("Error registering types: ", s), Se(s), i?.close(4e3, "Error registering types");
       return;
     }
-  }, s.binaryType = "arraybuffer", s.onmessage = (i) => {
-    const o = i.data;
-    typeof o == "string" ? console.log(o) : st(new De(new Uint8Array(o)));
+  }, i.binaryType = "arraybuffer", i.onmessage = (s) => {
+    const o = s.data;
+    typeof o == "string" ? console.log(o) : ot(new je(new Uint8Array(o)));
   };
 }
-(async function() {
+a(lt, "connectOnce");
+(/* @__PURE__ */ a(async function() {
   for (await Promise.resolve(); ; )
     await new Promise(
-      (e) => at(e)
+      (e) => lt(e)
     );
-})();
-let T = null;
-async function ot(t) {
-  T = t;
+}, "connectLoop"))();
+let x = null;
+async function ut(t) {
+  x = t;
   try {
-    A && await y(null, "N", t);
+    k && await m(null, "N", t);
   } catch (e) {
     console.error(e);
   }
 }
-function ct(t) {
+a(ut, "setName");
+function ft(t) {
   return function(e) {
-    Me.push([t, (n) => n instanceof e, (n, r, s) => r.write(n, s)]), Ie.set(t, (n, r) => e.read(n, r));
+    Ie.push([t, (n) => n instanceof e, (n, r, i) => r.write(n, i)]), Be.set(t, (n, r) => e.read(n, r));
   };
 }
-function lt(t) {
+a(ft, "CustomDynamicType");
+function ht(t) {
   return function(e) {
-    xe(t ?? e.prototype.constructor.name, e).catch(console.error);
+    Ae(t ?? e.prototype.constructor.name, e).catch(console.error);
   };
 }
-Promise.resolve().then(() => ut).then((t) => Object.assign(globalThis, t));
-class b {
+a(ht, "RpcProvider");
+Promise.resolve().then(() => gt).then((t) => Object.assign(globalThis, t));
+class v {
   //Rpc
   static id = _;
   static get prettyName() {
-    return b.name != null ? `${b.name} (${b.id})` : b.id;
+    return v.name != null ? `${v.name} (${v.id})` : v.id;
   }
   static get name() {
-    return T;
+    return x;
   }
-  static setName = ot;
+  static setName = ut;
   //Connection
   static get isConnected() {
-    return A;
+    return k;
   }
   static get waitUntilConnected() {
-    return it();
+    return ct();
   }
   //Functions
   static createObject = se;
-  static createFunction = (e, n) => new N(e, n);
-  static registerFunction = pe;
-  static unregisterFunction = ye;
-  static callLocal = et;
+  static createFunction = (e, n) => new O(e, n);
+  static registerFunction = me;
+  static unregisterFunction = be;
+  static callLocal = rt;
   //Call function and get a PendingCall, this allows the use of the FunctionCallContext within the function
-  static callFunction = y;
+  static callFunction = m;
   //Call remote function
-  static getContext = Ye;
-  static runWithContext = Qe;
+  static getContext = tt;
+  static runWithContext = et;
   //Types
-  static registerType = xe;
-  static unregisterType = Xe;
-  static getObjectWithFallback = async (e, ...n) => await y("Rpc", "getObjectWithFallback", e, ...n);
-  static checkTypes = async (...e) => await y("Rpc", "checkTypes", ...e);
-  static checkType = async (e) => await y("Rpc", "checkType", e);
-  static getAllTypes = async () => await y("Rpc", "getAllTypes");
-  static getAllConnections = async () => await y("Rpc", "getAllConnections");
-  static getRegistrations = async (e = !1) => await y("Rpc", "getRegistrations", e);
-  static evalObject = async (e) => await y("Rpc", "evalObject", e);
-  static evalString = async (e) => await y("Rpc", "evalString", e);
-  static listenCalls = () => y("Rpc", "listenCalls");
-  static root = Fe;
-  static type = k;
-  static exists = Y;
-  static getMethods = z;
+  static registerType = Ae;
+  static unregisterType = Ze;
+  static generateTypeName = Ye;
+  static getObjectWithFallback = async (e, ...n) => await m("Rpc", "getObjectWithFallback", e, ...n);
+  static checkTypes = async (...e) => await m("Rpc", "checkTypes", ...e);
+  static checkType = async (e) => await m("Rpc", "checkType", e);
+  static getAllTypes = async () => await m("Rpc", "getAllTypes");
+  static getAllConnections = async () => await m("Rpc", "getAllConnections");
+  static getRegistrations = async (e = !1) => await m("Rpc", "getRegistrations", e);
+  static evalObject = async (e) => await m("Rpc", "evalObject", e);
+  static evalString = async (e) => await m("Rpc", "evalString", e);
+  static listenCalls = () => m("Rpc", "listenCalls");
+  static root = Me;
+  static type = T;
+  static exists = Z;
+  static getMethods = V;
 }
-const ut = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  CustomDynamicType: ct,
-  DataInput: De,
-  DataOutput: L,
-  PendingCall: de,
-  RPC_ROOT: Fe,
-  Rpc: b,
-  RpcCallError: H,
+  CustomDynamicType: ft,
+  DataInput: je,
+  DataOutput: $,
+  PendingCall: ye,
+  RPC_ROOT: Me,
+  Rpc: v,
+  RpcCallError: J,
   get RpcConnectionError() {
-    return O;
+    return L;
   },
-  RpcCustomError: K,
-  RpcError: m,
+  RpcCustomError: W,
+  RpcError: b,
   get RpcEvalError() {
-    return le;
+    return fe;
   },
-  RpcFunction: N,
+  RpcFunction: O,
   get RpcMetaMethodNotFoundError() {
-    return U;
+    return K;
   },
   get RpcMethodNotFoundError() {
-    return $;
+    return P;
   },
-  RpcObjectExists: Y,
-  RpcObjectGetMethods: z,
-  RpcObjectType: k,
-  RpcProvider: lt,
+  RpcObjectExists: Z,
+  RpcObjectGetMethods: V,
+  RpcObjectType: T,
+  RpcProvider: ht,
   get RpcTypeNotFoundError() {
-    return x;
+    return A;
   },
   createRemoteObject: se,
-  getAsyncIterator: ne,
-  listenersMap: B,
-  pendingMap: M,
-  registerFunction: pe,
-  registerReceive: re,
-  rejectCall: v,
-  resolveCall: I,
-  runReceiveMessage: q,
-  unregisterFunction: ye
+  getAsyncIterator: re,
+  listenersMap: D,
+  pendingMap: I,
+  registerFunction: me,
+  registerReceive: ie,
+  rejectCall: C,
+  resolveCall: B,
+  runReceiveMessage: z,
+  unregisterFunction: be
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ct as CustomDynamicType,
-  De as DataInput,
-  L as DataOutput,
-  de as PendingCall,
-  Fe as RPC_ROOT,
-  b as Rpc,
-  H as RpcCallError,
-  O as RpcConnectionError,
-  K as RpcCustomError,
-  m as RpcError,
-  le as RpcEvalError,
-  N as RpcFunction,
-  U as RpcMetaMethodNotFoundError,
-  $ as RpcMethodNotFoundError,
-  Y as RpcObjectExists,
-  z as RpcObjectGetMethods,
-  k as RpcObjectType,
-  lt as RpcProvider,
-  x as RpcTypeNotFoundError,
+  ft as CustomDynamicType,
+  je as DataInput,
+  $ as DataOutput,
+  ye as PendingCall,
+  Me as RPC_ROOT,
+  v as Rpc,
+  J as RpcCallError,
+  L as RpcConnectionError,
+  W as RpcCustomError,
+  b as RpcError,
+  fe as RpcEvalError,
+  O as RpcFunction,
+  K as RpcMetaMethodNotFoundError,
+  P as RpcMethodNotFoundError,
+  Z as RpcObjectExists,
+  V as RpcObjectGetMethods,
+  T as RpcObjectType,
+  ht as RpcProvider,
+  A as RpcTypeNotFoundError,
   se as createRemoteObject,
-  ne as getAsyncIterator,
-  B as listenersMap,
-  M as pendingMap,
-  pe as registerFunction,
-  re as registerReceive,
-  v as rejectCall,
-  I as resolveCall,
-  q as runReceiveMessage,
-  ye as unregisterFunction
+  re as getAsyncIterator,
+  D as listenersMap,
+  I as pendingMap,
+  me as registerFunction,
+  ie as registerReceive,
+  C as rejectCall,
+  B as resolveCall,
+  z as runReceiveMessage,
+  be as unregisterFunction
 };
 //# sourceMappingURL=rpc.js.map
