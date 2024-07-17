@@ -1,7 +1,7 @@
 import {RpcError} from "../RpcError.js";
 import {readDynamic} from "./DynamicData.js";
 
-
+// noinspection JSUnusedGlobalSymbols
 export class DataInput{
 	private readonly _buf: Uint8Array;
 	private readonly _data: DataView;

@@ -1,10 +1,9 @@
 import {RpcError} from "../RpcError.js";
 import {RpcCustomError} from "./RpcCustomErrorDecorator.js";
 
-const quoted=(s:string | null)=>s==null?"null":'"'+s+'"';
+const quoted=(s:string | null)=>s==null?"null":"\""+s+"\"";
 
-export abstract class RpcCallError extends RpcError{
-}
+export abstract class RpcCallError extends RpcError{}
 
 @RpcCustomError("$type")
 export class RpcTypeNotFoundError extends RpcCallError{
@@ -30,5 +29,9 @@ export class RpcConnectionError extends RpcCallError{
 }
 
 @RpcCustomError("$eval")
-export class RpcEvalError extends RpcCallError{
+export class RpcEvalError extends RpcCallError{}
+
+@RpcCustomError("$data")
+export class RpcDataError extends RpcError{
+	static new=(message:string,cause:Error)=>new RpcDataError(null,null,message,"",cause);
 }

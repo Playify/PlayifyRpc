@@ -28,7 +28,7 @@ export async function registerType(type:string,invoker:Invoker):Promise<void>{
 		if(isConnected)
 			await callRemoteFunction(null,'+',type);
 	}catch(e){
-		console.warn(e);
+		console.error(`[Rpc] Error registering type "${type}":`,e);
 
 		registeredTypes.delete(type);
 	}
@@ -41,7 +41,7 @@ export async function unregisterType(type:string):Promise<void>{
 		if(isConnected)
 			await callRemoteFunction(null,'-',type);
 	}catch(e){
-		console.warn(e);
+		console.error(`[Rpc] Error unregistering type "${type}":`,e);
 
 		//Also delete locally, as it won't be listened to, and on the server it probably is already unregistered
 	}

@@ -9,6 +9,6 @@ export async function setName(name:string|null){
 	try{
 		if(isConnected) await callRemoteFunction(null,'N',name);
 	}catch(e){
-		console.error(e);
+		console.error(`[Rpc] Error changing name to "${name}":`,e);
 	}
 }

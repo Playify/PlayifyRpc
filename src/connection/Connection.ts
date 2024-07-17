@@ -9,12 +9,12 @@ import {
 	registerReceive,
 	rejectCall,
 	resolveCall,
-	runReceiveMessage
+	runReceiveMessage,
 } from "../types/functions/PendingCall.js";
 import {invoke,registeredTypes} from "../internal/RegisteredTypes.js";
 import {FunctionCallContext,invokeForPromise} from "../types/functions/FunctionCallContext.js";
 import {freeDynamic} from "../types/data/DynamicData.js";
-import {Rpc,RpcConnectionError,RpcTypeNotFoundError} from "../rpc.js";
+import {RpcConnectionError,RpcTypeNotFoundError} from "../rpc.js";
 
 
 const activeRequests=new Map<number,PendingCall>();
@@ -93,8 +93,7 @@ export async function receiveRpc(data:DataInput){
 						freeDynamic(already);
 					};
 				});
-				promise.catch(()=>{
-				});//Prevent uncaught error warning
+				promise.catch(()=>{});//Prevent uncaught error warning
 
 
 				try{
@@ -153,7 +152,7 @@ export async function receiveRpc(data:DataInput){
 
 				const pending=activeRequests.get(callId);
 				if(pending==null){
-					console.warn(`${Rpc.prettyName} has no activeRequest with id: ${callId}`);
+					console.warn(`[Rpc] No activeRequest[${callId}] (${PacketType[packetType]})`);
 					break;
 				}
 				try{
@@ -170,7 +169,7 @@ export async function receiveRpc(data:DataInput){
 
 				const pending=activeRequests.get(callId);
 				if(pending==null){
-					console.warn(`${Rpc.prettyName} has no activeRequest with id: ${callId}`);
+					console.warn(`[Rpc] No activeRequest[${callId}] (${PacketType[packetType]})`);
 					break;
 				}
 
@@ -187,7 +186,7 @@ export async function receiveRpc(data:DataInput){
 				const callId=data.readLength();
 				let ctx=currentlyExecuting.get(callId);
 				if(!ctx){
-					console.warn(`${Rpc.prettyName} has no CurrentlyExecuting with id: ${callId}`);
+					console.warn(`[Rpc] No currentlyExecuting[${callId}] (${PacketType[packetType]})`);
 					break;
 				}
 				ctx.cancelSelf();
@@ -197,7 +196,7 @@ export async function receiveRpc(data:DataInput){
 				const callId=data.readLength();
 				let ctx=currentlyExecuting.get(callId);
 				if(!ctx){
-					console.warn(`${Rpc.prettyName} has no CurrentlyExecuting with id: ${callId}`);
+					console.warn(`[Rpc] No currentlyExecuting[${callId}] (${PacketType[packetType]})`);
 					break;
 				}
 				const already:unknown[]=[];
@@ -209,7 +208,7 @@ export async function receiveRpc(data:DataInput){
 				const callId=data.readLength();
 				let pending=activeRequests.get(callId);
 				if(!pending){
-					console.warn(`${Rpc.prettyName} has no ActiveRequest with id: ${callId}`);
+					console.warn(`[Rpc] No activeRequest[${callId}] (${PacketType[packetType]})`);
 					break;
 				}
 				const already:unknown[]=[];
@@ -219,6 +218,6 @@ export async function receiveRpc(data:DataInput){
 			}
 		}
 	}catch(e){
-		console.error(e);
+		console.warn("[Rpc] Error receiving Packet:",e);
 	}
 }

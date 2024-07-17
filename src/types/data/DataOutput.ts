@@ -1,6 +1,7 @@
 import {RpcError} from "../RpcError.js";
 import {writeDynamic} from "./DynamicData.js";
 
+// noinspection JSUnusedGlobalSymbols
 export class DataOutput{
 	private _buf:Uint8Array;
 	private _data:DataView;

@@ -5,6 +5,7 @@ import {Rpc} from "../../rpc";
 
 type Action<T>=(t:T)=>void;
 
+// noinspection JSUnusedGlobalSymbols
 export class PendingCall<T=unknown> implements Promise<T>{
 	public readonly [Symbol.toStringTag]:string="PendingCall";
 	public finished=false;
@@ -54,8 +55,7 @@ export class PendingCall<T=unknown> implements Promise<T>{
 		return registerReceive(this,func as (...args:any[])=>void);
 	}
 
-	cancel(){
-	}//overridden by callFunction and callLocal
+	cancel(){}//overridden by callFunction and callLocal
 	
 	getCaller():Promise<string>{
 		return Promise.resolve(Rpc.prettyName);
@@ -101,7 +101,7 @@ export function registerReceive<AnyCall extends PendingCall | FunctionCallContex
 			try{
 				func(...pending);
 			}catch(e){
-				console.warn("Error receiving pending: ",e);
+				console.warn("[Rpc] Error while handling pending message:",e);
 			}
 		}
 	}
@@ -116,7 +116,7 @@ export function runReceiveMessage(call:PendingCall | FunctionCallContext,args:an
 			try{
 				func(...args);
 			}catch(e){
-				console.warn("Error receiving: ",e);
+				console.warn("[Rpc] Error while receiving message:",e);
 			}
 		}
 	}else if(pendingMap.has(call)){
