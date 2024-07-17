@@ -60,19 +60,19 @@ function He() {
             throw new TypeError("Eval Origin must be an Object or StackFrame");
         },
         toString: function() {
-          var f = this.getFileName() || "", d = this.getLineNumber() || "", R = this.getColumnNumber() || "", G = this.getFunctionName() || "";
-          return this.getIsEval() ? f ? "[eval] (" + f + ":" + d + ":" + R + ")" : "[eval]:" + d + ":" + R : G ? G + " (" + f + ":" + d + ":" + R + ")" : f + ":" + d + ":" + R;
+          var f = this.getFileName() || "", d = this.getLineNumber() || "", R = this.getColumnNumber() || "", q = this.getFunctionName() || "";
+          return this.getIsEval() ? f ? "[eval] (" + f + ":" + d + ":" + R + ")" : "[eval]:" + d + ":" + R : q ? q + " (" + f + ":" + d + ":" + R + ")" : f + ":" + d + ":" + R;
         }
       }, h.fromString = /* @__PURE__ */ a(function(d) {
-        var R = d.indexOf("("), G = d.lastIndexOf(")"), Ue = d.substring(0, R), Ke = d.substring(R + 1, G).split(","), _e = d.substring(G + 1);
+        var R = d.indexOf("("), q = d.lastIndexOf(")"), Ue = d.substring(0, R), Ke = d.substring(R + 1, q).split(","), _e = d.substring(q + 1);
         if (_e.indexOf("@") === 0)
-          var ae = /@(.+?)(?::(\d+))?(?::(\d+))?$/.exec(_e, ""), We = ae[1], Ge = ae[2], qe = ae[3];
+          var ae = /@(.+?)(?::(\d+))?(?::(\d+))?$/.exec(_e, ""), We = ae[1], qe = ae[2], Ge = ae[3];
         return new h({
           functionName: Ue,
           args: Ke || void 0,
           fileName: We,
-          lineNumber: Ge || void 0,
-          columnNumber: qe || void 0
+          lineNumber: qe || void 0,
+          columnNumber: Ge || void 0
         });
       }, "StackFrame$$fromString");
       for (var g = 0; g < s.length; g++)
@@ -363,7 +363,7 @@ var $e = Object.defineProperty, Xe = Object.getOwnPropertyDescriptor, Qe = /* @_
     (o = t[s]) && (i = (r ? o(e, n, i) : o(i)) || i);
   return r && i && $e(e, n, i), i;
 }, "__decorateClass"), ne = /* @__PURE__ */ a((t, e, n) => (Qe(t, typeof e != "symbol" ? e + "" : e, n), n), "__publicField");
-const q = /* @__PURE__ */ a((t) => t == null ? "null" : '"' + t + '"', "quoted");
+const G = /* @__PURE__ */ a((t) => t == null ? "null" : '"' + t + '"', "quoted");
 class J extends b {
   static {
     a(this, "RpcCallError");
@@ -377,7 +377,7 @@ let A = class extends J {
 ne(A, "new", (t) => new A(
   null,
   null,
-  `Type ${q(t)} does not exist`,
+  `Type ${G(t)} does not exist`,
   "",
   { type: t }
 ));
@@ -392,7 +392,7 @@ let P = class extends J {
 ne(P, "new", (t, e) => new P(
   null,
   null,
-  `Method ${q(e)} does not exist on type ${q(t)}`,
+  `Method ${G(e)} does not exist on type ${G(t)}`,
   "",
   { type: t, method: e }
 ));
@@ -407,7 +407,7 @@ let K = class extends P {
 ne(K, "new", (t, e) => new K(
   null,
   null,
-  `Meta-Method ${q(e)} does not exist on type ${q(t)}`,
+  `Meta-Method ${G(e)} does not exist on type ${G(t)}`,
   "",
   { type: t, method: null, meta: e }
 ));
@@ -1245,7 +1245,9 @@ if (Te) {
   const t = "RPC_URL" in globalThis ? globalThis.RPC_URL : process.env.RPC_URL, e = "RPC_TOKEN" in globalThis ? globalThis.RPC_TOKEN : process.env.RPC_TOKEN;
   t ? M = /* @__PURE__ */ a(async (n) => {
     const r = new URL(t);
-    return r.search = n.toString(), new (await import("ws")).WebSocket(r, e == null ? {} : {
+    r.search = n.toString();
+    const i = "require" in globalThis ? globalThis.require("ws") : (await import("ws")).WebSocket;
+    return new i(r, e == null ? {} : {
       headers: {
         Cookie: "RPC_TOKEN=" + e
       }

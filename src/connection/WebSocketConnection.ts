@@ -33,7 +33,9 @@ if(isNodeJs){
 		createWebSocket=async(query)=>{
 			const uri=new URL(RPC_URL);
 			uri.search=query.toString();
-			return new (await import("ws")).WebSocket(uri,RPC_TOKEN==null?{}:{
+			const ws:typeof import("ws").WebSocket="require" in globalThis?globalThis["require"]("ws"):(await import("ws")).WebSocket;
+
+			return new ws(uri,RPC_TOKEN==null?{}:{
 				headers:{
 					Cookie:"RPC_TOKEN="+RPC_TOKEN,
 				},
