@@ -141,7 +141,8 @@ export async function connectOnce(reconnect:VoidFunction){
 	webSocket.onmessage=(e:MessageEvent)=>{
 		const data=e.data;
 		if(typeof data=="string") console.log("[Rpc] WebSocket Message:",data);
-		else receiveRpc(new DataInput(new Uint8Array(data)));
+		else receiveRpc(new DataInput(new Uint8Array(data)))
+			.catch(e=>console.warn("[Rpc] Error receiving Packet:",e));
 	};
 }
 
