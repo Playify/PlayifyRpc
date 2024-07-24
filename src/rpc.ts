@@ -1,6 +1,13 @@
 import {RpcName,setName} from "./connection/RpcName.js";
 import {isConnected,waitConnected} from "./connection/WebSocketConnection.js";
-import {createRemoteObject,RPC_ROOT,RpcObjectExists,RpcObjectGetMethods,RpcObjectType} from "./types/RpcObject.js";
+import {
+	createRemoteObject,
+	RPC_ROOT,
+	RpcObject,
+	RpcObjectExists,
+	RpcObjectGetMethods,
+	RpcObjectType,
+} from "./types/RpcObject.js";
 import {registerFunction,RpcFunction,unregisterFunction} from "./types/RpcFunction.js";
 import {
 	callLocal,
@@ -84,9 +91,16 @@ export class Rpc{
 	public static listenCalls=():PendingCall=>callRemoteFunction("Rpc","listenCalls");
 
 	public static root=RPC_ROOT;
+	/** @deprecated*/
 	public static type=RpcObjectType;
+	/** @deprecated*/
 	public static exists=RpcObjectExists;
+	/** @deprecated*/
 	public static getMethods=RpcObjectGetMethods;
+	
+	public static getObjectMethods=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcObjectGetMethods]();
+	public static getObjectExists=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcObjectExists]();
+	public static getObjectType=(o:RpcObject)=>o[RpcObjectType];
 }
 
 

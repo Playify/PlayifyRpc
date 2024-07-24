@@ -27,7 +27,7 @@ const appendDotHtml=(defaultPath: string): PluginOption=>({
 
 export default defineConfig({
 	plugins:[
-		appendDotHtml("/index.html")
+		appendDotHtml("/_html/rpc.html")
 	],
 
 	root:"src",
