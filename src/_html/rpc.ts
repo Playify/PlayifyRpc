@@ -17,7 +17,10 @@ function setStatus(text:string,color:string,back:string,date:number){
 }
 
 let curr=0;
-async function runEval(func:()=>Promise<string>=()=>Rpc.evalString(input.value)){
+async function runEval(func:()=>Promise<string> =()=>Rpc.evalString(input.value)){
+	while(autocomplete.firstChild) autocomplete.removeChild(autocomplete.lastChild!);
+	last="";
+	
 	const now=++curr;
 
 	const startTime=Date.now();
@@ -95,6 +98,7 @@ input.addEventListener("keydown",async e=>{
 			e.preventDefault();
 
 			active=autocomplete.querySelector<HTMLElement>(":scope>.active");
+			
 			if(active) active.onclick!(null!);
 			else runEval().catch(console.error);
 
@@ -103,6 +107,13 @@ input.addEventListener("keydown",async e=>{
 			e.preventDefault();
 			while(autocomplete.firstChild) autocomplete.removeChild(autocomplete.lastChild!);
 			last="";
+			return;
+		case " ":
+		case "Space":
+			if(e.altKey||e.shiftKey||e.ctrlKey){
+				updateAutoComplete();
+				e.preventDefault();
+			}
 			return;
 		default:return;
 	}
@@ -157,6 +168,8 @@ async function getAutoComplete():Promise<HTMLElement[]>{
 			return [div];
 		}
 		const beginning=value.substring(0,start);
+		if(beginning[0]!="$")types=types.filter(t=>t[0]!="$");
+		
 		return types
 			.filter(t=>t.startsWith(beginning))
 			.map(t=>{
