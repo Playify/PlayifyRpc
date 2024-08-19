@@ -84,4 +84,7 @@ pre{
     padding: 8px;
     border-radius: 8px;
     tab-size: 4;
+	overflow: auto;
+	scrollbar-width: thin;
+	scrollbar-color: green transparent;
 }
