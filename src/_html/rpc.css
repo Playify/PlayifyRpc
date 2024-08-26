@@ -59,12 +59,13 @@ input:focus{
 
 #buttonbar{
     display: flex;
-    margin: 4px;
+    margin: 0 8px;
+	flex-wrap: wrap;
+	gap: 4px;
 }
 #buttonbar>*{
-    border-radius: 999px;
+    border-radius: 14px;
     padding: 4px 8px;
-    margin: 0 4px;
     border: 1px solid black;
     color: #333;
     background-color: lightgray;

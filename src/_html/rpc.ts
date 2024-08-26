@@ -27,16 +27,19 @@ async function runEval(func:()=>Promise<string> =()=>Rpc.evalString(input.value)
 	try{
 		setStatus("Executing","cyan","blue",startTime);
 		result.style.backgroundColor="rgba(0,0,255,10%)";
+		result.style.scrollbarColor="rgb(0,0,128) transparent";
 		const s=await func();
 		if(now!=curr) return;
 		result.textContent=s;
 		result.style.backgroundColor="rgba(0,255,0,10%)";
+		result.style.scrollbarColor="rgb(0,128,0) transparent";
 		const endTime=Date.now();
 		setStatus(`Success (${((endTime-startTime)/1000).toFixed(3)}s)`,"lime","green",Date.now());
 	}catch(e){
 		if(now!=curr) return;
 		result.textContent=(e as RpcError).trashLocalStack()+"\n\n\nException data:"+JSON.stringify((e as RpcError).data,null,"\t");
 		result.style.backgroundColor="rgba(255,0,0,10%)";
+		result.style.scrollbarColor="rgb(128,0,0) transparent";
 		const endTime=Date.now();
 		setStatus(`Failed (${((endTime-startTime)/1000).toFixed(3)}s)`,"orangered","darkred",Date.now());
 	}
