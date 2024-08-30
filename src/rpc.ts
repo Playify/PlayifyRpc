@@ -91,16 +91,11 @@ export class Rpc{
 	public static listenCalls=():PendingCall=>callRemoteFunction("Rpc","listenCalls");
 
 	public static root=RPC_ROOT;
-	/** @deprecated*/
-	public static type=RpcObjectType;
-	/** @deprecated*/
-	public static exists=RpcObjectExists;
-	/** @deprecated*/
-	public static getMethods=RpcObjectGetMethods;
 	
 	public static getObjectMethods=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcObjectGetMethods]();
 	public static getObjectExists=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcObjectExists]();
 	public static getObjectType=(o:RpcObject)=>o[RpcObjectType];
+	public static getMethodSignatures=(type:string,method:string,ts=false)=>new RpcFunction(type,method).getMethodSignatures(ts);
 }
 
 

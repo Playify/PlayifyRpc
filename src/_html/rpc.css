@@ -48,7 +48,7 @@ input:focus{
     padding: 2px 4px;
     cursor: pointer;
     user-select: none;
-    white-space: pre;/*TODO check that this is working correctly*/
+    white-space: pre;
 }
 #autocomplete>*+*{
     border-top: 1px solid #999;

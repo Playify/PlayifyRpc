@@ -23,6 +23,9 @@ export const RpcFunction=class RpcFunction<FuncOrReturnType>
 		public readonly method: string,
 	){super(callRemoteFunction.bind(null,type,method));}
 
+	async getMethodSignatures(typeScript:boolean=false):Promise<[parameters:string[],returns:string][]>{
+		return callRemoteFunction(this.type,null,"S",this.method,typeScript);
+	}
 
 	toString(){
 		return `rpc (...params) => ${this.type??"null"}.${this.method}(...params)`;

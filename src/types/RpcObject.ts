@@ -4,6 +4,7 @@ import {callRemoteFunction} from "./functions/FunctionCallContext.js";
 export const RpcObjectType=Symbol("RpcObjectType");
 export const RpcObjectExists=Symbol("RpcObjectExists");
 export const RpcObjectGetMethods=Symbol("RpcObjectGetMethods");
+export const RpcObjectGetMethodSignatures=Symbol("RpcObjectGetMethodSignatures");
 export type RpcObject<T=RpcObjectTemplate,Type=string>={
 	[x in keyof T]:
 	x extends "then" | symbol?

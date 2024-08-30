@@ -11,15 +11,15 @@
 		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{build:true}\""
 	},
 	"devDependencies":{
-		"@types/node":"^20.5.9",
-		"@types/web":"^0.0.114",
-		"@types/ws":"^8.5.5",
-		"typescript":"^5.2.2",
+		"@types/node":"^22.5.1",
+		"@types/web":"^0.0.157",
+		"@types/ws":"~8.5.10",
+		"typescript":"^5.5.4",
 		"vite":"^5.0.11",
 		"pug-cli":"^1.0.0-alpha6"
 	},
 	"dependencies":{
-		"ws":"^8.13.0",
+		"ws":"^8.18.0",
 		"error-stack-parser":"^2.1.4"
 	},
 	"main":"dist/rpc.js",
