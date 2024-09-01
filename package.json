@@ -1,6 +1,6 @@
 {
 	"name":"playify-rpc",
-	"version":"1.5.0",
+	"version":"1.5.1",
 	"type":"module",
 	"scripts":{
 		"dev":"vite",
@@ -8,7 +8,9 @@
 		"build:pug":"npm run build:pug:css&&npm run build:pug:ts&&npm run build:pug:pug",
 		"build:pug:css":"esbuild src/_html/rpc.css --outfile=src/_html/rpc.min.css --minify",
 		"build:pug:ts":"esbuild src/_html/rpc.ts --outfile=src/_html/rpc.js --minify",
-		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{build:true}\""
+		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{build:true}\"",
+		
+		"prepack":"npm run build"
 	},
 	"devDependencies":{
 		"@types/node":"^22.5.1",
