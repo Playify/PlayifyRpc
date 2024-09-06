@@ -34,7 +34,7 @@ input{
 input:focus{
     background: #fff;
 }
-#autocomplete{
+.autocomplete{
     position: absolute;
     top: 0;
     left: 0;
@@ -44,39 +44,39 @@ input:focus{
     padding-top: 24px;
     border-radius: 4px;
 }
-#autocomplete>*{
+.autocomplete>*{
     padding: 2px 4px;
     cursor: pointer;
     user-select: none;
     white-space: pre;
 }
-#autocomplete>*+*{
+.autocomplete>*+*{
     border-top: 1px solid #999;
 }
-#autocomplete>.active{
+.autocomplete>.active{
     background-color: #aaa;
 }
 
-#buttonbar{
+.buttonbar{
     display: flex;
     margin: 0 8px;
 	flex-wrap: wrap;
 	gap: 4px;
 }
-#buttonbar>*{
+.buttonbar>*{
     border-radius: 14px;
     padding: 4px 8px;
     border: 1px solid black;
     color: #333;
     background-color: lightgray;
 }
-#buttonbar>:not(#status){
+.buttonbar>:not(.status){
     cursor: pointer;
     user-select: none;
     color: #333;
     background-color: lightgray;
 }
-#status{
+.status{
     margin-left: auto;
 }
 

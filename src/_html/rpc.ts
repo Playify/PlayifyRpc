@@ -4,13 +4,12 @@ declare type RpcError=import("../rpc.js").RpcError;
 
 
 const input=document.querySelector<HTMLInputElement>("input")!;
-const autocomplete=document.querySelector<HTMLInputElement>("#autocomplete")!;
-const result=document.querySelector<HTMLPreElement>("#result")!;
-const copy=document.querySelector<HTMLElement>("#copy")!;
+const autocomplete=document.querySelector<HTMLInputElement>(".autocomplete")!;
+const result=document.querySelector<HTMLPreElement>(".result")!;
 
 function setStatus(text:string,color:string,back:string,date:number){
 	const dateTime=new Date(date-(new Date().getTimezoneOffset()*1000*60)).toJSON();
-	const status=document.querySelector<HTMLElement>("#status")!;
+	const status=document.querySelector<HTMLElement>(".status")!;
 	status.textContent=`${text} (${dateTime.replace('T',' ').replace('Z','')})`;
 	status.style.color=color;
 	status.style.backgroundColor=back;
@@ -46,6 +45,7 @@ async function runEval(func:()=>Promise<string>=()=>Rpc.evalString(input.value))
 	}
 }
 
+const copy=document.querySelector<HTMLElement>(".copy")!;
 let copyTimeout:ReturnType<typeof setTimeout> | undefined=undefined;
 copy.addEventListener("click",()=>{
 	const textarea=document.createElement('textarea');
@@ -66,7 +66,23 @@ copy.addEventListener("click",()=>{
 		copy.style.backgroundColor=null!;
 	},250);
 });
-document.querySelector("#execute")!.addEventListener("click",()=>runEval());
+
+document.querySelector(".parseJson")!.addEventListener("click",()=>{
+	let s=result.textContent??"";
+	try{
+		if(s.startsWith('"')) result.textContent=JSON.parse(s);
+	}catch(e){
+		console.warn("Error parsing JSON: ",e);
+	}
+	try{
+		result.textContent=JSON.stringify(JSON.parse(result.textContent??""),null,"\t");
+	}catch(e){
+		console.warn("Error parsing JSON: ",e);
+	}
+});
+
+
+document.querySelector(".execute")!.addEventListener("click",()=>runEval());
 
 input.addEventListener("keydown",async e=>{
 	let active:HTMLElement | null;
@@ -75,29 +91,29 @@ input.addEventListener("keydown",async e=>{
 			e.preventDefault();
 
 			active=autocomplete.querySelector<HTMLElement>(":scope>.active");
-			{
-				const selectables=[...autocomplete.querySelectorAll(":scope>.selectable")];
-				const index=selectables.indexOf(active!);
-				if(index== -1) selectables[selectables.length-1]?.classList.add("active");
-				else{
-					active?.classList.remove("active");
-					(selectables[index-1]??active)?.classList.add("active");
-				}
+		{
+			const selectables=[...autocomplete.querySelectorAll(":scope>.selectable")];
+			const index=selectables.indexOf(active!);
+			if(index== -1) selectables[selectables.length-1]?.classList.add("active");
+			else{
+				active?.classList.remove("active");
+				(selectables[index-1]??active)?.classList.add("active");
 			}
+		}
 			break;
 		case "ArrowDown":
 			e.preventDefault();
 
 			active=autocomplete.querySelector<HTMLElement>(":scope>.active");
-			{
-				const selectables=[...autocomplete.querySelectorAll(":scope>.selectable")];
-				const index=selectables.indexOf(active!);
-				if(index== -1) selectables[0]?.classList.add("active");
-				else{
-					active?.classList.remove("active");
-					(selectables[index+1]??active)?.classList.add("active");
-				}
+		{
+			const selectables=[...autocomplete.querySelectorAll(":scope>.selectable")];
+			const index=selectables.indexOf(active!);
+			if(index== -1) selectables[0]?.classList.add("active");
+			else{
+				active?.classList.remove("active");
+				(selectables[index+1]??active)?.classList.add("active");
 			}
+		}
 			break;
 		case "Tab":
 			e.preventDefault();

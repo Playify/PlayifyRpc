@@ -12,13 +12,14 @@ html
 			link(rel="stylesheet" href="/_html/rpc.css")
 	body
 		label
-			#autocomplete
+			.autocomplete
 			input(type="text" value="Rpc.getRegistrations()")
-		#buttonbar
-			span#execute Execute
-			span#copy Copy Result
-			span#status Waiting for input
-		pre#result
+		.buttonbar
+			span.execute Execute
+			span.copy Copy Result
+			span.parseJson Parse JSON
+			span.status Waiting for input
+		pre.result
 		if build
 			script: include ./rpc.js
 		else
