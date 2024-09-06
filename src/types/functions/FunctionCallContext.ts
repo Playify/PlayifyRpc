@@ -5,6 +5,7 @@ import {PacketType,sendCall,sendRaw} from "../../connection/Connection.js";
 import {_webSocket,isConnected} from "../../connection/WebSocketConnection.js";
 import {RpcError} from "../RpcError.js";
 import {RpcConnectionError} from "../errors/PredefinedErrors.js";
+import {needsFreeDynamic} from "../data/DynamicData";
 
 
 let currentContext:FunctionCallContext | null=null;
@@ -33,8 +34,8 @@ export function callRemoteFunction<T=unknown>(type:string | null,method:string |
 		if(local) return callLocalFunction<T>(invoke.bind(null,local,type,method,...args),type,method,args,3);
 	}
 
-	const already:unknown[]=[];
-	const call=new PendingCall<T>(2,already);
+	const toFree:unknown[]=[];
+	const call=new PendingCall<T>(2,toFree);
 
 	const buff=new DataOutput();
 	const callId=nextId++;
@@ -43,7 +44,11 @@ export function callRemoteFunction<T=unknown>(type:string | null,method:string |
 		buff.writeLength(callId);
 		buff.writeString(type);
 		buff.writeString(method);
-		buff.writeArray(args,d=>buff.writeDynamic(d,already));
+		const writeAlready=new Map<unknown,number>;
+		buff.writeArray(args,d=>buff.writeDynamic(d,writeAlready));
+		for(let key of writeAlready.keys())
+			if(needsFreeDynamic(key))
+				toFree.push(key);
 	}catch(e){
 		rejectCall.get(call)?.(e);
 		return call;
@@ -58,9 +63,11 @@ export function callRemoteFunction<T=unknown>(type:string | null,method:string |
 		const msg=new DataOutput();
 		msg.writeByte(PacketType.MessageToExecutor);
 		msg.writeLength(callId);
-		const list:unknown[]=[];
+		const list=new Map<unknown,number>;
 		msg.writeArray(msgArgs,d=>msg.writeDynamic(d,list));
-		already.push(...list);
+		for(let key of list.keys())
+			if(needsFreeDynamic(key))
+				toFree.push(key);
 
 		sendRaw(msg);
 		return call;

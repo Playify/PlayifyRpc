@@ -22,6 +22,10 @@ export class DataOutput{
 			this._buf=replacement;
 		}
 	}
+	
+	index(){
+		return this._count;
+	}
 
 	writeByte(b:number):void{
 		this.ensureCapacity(1);
@@ -138,7 +142,7 @@ export class DataOutput{
 		}
 	}
 
-	writeDynamic(value:any,already:unknown[]=[]){
+	writeDynamic(value:any,already:Map<unknown,number>){
 		writeDynamic(this,value,already);
 	}
 }
