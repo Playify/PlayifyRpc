@@ -1,6 +1,6 @@
 {
 	"name":"playify-rpc",
-	"version":"1.7.0",
+	"version":"1.7.1",
 	"type":"module",
 	"scripts":{
 		"dev":"vite",
@@ -11,8 +11,7 @@
 		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{js:require('fs').readFileSync('src/_html/rpc.js', 'utf8'),css:require('fs').readFileSync('src/_html/rpc.min.css','utf8')}\"",
 		"build:pug:cleanup":"del src\\_html\\rpc.min.css src\\_html\\rpc.js src\\_html\\rpc.html",
 		
-		"prepack":"npm run build",
-		"postinstall":"npm run build:pug"
+		"prepack":"npm run build"
 	},
 	"devDependencies":{
 		"@types/node":"^22.5.1",
