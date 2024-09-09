@@ -35,6 +35,9 @@ export class DataInput{
 		return k;
 	}
 
+	index():number{
+		return this._pos;
+	}
 	available(): number{
 		return this._count-this._pos;
 	}
@@ -133,7 +136,7 @@ export class DataInput{
 		return RpcError.read(this);
 	}
 
-	readDynamic(already: unknown[]=[]){
+	readDynamic(already: Record<number,unknown>){
 		return readDynamic(this,already);
 	}
 }

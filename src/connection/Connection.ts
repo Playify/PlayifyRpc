@@ -13,7 +13,7 @@ import {
 } from "../types/functions/PendingCall.js";
 import {invoke,registeredTypes} from "../internal/RegisteredTypes.js";
 import {FunctionCallContext,invokeForPromise} from "../types/functions/FunctionCallContext.js";
-import {freeDynamic} from "../types/data/DynamicData.js";
+import {freeDynamic,needsFreeDynamic} from "../types/data/DynamicData.js";
 import {RpcConnectionError,RpcDataError,RpcError,RpcTypeNotFoundError} from "../rpc.js";
 
 
@@ -58,11 +58,11 @@ export async function receiveRpc(data:DataInput){
 			const callId=data.readLength();
 
 
-			const already:unknown[]=[];
 
 			let finished:boolean=false;
 			let resolve:(t:unknown)=>void=null!;
 			let reject:(e:Error)=>void=null!;
+			const toFree:unknown[]=[];
 
 			const promise=new Promise((res,rej)=>{
 				resolve=t=>{
@@ -72,11 +72,11 @@ export async function receiveRpc(data:DataInput){
 					const buff=new DataOutput();
 					buff.writeByte(PacketType.FunctionSuccess);
 					buff.writeLength(callId);
-					buff.writeDynamic(t);
+					buff.writeDynamic(t,new Map);//will not be freed
 					sendRaw(buff);
 					currentlyExecuting.delete(callId);
 
-					freeDynamic(already);
+					freeDynamic(toFree);
 				};
 				reject=e=>{
 					rej(e);
@@ -89,7 +89,7 @@ export async function receiveRpc(data:DataInput){
 					sendRaw(buff);
 					currentlyExecuting.delete(callId);
 
-					freeDynamic(already);
+					freeDynamic(toFree);
 				};
 			});
 			promise.catch(()=>{});//Prevent uncaught error warning
@@ -106,7 +106,8 @@ export async function receiveRpc(data:DataInput){
 
 				const method=data.readString();
 
-				const args=data.readArray(()=>data.readDynamic(already))??[];
+				const readAlready:Record<number,unknown>=Object.create(null);
+				const args=data.readArray(()=>data.readDynamic(readAlready))??[];
 
 
 				const controller=new AbortController();
@@ -122,9 +123,11 @@ export async function receiveRpc(data:DataInput){
 						const msg=new DataOutput();
 						msg.writeByte(PacketType.MessageToCaller);
 						msg.writeLength(callId);
-						const list:unknown[]=[];
-						msg.writeArray(sending,d=>msg.writeDynamic(d,list));
-						already.push(...list);
+						const already=new Map<unknown,number>;
+						msg.writeArray(sending,d=>msg.writeDynamic(d,already));
+						for(let key of already.keys())
+							if(needsFreeDynamic(key))
+								toFree.push(key);
 
 						sendRaw(msg);
 						return context;
@@ -157,7 +160,7 @@ export async function receiveRpc(data:DataInput){
 				break;
 			}
 			try{
-				resolveCall.get(pending)?.(data.readDynamic());
+				resolveCall.get(pending)?.(data.readDynamic(Object.create(null) as Record<number,unknown>));
 			}catch(e){
 				rejectCall.get(pending)?.(RpcDataError.new(`Error reading binary stream (${PacketType[packetType]})`,e as Error));
 			}finally{
@@ -206,7 +209,7 @@ export async function receiveRpc(data:DataInput){
 				console.warn(`[Rpc] No currentlyExecuting[${callId}] (${PacketType[packetType]})`);
 				break;
 			}
-			const already:unknown[]=[];
+			const already:Record<number,unknown>=Object.create(null);
 			const args=data.readArray(()=>data.readDynamic(already))??[];
 			runReceiveMessage(ctx,args);
 			break;
@@ -218,7 +221,7 @@ export async function receiveRpc(data:DataInput){
 				console.warn(`[Rpc] No activeRequest[${callId}] (${PacketType[packetType]})`);
 				break;
 			}
-			const already:unknown[]=[];
+			const already:Record<number,unknown>=Object.create(null);
 			const args=data.readArray(()=>data.readDynamic(already))??[];
 			runReceiveMessage(pending,args);
 			break;

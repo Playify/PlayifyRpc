@@ -1,10 +1,11 @@
 import {isConnected} from "../connection/WebSocketConnection.js";
 import {randomId,RpcId} from "../connection/RpcId.js";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
-import {RpcObjectGetMethods,RpcObjectGetMethodSignatures} from "../types/RpcObject.js";
+import {RpcObjectGetMethods,RpcObjectGetMethodSignatures,RpcObjectGetRpcVersion} from "../types/RpcObject.js";
 import {RpcError} from "../types/RpcError.js";
 import {RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/PredefinedErrors.js";
 import {getFunctionParameterNames} from "./functionParameterNames";
+import {version} from "../../package.json";
 
 
 export type Func=((...args:any[])=>Promise<any>)&{
@@ -13,6 +14,7 @@ export type Func=((...args:any[])=>Promise<any>)&{
 export type Invoker={
 	[RpcObjectGetMethods]?:()=>Promise<string[]>,
 	[RpcObjectGetMethodSignatures]?:(method:string,ts:boolean)=>Promise<[parameters:string[],returns:string][]>,
+	[RpcObjectGetRpcVersion]?:()=>Promise<string>,
 	[s:string]:Func | any,
 };
 export const registeredFunctions:Invoker=Object.create(null);
@@ -83,6 +85,8 @@ export async function invoke(invoker:Invoker,type:string,method:string | null,..
 			return getMethods(invoker);
 		case "S":
 			return getMethodSignatures(invoker,type,args[1]==null?null:""+args[1],!!args[2]);
+		case "V":
+			return getRpcVersion(invoker);
 		default:
 			throw RpcMetaMethodNotFoundError.new(type,meta);
 	}
@@ -91,6 +95,7 @@ async function getMethodSignatures(invoker:Invoker,type:string,method:string|nul
 	if(method==null)return [
 		[["M"],"string[]"],
 		[["S",ts?"method:string|null":"string? method",ts?"ts:boolean":"bool ts"],ts?"[parameters:string[],returns:string][]":"(string[] parameters,string @return)[]"],
+		[["V"],"string"],
 	];
 	const getter=invoker[RpcObjectGetMethodSignatures];
 	if(getter) return await getter.call(invoker,method,ts);
@@ -100,7 +105,7 @@ async function getMethodSignatures(invoker:Invoker,type:string,method:string|nul
 	if(func[RpcObjectGetMethodSignatures]) return func[RpcObjectGetMethodSignatures].call(func,ts);
 
 	return [
-		[getFunctionParameterNames(func),ts?"unknown":"dynamic"]
+		[getFunctionParameterNames(func),ts?"unknown":"object?"]
 	];
 }
 
@@ -109,4 +114,10 @@ async function getMethods(invoker:Invoker):Promise<string[]>{
 	if(getter) return await getter.call(invoker);
 
 	return Object.getOwnPropertyNames(invoker).filter(key=>typeof invoker[key]=="function");
+}
+
+async function getRpcVersion(invoker:Invoker):Promise<string>{
+	const getter=invoker[RpcObjectGetRpcVersion];
+	if(getter) return await getter.call(invoker);
+	return version+" JS";
 }

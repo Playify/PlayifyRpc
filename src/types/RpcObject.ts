@@ -5,6 +5,7 @@ export const RpcObjectType=Symbol("RpcObjectType");
 export const RpcObjectExists=Symbol("RpcObjectExists");
 export const RpcObjectGetMethods=Symbol("RpcObjectGetMethods");
 export const RpcObjectGetMethodSignatures=Symbol("RpcObjectGetMethodSignatures");
+export const RpcObjectGetRpcVersion=Symbol("RpcObjectGetRpcVersion");
 export type RpcObject<T=RpcObjectTemplate,Type=string>={
 	[x in keyof T]:
 	x extends "then" | symbol?
@@ -16,6 +17,7 @@ export type RpcObject<T=RpcObjectTemplate,Type=string>={
 	[RpcObjectType]: Type,
 	[RpcObjectExists]: ()=>Promise<boolean>
 	[RpcObjectGetMethods]: ()=>Promise<string[]>
+	[RpcObjectGetRpcVersion]: ()=>Promise<string>
 };
 
 export type RpcObjectTemplate={
@@ -39,6 +41,7 @@ export function createRemoteObject<
 			if(p==RpcObjectType) return type;
 			if(p==RpcObjectExists) return ()=>callRemoteFunction(null,"E",type);
 			if(p==RpcObjectGetMethods) return ()=>callRemoteFunction(type,null,"M");
+			if(p==RpcObjectGetRpcVersion) return ()=>callRemoteFunction(type,null,"V");
 			if(typeof p!="string"||
 				p=="then"//otherwise every RemoteObject would be thenable => would interfere with async await
 			) return (<any>target)[p];
@@ -54,7 +57,7 @@ export function createRemoteObject<
 			return new target(...argArray);
 		},
 		has(_:never,p: string | symbol): boolean{
-			return p==RpcObjectType||p==RpcObjectGetMethods||p==RpcObjectExists||p in target;
+			return p==RpcObjectType||p==RpcObjectGetMethods||p==RpcObjectExists||p==RpcObjectGetRpcVersion||p in target;
 		},
 	});
 }
