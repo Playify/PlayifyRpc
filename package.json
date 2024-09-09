@@ -5,12 +5,14 @@
 	"scripts":{
 		"dev":"vite",
 		"build":"vite build&&npm run build:pug",
-		"build:pug":"npm run build:pug:css&&npm run build:pug:ts&&npm run build:pug:pug",
+		"build:pug":"npm run build:pug:css&&npm run build:pug:ts&&npm run build:pug:pug&&npm run build:pug:cleanup",
 		"build:pug:css":"esbuild src/_html/rpc.css --outfile=src/_html/rpc.min.css --minify",
 		"build:pug:ts":"esbuild src/_html/rpc.ts --outfile=src/_html/rpc.js --minify",
-		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{build:true}\"",
+		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{js:require('fs').readFileSync('src/_html/rpc.js', 'utf8'),css:require('fs').readFileSync('src/_html/rpc.min.css','utf8')}\"",
+		"build:pug:cleanup":"del src\\_html\\rpc.min.css src\\_html\\rpc.js src\\_html\\rpc.html",
 		
-		"prepack":"npm run build"
+		"prepack":"npm run build",
+		"postinstall":"npm run build:pug"
 	},
 	"devDependencies":{
 		"@types/node":"^22.5.1",

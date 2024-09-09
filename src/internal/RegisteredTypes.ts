@@ -5,6 +5,7 @@ import {RpcObjectGetMethods,RpcObjectGetMethodSignatures,RpcObjectGetRpcVersion}
 import {RpcError} from "../types/RpcError.js";
 import {RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/PredefinedErrors.js";
 import {getFunctionParameterNames} from "./functionParameterNames";
+// @ts-ignore
 import {version} from "../../package.json";
 
 
