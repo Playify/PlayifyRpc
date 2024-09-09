@@ -7,7 +7,7 @@ export const writeRegistry: [id: string,check: (d: unknown)=>boolean,write: (dat
 export const readRegistry=new Map<string,(data: DataInput,already:(<T>(t:T)=>T))=>unknown>();
 
 export function readDynamic(data: DataInput,already: Record<number,unknown>){
-	const index=data.index();
+	const index=data.offset();
 	const alreadyFunc=<T>(t:T):T=>{
 		already[index]=t;
 		return t;
@@ -19,7 +19,7 @@ export function readDynamic(data: DataInput,already: Record<number,unknown>){
 		objectId= -objectId;
 		switch(objectId%4){
 			case 0:
-				let alreadyElement=already[objectId/4];
+				let alreadyElement=already[index-objectId/4];
 				if(alreadyElement==null) throw new Error("Error reading from 'already'");
 				return alreadyElement;
 			case 1:
@@ -104,7 +104,7 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		output.writeLength('l'.charCodeAt(0));
 		output.writeLong(d);
 	}else if(d instanceof Uint8Array){
-		already.set(d,output.index());
+		already.set(d,output.length());
 		output.writeLength('b'.charCodeAt(0));
 		output.writeLength(d.length);
 		output.writeBuffer(d);
@@ -112,7 +112,7 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		output.writeLength('D'.charCodeAt(0));
 		output.writeLong(+d);
 	}else if(d instanceof RegExp){
-		already.set(d,output.index());
+		already.set(d,output.length());
 		output.writeLength('R'.charCodeAt(0));
 		output.writeString(d.source);
 		const flags=d.flags;
@@ -121,15 +121,15 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 			(flags.includes("m")?2: 0),
 		);
 	}else if(d instanceof Error){
-		already.set(d,output.index());
+		already.set(d,output.length());
 		output.writeLength('E'.charCodeAt(0));
 		output.writeError(d);
 	}else if(typeof d==="object"&&RpcObjectType in d){//RpcObject
-		already.set(d,output.index());
+		already.set(d,output.length());
 		output.writeLength('O'.charCodeAt(0));
 		output.writeString((d as any)[RpcObjectType]);
 	}else if(typeof d==="function"){//RpcFunction
-		already.set(d,output.index());
+		already.set(d,output.length());
 		output.writeLength('F'.charCodeAt(0));
 		
 		let rpcFunc:RpcFunction<any>;
@@ -143,14 +143,14 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		output.writeString(rpcFunc.method);
 		
 	}else if(already.has(d)){
-		output.writeLength(-(already.get(d)!*4/* +0 */));
+		output.writeLength(-((output.length()-already.get(d)!)*4/* +0 */));
 	}else if(typeof d==="string"){
-		already.set(d,output.index());
+		already.set(d,output.length());
 		const buffer=new TextEncoder().encode(d);
 		output.writeLength(-(buffer.length*4+1));
 		output.writeBytes(buffer);
 	} else if(Array.isArray(d)){
-		already.set(d,output.index());
+		already.set(d,output.length());
 		output.writeLength(-(d.length*4+3));
 		for(let element of d) writeDynamic(output,element,already);
 	}else{
@@ -159,13 +159,13 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 			const idBytes=new TextEncoder().encode(id);
 			output.writeLength(idBytes.length+128);
 			output.writeBytes(idBytes);
-			already.set(d,output.index());
+			already.set(d,output.length());
 			write(output,d);
 			return;
 		}
 
 		if(typeof d==="object"){
-			already.set(d,output.index());
+			already.set(d,output.length());
 			const entries=Object.entries(d);
 			output.writeLength(-(entries.length*4+2));
 			for(let [key,value] of entries){

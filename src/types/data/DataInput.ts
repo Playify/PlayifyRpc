@@ -35,7 +35,7 @@ export class DataInput{
 		return k;
 	}
 
-	index():number{
+	offset():number{
 		return this._pos;
 	}
 	available(): number{

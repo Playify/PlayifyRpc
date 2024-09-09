@@ -23,7 +23,7 @@ export class DataOutput{
 		}
 	}
 	
-	index(){
+	length(){
 		return this._count;
 	}
 
