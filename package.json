@@ -1,6 +1,6 @@
 {
 	"name":"playify-rpc",
-	"version":"1.7.1",
+	"version":"1.7.2",
 	"type":"module",
 	"scripts":{
 		"dev":"vite",
@@ -39,5 +39,13 @@
 			"default":"./dist_dev/vite.js",
 			"types":"./src/vite.ts"
 		}
-	}
+	},
+	"files":[
+		"src",
+		"dist",
+		"dist_cjs",
+		"dist_dev",
+		"vite.d.ts",
+		"tsconfig.json"
+	]
 }
