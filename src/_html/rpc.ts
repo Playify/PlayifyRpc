@@ -68,6 +68,7 @@ copy.addEventListener("click",()=>{
 });
 document.querySelector("#execute")!.addEventListener("click",()=>runEval());
 
+input.setSelectionRange(input.value.length,input.value.length);
 input.addEventListener("keydown",async e=>{
 	let active:HTMLElement | null;
 	switch(e.key){
