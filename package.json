@@ -1,46 +1,46 @@
 {
-	"name":"playify-rpc",
-	"version":"1.7.2",
-	"type":"module",
-	"scripts":{
-		"dev":"vite",
-		"build":"vite build&&npm run build:pug",
-		"build:pug":"npm run build:pug:css&&npm run build:pug:ts&&npm run build:pug:pug&&npm run build:pug:cleanup",
-		"build:pug:css":"esbuild src/_html/rpc.css --outfile=src/_html/rpc.min.css --minify",
-		"build:pug:ts":"esbuild src/_html/rpc.ts --outfile=src/_html/rpc.js --minify",
-		"build:pug:pug":"pug src/_html/rpc.pug --out dist --obj \"{js:require('fs').readFileSync('src/_html/rpc.js', 'utf8'),css:require('fs').readFileSync('src/_html/rpc.min.css','utf8')}\"",
-		"build:pug:cleanup":"del src\\_html\\rpc.min.css src\\_html\\rpc.js src\\_html\\rpc.html",
-		
-		"prepack":"npm run build"
+	"name": "playify-rpc",
+	"version": "1.7.2",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build&&npm run build:pug",
+		"build:pug": "npm run build:pug:css&&npm run build:pug:ts&&npm run build:pug:pug&&npm run build:pug:cleanup",
+		"build:pug:css": "esbuild src/_html/rpc.css --outfile=src/_html/rpc.min.css --minify",
+		"build:pug:ts": "esbuild src/_html/rpc.ts --outfile=src/_html/rpc.js --minify",
+		"build:pug:pug": "pug src/_html/rpc.pug --out dist --obj \"{js:require('fs').readFileSync('src/_html/rpc.js', 'utf8'),css:require('fs').readFileSync('src/_html/rpc.min.css','utf8')}\"",
+		"build:pug:cleanup": "del src\\_html\\rpc.min.css src\\_html\\rpc.js src\\_html\\rpc.html",
+		"prepack": "npm run build"
 	},
-	"devDependencies":{
-		"@types/node":"^22.5.1",
-		"@types/web":"^0.0.157",
-		"@types/ws":"~8.5.10",
-		"typescript":"^5.5.4",
-		"vite":"^5.0.11",
-		"pug-cli":"^1.0.0-alpha6"
+	"devDependencies": {
+		"@types/node": "^22.5.1",
+		"@types/pug": "^2.0.10",
+		"@types/web": "^0.0.157",
+		"@types/ws": "~8.5.10",
+		"pug-cli": "^1.0.0-alpha6",
+		"typescript": "^5.5.4",
+		"vite": "^5.0.11"
 	},
-	"dependencies":{
-		"ws":"^8.18.0",
-		"error-stack-parser":"^2.1.4"
+	"dependencies": {
+		"error-stack-parser": "^2.1.4",
+		"ws": "^8.18.0"
 	},
-	"main":"dist/rpc.js",
-	"types":"src/rpc.ts",
-	"exports":{
-		".":{
-			"import":"./dist/rpc.js",
-			"require":"./dist_cjs/rpc.cjs",
-			"default":"./dist/rpc.js"
+	"main": "dist/rpc.js",
+	"types": "src/rpc.ts",
+	"exports": {
+		".": {
+			"import": "./dist/rpc.js",
+			"require": "./dist_cjs/rpc.cjs",
+			"default": "./dist/rpc.js"
 		},
-		"./vite":{
-			"import":"./dist_dev/vite.js",
-			"require":"./dist_dev/vite.cjs",
-			"default":"./dist_dev/vite.js",
-			"types":"./src/vite.ts"
+		"./vite": {
+			"import": "./dist_dev/vite.js",
+			"require": "./dist_dev/vite.cjs",
+			"default": "./dist_dev/vite.js",
+			"types": "./src/vite.ts"
 		}
 	},
-	"files":[
+	"files": [
 		"src",
 		"dist",
 		"dist_cjs",

@@ -67,18 +67,29 @@ copy.addEventListener("click",()=>{
 	},250);
 });
 
-document.querySelector(".parseJson")!.addEventListener("click",()=>{
-	let s=result.textContent??"";
+
+let parseTimeout:ReturnType<typeof setTimeout> | undefined=undefined;
+let parseJson=document.querySelector<HTMLElement>(".parseJson")!;
+parseJson.addEventListener("click",()=>{
+	let success=false;
 	try{
-		if(s.startsWith('"')) result.textContent=JSON.parse(s);
-	}catch(e){
-		console.warn("Error parsing JSON: ",e);
-	}
-	try{
+		const s=result.textContent??"";
+		if(s.startsWith('"')){
+			result.textContent=JSON.parse(s);
+			success=true;
+		}
 		result.textContent=JSON.stringify(JSON.parse(result.textContent??""),null,"\t");
+		success=true;
 	}catch(e){
 		console.warn("Error parsing JSON: ",e);
 	}
+	parseJson.style.color=success?"lime":"red";
+	parseJson.style.backgroundColor=success?"darkgreen":"darkred";
+	clearTimeout(parseTimeout);
+	parseTimeout=setTimeout(()=>{
+		parseJson.style.color=null!;
+		parseJson.style.backgroundColor=null!;
+	},250);
 });
 
 

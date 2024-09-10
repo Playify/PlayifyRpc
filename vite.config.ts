@@ -1,34 +1,20 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {defineConfig,PluginOption} from "vite";
+import {defineConfig} from "vite";
 import {fileURLToPath} from "url";
-import fs from "fs";
-import {promisify} from "util";
+import {renderFile} from "pug";
 
-const exists=promisify(fs.exists);
-
-const appendDotHtml=(defaultPath: string): PluginOption=>({
-	name:"middleware",
-	apply:"serve",
-	configureServer(viteDevServer){
-		// @ts-ignore
-		viteDevServer.middlewares.use(async(req,_,next)=>{
-			const url=new URL(req.originalUrl!,"http://localhost");
-			if(url.pathname=="/")
-				req.url=defaultPath+url.search;
-			else if(!/[.@]/.test(url.pathname))
-				if(await exists("./src"+url.pathname+".html"))
-					req.url=url.pathname+".html"+url.search;
-
-			next();
-		});
-	},
-});
 
 export default defineConfig({
-	plugins:[
-		appendDotHtml("/_html/rpc.html")
-	],
+	plugins:[{
+		name:"middleware",
+		apply:"serve",
+		configureServer:(viteDevServer)=>void viteDevServer.middlewares.use(
+			async(req,res,next)=>
+				new URL(req.originalUrl!,"http://localhost").pathname=="/"?
+					res.setHeader('Content-Type','text/html').end(renderFile("src/_html/rpc.pug")):
+					next()),
+	}],
 
 	root:"src",
 	publicDir:"public",
