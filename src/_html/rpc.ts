@@ -96,14 +96,18 @@ parseJson.addEventListener("click",()=>{
 document.querySelector(".execute")!.addEventListener("click",()=>runEval());
 
 input.setSelectionRange(input.value.length,input.value.length);
+input.addEventListener("keyup",e=>{
+	if(e.key=="Enter")
+		document.querySelector(".execute")?.classList.remove("pressed");
+});
+input.addEventListener("blur",()=>document.querySelector(".execute")?.classList.remove("pressed"));
 input.addEventListener("keydown",async e=>{
 	let active:HTMLElement | null;
 	switch(e.key){
-		case "ArrowUp":
+		case "ArrowUp":{
 			e.preventDefault();
-
 			active=autocomplete.querySelector<HTMLElement>(":scope>.active");
-		{
+			
 			const selectables=[...autocomplete.querySelectorAll(":scope>.selectable")];
 			const index=selectables.indexOf(active!);
 			if(index== -1) selectables[selectables.length-1]?.classList.add("active");
@@ -111,13 +115,12 @@ input.addEventListener("keydown",async e=>{
 				active?.classList.remove("active");
 				(selectables[index-1]??active)?.classList.add("active");
 			}
+			return;
 		}
-			break;
-		case "ArrowDown":
+		case "ArrowDown":{
 			e.preventDefault();
-
 			active=autocomplete.querySelector<HTMLElement>(":scope>.active");
-		{
+
 			const selectables=[...autocomplete.querySelectorAll(":scope>.selectable")];
 			const index=selectables.indexOf(active!);
 			if(index== -1) selectables[0]?.classList.add("active");
@@ -125,8 +128,8 @@ input.addEventListener("keydown",async e=>{
 				active?.classList.remove("active");
 				(selectables[index+1]??active)?.classList.add("active");
 			}
+			return;
 		}
-			break;
 		case "Tab":
 			e.preventDefault();
 
@@ -136,6 +139,7 @@ input.addEventListener("keydown",async e=>{
 
 			return;
 		case "Enter":
+			document.querySelector(".execute")?.classList.add("pressed");
 			e.preventDefault();
 
 			active=autocomplete.querySelector<HTMLElement>(":scope>.active");
