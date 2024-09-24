@@ -50,10 +50,14 @@ input:focus{
     white-space: pre;
 }
 .autocomplete>*+*{
-    border-top: 1px solid #999;
+    border-top: 1px solid rgba(128,128,128,40%);
 }
 .autocomplete>.active{
     background-color: #aaa;
+}
+.autocomplete>.error{
+	background-color: rgba(255,0,0,25%);
+	cursor: inherit;
 }
 
 .buttonbar{
@@ -106,6 +110,10 @@ pre{
 	input:focus{
 		background-color: #000;
 	}
+	.autocomplete{
+		background: #161616;
+	}
+	
 	.buttonbar>*{
 		color: white;
 		border-color: #999;

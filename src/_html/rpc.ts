@@ -222,7 +222,7 @@ async function getAutoCompleteTypes(value:string,to:number,selection:number){
 	}catch(e){
 		const div=document.createElement("div");
 		div.textContent="Error getting types: "+(e as RpcError).message;
-		div.style.backgroundColor="rgba(255,0,0,10%)";
+		div.classList.add("error");
 		return [div];
 	}
 	const beginning=value.substring(0,selection);
@@ -268,7 +268,7 @@ async function getAutoCompleteMethods(value:string,from:number,to:number,selecti
 	}catch(e){
 		const div=document.createElement("div");
 		div.textContent="Error getting methods: "+(e as RpcError).message;
-		div.style.backgroundColor="rgba(255,0,0,10%)";
+		div.classList.add("error");
 		return [div];
 	}
 	const beginning=value.substring(from+1,selection);
@@ -307,7 +307,7 @@ async function getAutoCompleteParameters(value:string,from:number,to:number,star
 	if(i== -1){
 		const div=document.createElement("div");
 		div.textContent=`Error getting signatures: "${callSignature}" is not in the form of type.method`;
-		div.style.backgroundColor="rgba(255,0,0,10%)";
+		div.classList.add("error");
 		return [div];
 	}
 
@@ -321,7 +321,7 @@ async function getAutoCompleteParameters(value:string,from:number,to:number,star
 	}catch(e){
 		const div=document.createElement("div");
 		div.textContent="Error getting signatures: "+(e as RpcError).message;
-		div.style.backgroundColor="rgba(255,0,0,10%)";
+		div.classList.add("error");
 		return [div];
 	}
 
