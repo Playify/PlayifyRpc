@@ -1,13 +1,6 @@
 import {RpcName,setName} from "./connection/RpcName.js";
 import {isConnected,waitConnected} from "./connection/WebSocketConnection.js";
-import {
-	createRemoteObject,
-	RPC_ROOT,
-	RpcObject,
-	RpcObjectExists,
-	RpcObjectGetMethods,
-	RpcObjectType,
-} from "./types/RpcObject.js";
+import {createRemoteObject,RpcObject} from "./types/RpcObject.js";
 import {registerFunction,RpcFunction,unregisterFunction} from "./types/RpcFunction.js";
 import {
 	callLocal,
@@ -23,17 +16,18 @@ import {PendingCall} from "./types/functions/PendingCall.js";
 
 export * from "./types/data/DataInput.js";
 export * from "./types/data/DataOutput.js";
-export {CustomDynamicType} from "./types/data/CustomDynamicTypeDecorator.js";
+export {RpcDataTypeDecorator} from "./types/data/RpcDataTypeDecorator";
 
 export type {FunctionCallContext} from "./types/functions/FunctionCallContext.js";
-export * from "./types/functions/PendingCall.js";
+export {PendingCall} from "./types/functions/PendingCall.js";
 
-export * from "./types/RpcObject.js";
-export * from "./types/RpcFunction.js";
+export {RpcSymbols,type RpcObject,type RpcObjectTemplate} from "./types/RpcObject.js";
+export {RpcFunction} from "./types/RpcFunction.js";
 export * from "./types/RpcError.js";
 export {RpcCustomError} from "./types/errors/RpcCustomErrorDecorator.js";
 export * from "./types/errors/PredefinedErrors.js";
 export {RpcProvider} from "./types/RpcProviderDecorator.js";
+export * from "./utils/RpcHelpers.js";
 
 import("./rpc.js").then((m)=>Object.assign(globalThis,m));
 
@@ -90,11 +84,14 @@ export class Rpc{
 	public static evalString=async(expression:string):Promise<string>=>await callRemoteFunction("Rpc","evalString",expression);
 	public static listenCalls=():PendingCall=>callRemoteFunction("Rpc","listenCalls");
 
-	public static root=RPC_ROOT;
+	public static root=new Proxy({},{
+		get:(_,prop)=>typeof prop=="string"?createRemoteObject(prop):undefined,
+		has:(_,prop)=>typeof prop=="string"&&prop!="then",
+	}) as Record<string,RpcObject>;
 	
-	public static getObjectMethods=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcObjectGetMethods]();
-	public static getObjectExists=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcObjectExists]();
-	public static getObjectType=(o:RpcObject)=>o[RpcObjectType];
+	public static getObjectMethods=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcSymbols.GetMethods]();
+	public static getObjectExists=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcSymbols.ObjectExists]();
+	public static getObjectType=(o:RpcObject)=>o[RpcSymbols.ObjectType];
 	public static getMethodSignatures=(type:string,method:string,ts=false)=>new RpcFunction(type,method).getMethodSignatures(ts);
 }
 

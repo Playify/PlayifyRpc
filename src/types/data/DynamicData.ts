@@ -1,5 +1,5 @@
 import {DataInput} from "./DataInput.js";
-import {createRemoteObject,RpcObjectType} from "../RpcObject.js";
+import {createRemoteObject,RpcSymbols} from "../RpcObject.js";
 import {DataOutput} from "./DataOutput.js";
 import {registerFunction,RpcFunction,unregisterFunction} from "../RpcFunction.js";
 
@@ -124,10 +124,10 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		already.set(d,output.length());
 		output.writeLength('E'.charCodeAt(0));
 		output.writeError(d);
-	}else if(typeof d==="object"&&RpcObjectType in d){//RpcObject
+	}else if(typeof d==="object"&&RpcSymbols.ObjectType in d){//RpcObject
 		already.set(d,output.length());
 		output.writeLength('O'.charCodeAt(0));
-		output.writeString((d as any)[RpcObjectType]);
+		output.writeString((d as any)[RpcSymbols.ObjectType]);
 	}else if(typeof d==="function"){//RpcFunction
 		already.set(d,output.length());
 		output.writeLength('F'.charCodeAt(0));

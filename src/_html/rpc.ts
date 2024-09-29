@@ -1,5 +1,5 @@
 declare const Rpc:typeof import("../rpc.js").Rpc;
-declare const RpcObjectGetMethods:typeof import("../rpc.js").RpcObjectGetMethods;
+declare const RpcSymbols:typeof import("../rpc.js").RpcSymbols;
 declare type RpcError=import("../rpc.js").RpcError;
 
 
@@ -258,7 +258,7 @@ async function getAutoCompleteMethods(value:string,from:number,to:number,selecti
 		cachedMethodsType=type;
 		cachedMethods=null;
 	}
-	cachedMethods??=Rpc.createObject(type)[RpcObjectGetMethods]().finally(()=>console.log("Catching methods for "+type));
+	cachedMethods??=Rpc.createObject(type)[RpcSymbols.GetMethods]().finally(()=>console.log("Catching methods for "+type));
 	clearTimeout(cachedMethodsTimeout);
 	cachedMethodsTimeout=setTimeout(()=>cachedMethods=null,1000);
 
