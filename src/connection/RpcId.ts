@@ -13,6 +13,9 @@ if(isNodeJs)
 	try{
 		if(process?.versions.bun)
 			RpcId="bun@"+require("os").hostname()+"@"+process.pid;
+		else if(process?.versions.deno)
+			 // @ts-ignore
+			RpcId="deno@"+Deno.hostname()+"@"+process.pid;
 		else
 			//@ts-ignore
 			// noinspection JSUnresolvedReference

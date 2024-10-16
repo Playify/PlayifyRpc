@@ -52,7 +52,7 @@ export class RpcError extends Error{
 
 	#stackTrace:string="";
 	#appendStack=false;
-	readonly #causes:string="";
+	#causes:string="";
 
 	constructor(message:string);
 	constructor(message:string,cause:Error | unknown);
@@ -204,11 +204,16 @@ export class RpcError extends Error{
 	}
 
 	append(type:string | null,method:string | null,args:any[] | null){
-		this.#stackTrace+="\n\trpc "+(args==null
+		if(this.#appendStack)console.warn("RpcError.append should only be used on frozen Errors");
+		let clone=new (this.constructor as typeof RpcError)(this.name,this.from,this.message,this.stackTrace,this.data,this.cause);
+		clone.#ownStack=this.#ownStack;
+		clone.#stackTrace=this.#stackTrace+"\n\trpc "+(args==null
 			?"<<callLocal>>"
 			:(type??"<<null>>")+"."+(method??"<<null>>")+"("+
 			args.map(a=>JSON.stringify(a)).join(",")+")");
-		this.stack=this.toString();
-		return this;
+		clone.stack=clone.toString();
+		clone.#appendStack=this.#appendStack;
+		clone.#causes=this.#causes;
+		return clone;
 	}
 }
