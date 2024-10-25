@@ -57,8 +57,16 @@ export function readDynamic(data: DataInput,already: Record<number,unknown>){
 				return data.readInt();
 			case 'd':
 				return data.readDouble();
-			case 'l':
-				return data.readLong();
+			case '-':
+			case '+':
+				const length=data.readLength();
+				const bytes=data.readBuffer(length);
+				
+				let big=0n;
+				for(let i=length-1;i>=0;i--)
+					big=(big<<8n)|BigInt(bytes[i]);
+				
+				return String.fromCodePoint(objectId)=='-'?-big:big;
 			case 'b':
 				return alreadyFunc(data.readBuffer(data.readLength()));
 			case 'D':
@@ -101,8 +109,17 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		output.writeLength('d'.charCodeAt(0));
 		output.writeDouble(d);
 	}else if(typeof d=="bigint"){
-		output.writeLength('l'.charCodeAt(0));
-		output.writeLong(d);
+		if(d<0n){
+			output.writeLength('-'.charCodeAt(0));
+			d=-d;
+		}else output.writeLength('+'.charCodeAt(0));
+		
+		const list:number[]=[];
+		for(let bigInt=d as bigint;bigInt>0n;bigInt>>=8n)
+			list.push(Number(bigInt&0xFFn));
+
+		output.writeLength(list.length);
+		output.writeBytes(list);
 	}else if(d instanceof Uint8Array){
 		already.set(d,output.length());
 		output.writeLength('b'.charCodeAt(0));
