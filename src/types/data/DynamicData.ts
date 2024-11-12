@@ -70,7 +70,7 @@ export function readDynamic(data: DataInput,already: Record<number,unknown>){
 			case 'b':
 				return alreadyFunc(data.readBuffer(data.readLength()));
 			case 'D':
-				return new Date(Number(data.readLong()));
+				return alreadyFunc(new Date(Number(data.readLong())));
 			case 'R':{
 				const pattern=data.readString();
 				const flags=data.readByte();
