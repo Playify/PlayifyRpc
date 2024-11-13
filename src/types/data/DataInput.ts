@@ -35,6 +35,9 @@ export class DataInput{
 		return k;
 	}
 
+	buffer():Uint8Array{
+		return this._buf;
+	}
 	offset():number{
 		return this._pos;
 	}
