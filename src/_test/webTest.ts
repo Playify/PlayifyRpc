@@ -167,3 +167,15 @@ export class TestType{
 		}
 	}
 }
+
+function methodOverloads(){
+	const obj=Rpc.createObject<{
+		test():void
+		test(a:number):number
+		test(a:string):bigint
+	}>("Test");
+
+	let a=obj.test();
+	let b=obj.test(1);
+	let c=obj.test("");	
+}
