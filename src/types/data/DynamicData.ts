@@ -7,7 +7,7 @@ export const writeRegistry: [id: string,check: (d: unknown)=>boolean,write: (dat
 export const readRegistry=new Map<string,(data: DataInput,already:(<T>(t:T)=>T))=>unknown>();
 
 export function readDynamic(data: DataInput,already: Record<number,unknown>){
-	const index=data.offset();
+	let index=data.offset();
 	const alreadyFunc=<T>(t:T):T=>{
 		already[index]=t;
 		return t;
@@ -19,9 +19,12 @@ export function readDynamic(data: DataInput,already: Record<number,unknown>){
 		objectId= -objectId;
 		switch(objectId%4){
 			case 0:
-				let alreadyElement=already[index-objectId/4];
-				if(alreadyElement==null) throw new Error("Error reading from 'already'");
-				return alreadyElement;
+				index-=objectId/4;
+				if(index in already)return already[index];
+				
+				//As fallback, try reading the value again
+				const temp=new DataInput(data.buffer(),index,data.available()+data.offset()-index);
+				return readDynamic(temp,already);
 			case 1:
 				return alreadyFunc(new TextDecoder().decode(data.readBuffer((objectId-1)/4)));
 			case 2:{
@@ -120,14 +123,17 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 
 		output.writeLength(list.length);
 		output.writeBytes(list);
+	}else if(already.has(d)){
+		output.writeLength(-((output.length()-already.get(d)!)*4/* +0 */));
+	}else if(d instanceof Date){
+		already.set(d,output.length());
+		output.writeLength('D'.charCodeAt(0));
+		output.writeLong(+d);
 	}else if(d instanceof Uint8Array){
 		already.set(d,output.length());
 		output.writeLength('b'.charCodeAt(0));
 		output.writeLength(d.length);
 		output.writeBuffer(d);
-	}else if(d instanceof Date){
-		output.writeLength('D'.charCodeAt(0));
-		output.writeLong(+d);
 	}else if(d instanceof RegExp){
 		already.set(d,output.length());
 		output.writeLength('R'.charCodeAt(0));
@@ -159,8 +165,6 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		output.writeString(rpcFunc.type);
 		output.writeString(rpcFunc.method);
 		
-	}else if(already.has(d)){
-		output.writeLength(-((output.length()-already.get(d)!)*4/* +0 */));
 	}else if(typeof d==="string"){
 		already.set(d,output.length());
 		const buffer=new TextEncoder().encode(d);
