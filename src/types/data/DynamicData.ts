@@ -3,16 +3,16 @@ import {createRemoteObject,RpcSymbols} from "../RpcObject.js";
 import {DataOutput} from "./DataOutput.js";
 import {registerFunction,RpcFunction,unregisterFunction} from "../RpcFunction.js";
 
-export const writeRegistry: [id: string,check: (d: unknown)=>boolean,write: (data: DataOutput,o: unknown)=>void][]=[];
-export const readRegistry=new Map<string,(data: DataInput,already:(<T>(t:T)=>T))=>unknown>();
+export const writeRegistry:[id:string,check:(d:unknown)=>boolean,write:(data:DataOutput,o:unknown)=>void][]=[];
+export const readRegistry=new Map<string,(data:DataInput,already:(<T>(t:T)=>T))=>unknown>();
 
-export function readDynamic(data: DataInput,already: Record<number,unknown>){
+export function readDynamic(data:DataInput,already:Record<number,unknown>){
 	let index=data.offset();
 	const alreadyFunc=<T>(t:T):T=>{
 		already[index]=t;
 		return t;
 	};
-	
+
 	let objectId=data.readLength();
 
 	if(objectId<0){
@@ -20,15 +20,15 @@ export function readDynamic(data: DataInput,already: Record<number,unknown>){
 		switch(objectId%4){
 			case 0:
 				index-=objectId/4;
-				if(index in already)return already[index];
-				
+				if(index in already) return already[index];
+
 				//As fallback, try reading the value again
 				const temp=new DataInput(data.buffer(),index,data.available()+data.offset()-index);
 				return readDynamic(temp,already);
 			case 1:
 				return alreadyFunc(new TextDecoder().decode(data.readBuffer((objectId-1)/4)));
 			case 2:{
-				const o: Record<string,any>=alreadyFunc({});
+				const o:Record<string,any>=alreadyFunc({});
 				for(let i=0; i<(objectId-2)/4; i++){
 					const key=data.readString();
 					o[key!]=readDynamic(data,already);
@@ -42,66 +42,69 @@ export function readDynamic(data: DataInput,already: Record<number,unknown>){
 			}
 		}
 		throw new Error("Unreachable code reached");
-	}else if(objectId>=128){
+	}
+	if(objectId>=128){
 		const type=new TextDecoder().decode(data.readBuffer(objectId-128));
 		const registryEntry=readRegistry.get(type);
 		if(registryEntry)
 			return registryEntry(data,alreadyFunc);
 		throw new Error("Unknown data type: "+type);
-	}else{
-		switch(String.fromCodePoint(objectId)){
-			case 'n':
-				return null;
-			case 't':
-				return true;
-			case 'f':
-				return false;
-			case 'i':
-				return data.readInt();
-			case 'd':
-				return data.readDouble();
-			case '-':
-			case '+':
-				const length=data.readLength();
-				const bytes=data.readBuffer(length);
-				
-				let big=0n;
-				for(let i=length-1;i>=0;i--)
-					big=(big<<8n)|BigInt(bytes[i]);
-				
-				return String.fromCodePoint(objectId)=='-'?-big:big;
-			case 'b':
-				return alreadyFunc(data.readBuffer(data.readLength()));
-			case 'D':
-				return alreadyFunc(new Date(Number(data.readLong())));
-			case 'R':{
-				const pattern=data.readString();
-				const flags=data.readByte();
+	}
+	if(objectId<32)
+		return objectId?new TextDecoder().decode(data.readBuffer(objectId)):"";
 
-				return alreadyFunc(new RegExp(pattern!,"g"+
-					((flags&1)?"i": "")+
-					((flags&2)?"m": ""),
-				));
-			}
-			case 'E':
-				return alreadyFunc(data.readError());
-			case 'O':
-				const objectType=data.readString();
-				if(objectType==null) throw new Error("Type can't be null");
-				return alreadyFunc(createRemoteObject(objectType));
-			case 'F':
-				const type=data.readString();
-				if(type==null) throw new Error("Type can't be null");
-				const method=data.readString();
-				if(method==null) throw new Error("Method can't be null");
-				return alreadyFunc(new RpcFunction(type,method));
-			default:
-				throw new Error("Unknown data type number: "+objectId);
+	switch(String.fromCodePoint(objectId)){
+		case 'n':
+			return null;
+		case 't':
+			return true;
+		case 'f':
+			return false;
+		case 'i':
+			return data.readInt();
+		case 'd':
+			return data.readDouble();
+		case '-':
+		case '+':
+			const length=data.readLength();
+			const bytes=data.readBuffer(length);
+
+			let big=0n;
+			for(let i=length-1; i>=0; i--)
+				big=(big<<8n)|BigInt(bytes[i]);
+
+			return String.fromCodePoint(objectId)=='-'?-big:big;
+		case 'b':
+			return alreadyFunc(data.readBuffer(data.readLength()));
+		case 'D':
+			return alreadyFunc(new Date(Number(data.readLong())));
+		case 'R':{
+			const pattern=data.readString();
+			const flags=data.readByte();
+
+			return alreadyFunc(new RegExp(pattern!,"g"+
+				((flags&1)?"i":"")+
+				((flags&2)?"m":""),
+			));
 		}
+		case 'E':
+			return alreadyFunc(data.readError());
+		case 'O':
+			const objectType=data.readString();
+			if(objectType==null) throw new Error("Type can't be null");
+			return alreadyFunc(createRemoteObject(objectType));
+		case 'F':
+			const type=data.readString();
+			if(type==null) throw new Error("Type can't be null");
+			const method=data.readString();
+			if(method==null) throw new Error("Method can't be null");
+			return alreadyFunc(new RpcFunction(type,method));
+		default:
+			throw new Error("Unknown data type number: "+objectId);
 	}
 }
 
-export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,number>){
+export function writeDynamic(output:DataOutput,d:unknown,already:Map<unknown,number>){
 	if(d==null) output.writeLength('n'.charCodeAt(0));
 	else if(d===true) output.writeLength('t'.charCodeAt(0));
 	else if(d===false) output.writeLength('f'.charCodeAt(0));
@@ -114,11 +117,11 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 	}else if(typeof d=="bigint"){
 		if(d<0n){
 			output.writeLength('-'.charCodeAt(0));
-			d=-d;
+			d= -d;
 		}else output.writeLength('+'.charCodeAt(0));
-		
+
 		const list:number[]=[];
-		for(let bigInt=d as bigint;bigInt>0n;bigInt>>=8n)
+		for(let bigInt=d as bigint; bigInt>0n; bigInt>>=8n)
 			list.push(Number(bigInt&0xFFn));
 
 		output.writeLength(list.length);
@@ -140,8 +143,8 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 		output.writeString(d.source);
 		const flags=d.flags;
 		output.writeByte(
-			(flags.includes("i")?1: 0)||
-			(flags.includes("m")?2: 0),
+			(flags.includes("i")?1:0)||
+			(flags.includes("m")?2:0),
 		);
 	}else if(d instanceof Error){
 		already.set(d,output.length());
@@ -154,9 +157,9 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 	}else if(typeof d==="function"){//RpcFunction
 		already.set(d,output.length());
 		output.writeLength('F'.charCodeAt(0));
-		
+
 		let rpcFunc:RpcFunction<any>;
-		if(d instanceof RpcFunction)rpcFunc=d;
+		if(d instanceof RpcFunction) rpcFunc=d;
 		else{
 			rpcFunc=registerFunction(d as any);
 			onFree.set(d,()=>unregisterFunction(rpcFunc));
@@ -164,13 +167,13 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 
 		output.writeString(rpcFunc.type);
 		output.writeString(rpcFunc.method);
-		
+
 	}else if(typeof d==="string"){
 		already.set(d,output.length());
 		const buffer=new TextEncoder().encode(d);
 		output.writeLength(-(buffer.length*4+1));
 		output.writeBytes(buffer);
-	} else if(Array.isArray(d)){
+	}else if(Array.isArray(d)){
 		already.set(d,output.length());
 		output.writeLength(-(d.length*4+3));
 		for(let element of d) writeDynamic(output,element,already);
@@ -198,10 +201,12 @@ export function writeDynamic(output: DataOutput,d: unknown,already: Map<unknown,
 }
 
 const onFree=new WeakMap<any,VoidFunction>();
+
 export function freeDynamic(already:unknown[]){
 	for(let element of already)
 		onFree.get(element)?.();
 }
+
 export function needsFreeDynamic(obj:unknown){
 	return onFree.has(obj);
 }
