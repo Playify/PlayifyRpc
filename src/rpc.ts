@@ -28,6 +28,7 @@ export {RpcCustomError} from "./types/errors/RpcCustomErrorDecorator.js";
 export * from "./types/errors/PredefinedErrors.js";
 export {RpcProvider} from "./types/RpcProviderDecorator.js";
 export * from "./utils/RpcHelpers.js";
+export * from "./RpcLogger.js";
 
 import("./rpc.js").then((m)=>Object.assign(globalThis,m));
 
