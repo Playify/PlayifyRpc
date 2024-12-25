@@ -44,10 +44,15 @@ input:focus{
     border-radius: 4px;
 }
 .autocomplete>*{
-    padding: 2px 4px;
+    padding: 2px 8px;
     cursor: pointer;
     user-select: none;
     white-space: pre;
+}
+@media(pointer: coarse){
+	.autocomplete>*{
+		padding: 8px 8px;
+	}
 }
 .autocomplete>*+*{
     border-top: 1px solid rgba(128,128,128,40%);
