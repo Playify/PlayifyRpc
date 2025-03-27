@@ -171,7 +171,7 @@ export function writeDynamic(output:DataOutput,d:unknown,already:Map<unknown,num
 	}else if(typeof d==="string"){
 		already.set(d,output.length());
 		const buffer=new TextEncoder().encode(d);
-		output.writeLength(-(buffer.length*4+1));
+		output.writeLength(buffer.length<32?buffer.length:-(buffer.length*4+1));
 		output.writeBytes(buffer);
 	}else if(Array.isArray(d)){
 		already.set(d,output.length());
