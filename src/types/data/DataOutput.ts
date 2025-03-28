@@ -1,4 +1,4 @@
-import {RpcError} from "../RpcError.js";
+import {RpcError} from "../errors/RpcError";
 import {writeDynamic} from "./DynamicData.js";
 
 // noinspection JSUnusedGlobalSymbols

@@ -2,19 +2,18 @@ import {isConnected} from "../connection/WebSocketConnection.js";
 import {randomId,RpcId} from "../connection/RpcId.js";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
 import {RpcSymbols} from "../types/RpcObject.js";
-import {RpcError} from "../types/RpcError.js";
-import {RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/PredefinedErrors.js";
-import {getFunctionParameterNames} from "./functionParameterNames";
+import {RpcError,RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/RpcError.js";
+import {getFunctionParameterNames,ProgrammingLanguage} from "./functionParameterNames";
 // @ts-ignore
 import {version} from "../../package.json";
 
 
 export type Func=((...args:any[])=>Promise<any>)&{
-	[RpcSymbols.GetMethodSignatures]?:(ts:boolean)=>Promise<[parameters:string[],returns:string][]>
+	[RpcSymbols.GetMethodSignatures]?:(lang:ProgrammingLanguage)=>Promise<[parameters:string[],returns:string][]>
 };
 export type Invoker={
 	[RpcSymbols.GetMethods]?:()=>Promise<string[]>,
-	[RpcSymbols.GetMethodSignatures]?:(method:string,ts:boolean)=>Promise<[parameters:string[],returns:string][]>,
+	[RpcSymbols.GetMethodSignatures]?:(method:string,lang:ProgrammingLanguage)=>Promise<[parameters:string[],returns:string][]>,
 	[RpcSymbols.GetRpcVersion]?:()=>Promise<string>,
 	[s:string]:Func | any,
 };
@@ -85,30 +84,36 @@ export async function invoke(invoker:Invoker,type:string,method:string | null,..
 		case "M":
 			return getMethods(invoker);
 		case "S":
-			return getMethodSignatures(invoker,type,args[1]==null?null:""+args[1],!!args[2]);
+			return getMethodSignatures(invoker,type,args[1]==null?null:""+args[1],+args[2]);
 		case "V":
 			return getRpcVersion(invoker);
 		default:
 			throw RpcMetaMethodNotFoundError.new(type,meta);
 	}
 }
-async function getMethodSignatures(invoker:Invoker,type:string,method:string|null,ts:boolean):Promise<[parameters:string[],returns:string][]>{
+async function getMethodSignatures(invoker:Invoker,type:string,method:string|null,lang:ProgrammingLanguage):Promise<[parameters:string[],returns:string][]>{
 	if(method==null)return [
 		[["M"],"string[]"],
-		[["S",ts?"method:string|null":"string? method",ts?"ts:boolean":"bool ts"],ts?"[parameters:string[],returns:string][]":"(string[] parameters,string @return)[]"],
+		[["S",lang?"method:string|null":"string? method",lang?"lang:ProgrammingLanguage":"ProgrammingLanguage lang"],lang?"[parameters:string[],returns:string][]":"(string[] parameters,string @return)[]"],
 		[["V"],"string"],
 	];
 	const getter=invoker[RpcSymbols.GetMethodSignatures];
-	if(getter) return await getter.call(invoker,method,ts);
+	if(getter) return await getter.call(invoker,method,lang);
 	
 	const func:Func=invoker[method];
 	if(!func) throw new RpcMethodNotFoundError(type,method);
 	let getter2=func[RpcSymbols.GetMethodSignatures];
-	if(getter2) return getter2.call(func,ts);
-
-	return [
-		[getFunctionParameterNames(func),ts?"unknown":"object?"]
-	];
+	if(getter2) return getter2.call(func,lang);
+	
+	switch(lang){
+		default:
+		case ProgrammingLanguage.CSharp:
+			return [[getFunctionParameterNames(func).map(p=>p.startsWith("...")?`params dynamic[] ${p.substring(3)}`:`dynamic ${p}`),"dynamic"]];
+		case ProgrammingLanguage.TypeScript:
+			return [[getFunctionParameterNames(func).map(p=>`${p}:any${p.startsWith("...")?"[]":""}`),"any"]];
+		case ProgrammingLanguage.JavaScript:
+			return [[getFunctionParameterNames(func),"any"]];
+	}
 }
 
 async function getMethods(invoker:Invoker):Promise<string[]>{

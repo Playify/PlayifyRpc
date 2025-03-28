@@ -1,6 +1,14 @@
+
+export enum ProgrammingLanguage{
+	CSharp,
+	TypeScript,
+	JavaScript,
+}
+
 export function getFunctionParameterNames(func:Function):string[]{
 	let code=func.toString();
 	code=code.substring(code.indexOf('(')+1);
+	if(code[0]==')')return [];
 
 	const args:string[]=[];
 	while(true){

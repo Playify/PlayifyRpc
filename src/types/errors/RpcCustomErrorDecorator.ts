@@ -1,4 +1,4 @@
-import {RpcError} from "../RpcError.js";
+import {RpcError} from "./RpcError";
 
 export const RpcCustomErrors:[
 	Map<string,typeof RpcError>,

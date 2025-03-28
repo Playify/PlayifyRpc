@@ -19,7 +19,7 @@
 		"@types/ws": "~8.5.10",
 		"pug-cli": "^1.0.0-alpha6",
 		"typescript": "^5.5.4",
-		"vite":"^5.4.6"
+		"vite":"6.2.3"
 	},
 	"dependencies": {
 		"error-stack-parser": "^2.1.4",
@@ -29,15 +29,16 @@
 	"types": "src/rpc.ts",
 	"exports": {
 		".": {
+			"types": "./src/rpc.ts",
 			"import": "./dist/rpc.js",
 			"require": "./dist_cjs/rpc.cjs",
 			"default": "./dist/rpc.js"
 		},
 		"./vite": {
+			"types": "./src/vite.ts",
 			"import": "./dist_dev/vite.js",
 			"require": "./dist_dev/vite.cjs",
-			"default": "./dist_dev/vite.js",
-			"types": "./src/vite.ts"
+			"default": "./dist_dev/vite.js"
 		}
 	},
 	"files": [

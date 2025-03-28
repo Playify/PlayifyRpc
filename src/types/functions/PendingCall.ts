@@ -1,5 +1,5 @@
 import {FunctionCallContext} from "./FunctionCallContext.js";
-import {RpcError} from "../RpcError.js";
+import {RpcError} from "../errors/RpcError";
 import {freeDynamic} from "../data/DynamicData.js";
 
 type Action<T>=(t:T)=>void;

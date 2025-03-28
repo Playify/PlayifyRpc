@@ -1,5 +1,5 @@
-import {DataInput,DataOutput,Rpc} from "../rpc.js";
-import {RpcCustomErrors} from "./errors/RpcCustomErrorDecorator.js";
+import {DataInput,DataOutput,Rpc,RpcCustomError} from "../../rpc";
+import {RpcCustomErrors} from "./RpcCustomErrorDecorator";
 import ErrorStackParser,{StackFrame} from "error-stack-parser";
 
 function fixString(s:string){
@@ -216,4 +216,40 @@ export class RpcError extends Error{
 		clone.#causes=this.#causes;
 		return clone;
 	}
+}
+
+
+const quoted=(s:string | null)=>s==null?"null":"\""+s+"\"";
+
+export abstract class RpcCallError extends RpcError{}
+
+@RpcCustomError("$type")
+export class RpcTypeNotFoundError extends RpcCallError{
+	static new=(type:string | null)=>new RpcTypeNotFoundError(null,null,
+		`Type ${quoted(type)} does not exist`,"",{type});
+}
+
+@RpcCustomError("$method")
+export class RpcMethodNotFoundError extends RpcCallError{
+	static new=(type:string | null,method:string | null)=>new RpcMethodNotFoundError(null,null,
+		`Method ${quoted(method)} does not exist on type ${quoted(type)}`,"",{type,method});
+}
+
+@RpcCustomError("$method-meta")
+export class RpcMetaMethodNotFoundError extends RpcMethodNotFoundError{
+	static new=(type:string | null,meta:string | null)=>new RpcMetaMethodNotFoundError(null,null,
+		`Meta-Method ${quoted(meta)} does not exist on type ${quoted(type)}`,"",{type,method:null,meta});
+}
+
+@RpcCustomError("$connection")
+export class RpcConnectionError extends RpcCallError{
+	static new=(message:string | null)=>new RpcConnectionError(null,null,message,"");
+}
+
+@RpcCustomError("$eval")
+export class RpcEvalError extends RpcCallError{}
+
+@RpcCustomError("$data")
+export class RpcDataError extends RpcError{
+	static new=(message:string,cause:Error)=>new RpcDataError(null,null,message,"",cause);
 }
