@@ -12,13 +12,12 @@ import {
 import {generateTypeName,registerType,unregisterType} from "./internal/RegisteredTypes.js";
 import {RpcId} from "./connection/RpcId.js";
 import {PendingCall} from "./types/functions/PendingCall.js";
-import {ProgrammingLanguage} from "./internal/functionParameterNames";
+import {ProgrammingLanguage,ProgrammingLanguageOrAny} from "./internal/functionParameterNames.js";
 
 
 export * from "./types/data/DataInput.js";
 export * from "./types/data/DataOutput.js";
-export {RpcDataTypeDecorator} from "./types/data/RpcDataTypeDecorator";
-export {ProgrammingLanguage} from "./internal/functionParameterNames.js";
+export {RpcDataTypeDecorator} from "./types/data/RpcDataTypeDecorator.js";
 
 export type {FunctionCallContext} from "./types/functions/FunctionCallContext.js";
 export {PendingCall} from "./types/functions/PendingCall.js";
@@ -94,7 +93,7 @@ export class Rpc{
 	public static getObjectMethods=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcSymbols.GetMethods]();
 	public static getObjectExists=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcSymbols.ObjectExists]();
 	public static getObjectType=(o:RpcObject)=>o[RpcSymbols.ObjectType];
-	public static getMethodSignatures=(type:string,method:string,lang=ProgrammingLanguage.TypeScript)=>
+	public static getMethodSignatures=(type:string,method:string,lang:ProgrammingLanguageOrAny=ProgrammingLanguage.CSharp)=>
 		new RpcFunction(type,method).getSignatures(lang);
 }
 

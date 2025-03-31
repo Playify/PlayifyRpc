@@ -1,9 +1,24 @@
 
+export type ProgrammingLanguageOrAny=ProgrammingLanguage|"cs"|"ts"|"js"|"c#"|"typescript"|"javascript"|boolean;
 export enum ProgrammingLanguage{
 	CSharp,
 	TypeScript,
 	JavaScript,
 }
+export function ProgrammingLanguageEnumFromAny(any:ProgrammingLanguageOrAny):ProgrammingLanguage{
+	if(typeof any=="boolean") return any?ProgrammingLanguage.TypeScript:ProgrammingLanguage.CSharp;
+	if(typeof any=="number") return any;
+	return {
+		"cs":ProgrammingLanguage.CSharp,
+		"c#":ProgrammingLanguage.CSharp,
+		"ts":ProgrammingLanguage.TypeScript,
+		"typescript":ProgrammingLanguage.TypeScript,
+		"js":ProgrammingLanguage.JavaScript,
+		"jsdoc":ProgrammingLanguage.JavaScript,
+		"javascript":ProgrammingLanguage.JavaScript,
+	}[any.toLowerCase()]??ProgrammingLanguage.CSharp;
+}
+
 
 export function getFunctionParameterNames(func:Function):string[]{
 	let code=func.toString();

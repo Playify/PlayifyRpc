@@ -3,17 +3,22 @@ import {randomId,RpcId} from "../connection/RpcId.js";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
 import {RpcSymbols} from "../types/RpcObject.js";
 import {RpcError,RpcMetaMethodNotFoundError,RpcMethodNotFoundError} from "../types/errors/RpcError.js";
-import {getFunctionParameterNames,ProgrammingLanguage} from "./functionParameterNames";
+import {
+	getFunctionParameterNames,
+	ProgrammingLanguage,
+	ProgrammingLanguageEnumFromAny,
+	ProgrammingLanguageOrAny
+} from "./functionParameterNames";
 // @ts-ignore
 import {version} from "../../package.json";
 
 
 export type Func=((...args:any[])=>Promise<any>)&{
-	[RpcSymbols.GetMethodSignatures]?:(lang:ProgrammingLanguage)=>Promise<[parameters:string[],returns:string][]>
+	[RpcSymbols.GetMethodSignatures]?:(lang:ProgrammingLanguageOrAny)=>Promise<[parameters:string[],returns:string][]>
 };
 export type Invoker={
 	[RpcSymbols.GetMethods]?:()=>Promise<string[]>,
-	[RpcSymbols.GetMethodSignatures]?:(method:string,lang:ProgrammingLanguage)=>Promise<[parameters:string[],returns:string][]>,
+	[RpcSymbols.GetMethodSignatures]?:(method:string,lang:ProgrammingLanguageOrAny)=>Promise<[parameters:string[],returns:string][]>,
 	[RpcSymbols.GetRpcVersion]?:()=>Promise<string>,
 	[s:string]:Func | any,
 };
@@ -91,7 +96,8 @@ export async function invoke(invoker:Invoker,type:string,method:string | null,..
 			throw RpcMetaMethodNotFoundError.new(type,meta);
 	}
 }
-async function getMethodSignatures(invoker:Invoker,type:string,method:string|null,lang:ProgrammingLanguage):Promise<[parameters:string[],returns:string][]>{
+async function getMethodSignatures(invoker:Invoker,type:string,method:string|null,langOrAny:ProgrammingLanguageOrAny):Promise<[parameters:string[],returns:string][]>{
+	const lang=ProgrammingLanguageEnumFromAny(langOrAny);
 	if(method==null)return [
 		[["M"],"string[]"],
 		[["S",lang?"method:string|null":"string? method",lang?"lang:ProgrammingLanguage":"ProgrammingLanguage lang"],lang?"[parameters:string[],returns:string][]":"(string[] parameters,string @return)[]"],
