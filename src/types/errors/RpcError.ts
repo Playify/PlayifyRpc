@@ -83,14 +83,14 @@ export class RpcError extends Error{
 				[message,cause]=args;
 				break;
 			case 4:
-				[message,from,message,stackTrace]=args;
+				[type,from,message,stackTrace]=args;
 				break;
 			case 5:
-				if(args[4] instanceof RpcError) [message,from,message,stackTrace,cause]=args;
-				else [message,from,message,stackTrace,data]=args;
+				if(args[4] instanceof RpcError) [type,from,message,stackTrace,cause]=args;
+				else [type,from,message,stackTrace,data]=args;
 				break;
 			case 6:
-				[message,from,message,stackTrace,data,cause]=args;
+				[type,from,message,stackTrace,data,cause]=args;
 				break;
 			default:
 				throw new Error("Invalid arg count");
