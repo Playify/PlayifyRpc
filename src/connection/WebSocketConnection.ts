@@ -97,8 +97,10 @@ export async function connectOnce(reconnect:VoidFunction){
 
 	const webSocket=await createWebSocket(query);
 
-	webSocket.onclose=()=>{
-		setTimeout(reconnect,1000);
+	let timeout:ReturnType<typeof setTimeout>;
+	webSocket.onclose=webSocket.onerror=()=>{
+		clearTimeout(timeout);
+		timeout=setTimeout(reconnect,1000);
 
 		if(!_webSocket) return;
 		_webSocket=null;
@@ -152,5 +154,6 @@ export async function connectOnce(reconnect:VoidFunction){
 	// noinspection InfiniteLoopJS
 	while(true)
 		await new Promise<void>(
-			resolve=>connectOnce(resolve));
+			resolve=>connectOnce(resolve))
+			.catch(e=>console.error("[Rpc] error in connectOnce: ",e));
 }());

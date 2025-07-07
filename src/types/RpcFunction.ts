@@ -124,7 +124,7 @@ export const RpcFunction:{
 	new<FuncOrReturnType>(type:string,method:string):RpcFunction<FuncOrReturnType>
 }=RpcFunctionClass as {new(type:string,method:string):any};
 
-export type RpcFunction<FuncOrReturnType>=InstanceType<typeof RpcFunctionClass> & Overloaded<FuncOrReturnType>
+export type RpcFunction<FuncOrReturnType=any>=InstanceType<typeof RpcFunctionClass> & Overloaded<FuncOrReturnType>
 
 
 
