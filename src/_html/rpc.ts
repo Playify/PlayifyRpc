@@ -311,7 +311,7 @@ async function getAutoCompleteParameters(value:string,from:number,to:number,star
 		return [div];
 	}
 
-	cachedSignatures??=Rpc.createFunction(callSignature.substring(0,i),callSignature.substring(i+1)).getMethodSignatures().finally(()=>console.log("Catching signatures for "+callSignature));
+	cachedSignatures??=Rpc.createFunction(callSignature.substring(0,i),callSignature.substring(i+1)).getSignatures().finally(()=>console.log("Catching signatures for "+callSignature));
 	clearTimeout(cachedSignaturesTimeout);
 	cachedSignaturesTimeout=setTimeout(()=>cachedSignatures=null,1000);
 

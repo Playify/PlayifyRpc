@@ -4,7 +4,7 @@ import {DataInput} from "../types/data/DataInput.js";
 import {callRemoteFunction} from "../types/functions/FunctionCallContext.js";
 import {registeredTypes} from "../internal/RegisteredTypes.js";
 import {isNodeJs,RpcId} from "./RpcId.js";
-import {RpcConnectionError} from "../types/errors/PredefinedErrors.js";
+import {RpcConnectionError} from "../types/errors/RpcError.js";
 import {Rpc} from "../rpc.js";
 
 

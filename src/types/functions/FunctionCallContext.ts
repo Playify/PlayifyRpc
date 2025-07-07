@@ -3,8 +3,7 @@ import {getAsyncIterator,PendingCall,registerReceive,rejectCall,resolveCall,runR
 import {DataOutput} from "../data/DataOutput.js";
 import {PacketType,sendCall,sendRaw} from "../../connection/Connection.js";
 import {_webSocket,isConnected} from "../../connection/WebSocketConnection.js";
-import {RpcError} from "../RpcError.js";
-import {RpcConnectionError} from "../errors/PredefinedErrors.js";
+import {RpcConnectionError,RpcError} from "../errors/RpcError";
 import {needsFreeDynamic} from "../data/DynamicData";
 
 

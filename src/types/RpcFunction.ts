@@ -2,6 +2,7 @@ import {RpcId} from "../connection/RpcId.js";
 import {callRemoteFunction} from "./functions/FunctionCallContext.js";
 import {PendingCall} from "./functions/PendingCall.js";
 import {registeredFunctions} from "../internal/RegisteredTypes.js";
+import {ProgrammingLanguage,ProgrammingLanguageOrAny} from "../internal/functionParameterNames";
 
 
 type UnwrapPromise<T>=T extends Promise<infer U>?U:T;
@@ -110,9 +111,9 @@ const RpcFunctionClass=class RpcFunction extends (function Extendable(func:Funct
 		super(callRemoteFunction.bind(null,type,method));
 	}
 
-	async getMethodSignatures(typeScript:boolean=false):Promise<[parameters:string[],returns:string][]>{
+	async getSignatures(lang:ProgrammingLanguageOrAny=ProgrammingLanguage.CSharp):Promise<[parameters:string[],returns:string][]>{
 		// noinspection ES6RedundantAwait
-		return await callRemoteFunction(this.type,null,"S",this.method,typeScript);
+		return await callRemoteFunction(this.type,null,"S",this.method,lang);
 	}
 
 	toString(){

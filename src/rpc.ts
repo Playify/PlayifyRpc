@@ -12,20 +12,20 @@ import {
 import {generateTypeName,registerType,unregisterType} from "./internal/RegisteredTypes.js";
 import {RpcId} from "./connection/RpcId.js";
 import {PendingCall} from "./types/functions/PendingCall.js";
+import {ProgrammingLanguage,ProgrammingLanguageOrAny} from "./internal/functionParameterNames.js";
 
 
 export * from "./types/data/DataInput.js";
 export * from "./types/data/DataOutput.js";
-export {RpcDataTypeDecorator} from "./types/data/RpcDataTypeDecorator";
+export {RpcDataTypeDecorator} from "./types/data/RpcDataTypeDecorator.js";
 
 export type {FunctionCallContext} from "./types/functions/FunctionCallContext.js";
 export {PendingCall} from "./types/functions/PendingCall.js";
 
 export {RpcSymbols,type RpcObject,type RpcObjectTemplate} from "./types/RpcObject.js";
 export {RpcFunction} from "./types/RpcFunction.js";
-export * from "./types/RpcError.js";
+export * from "./types/errors/RpcError";
 export {RpcCustomError} from "./types/errors/RpcCustomErrorDecorator.js";
-export * from "./types/errors/PredefinedErrors.js";
 export {RpcProvider} from "./types/RpcProviderDecorator.js";
 export * from "./utils/RpcHelpers.js";
 export * from "./RpcLogger.js";
@@ -93,7 +93,8 @@ export class Rpc{
 	public static getObjectMethods=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcSymbols.GetMethods]();
 	public static getObjectExists=(o:RpcObject|string)=>(typeof o==="string"?createRemoteObject(o):o)[RpcSymbols.ObjectExists]();
 	public static getObjectType=(o:RpcObject)=>o[RpcSymbols.ObjectType];
-	public static getMethodSignatures=(type:string,method:string,ts=false)=>new RpcFunction(type,method).getMethodSignatures(ts);
+	public static getMethodSignatures=(type:string,method:string,lang:ProgrammingLanguageOrAny=ProgrammingLanguage.CSharp)=>
+		new RpcFunction(type,method).getSignatures(lang);
 }
 
 
