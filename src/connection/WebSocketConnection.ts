@@ -95,12 +95,12 @@ export async function connectOnce(reconnect:VoidFunction){
 		}
 
 
+	let reconnectTimer:Promise<void>|null=new Promise<void>(res=>setTimeout(res,1000));
 	const webSocket=await createWebSocket(query);
 
-	let timeout:ReturnType<typeof setTimeout>;
 	webSocket.onclose=webSocket.onerror=()=>{
-		clearTimeout(timeout);
-		timeout=setTimeout(reconnect,1000);
+		reconnectTimer?.then(reconnect);
+		reconnectTimer=null;
 
 		if(!_webSocket) return;
 		_webSocket=null;
