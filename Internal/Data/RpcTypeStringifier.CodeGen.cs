@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using PlayifyRpc.Types;
 using PlayifyUtility.Jsons;
+using PlayifyUtility.Utils;
 using PlayifyUtility.Utils.Extensions;
 
 namespace PlayifyRpc.Internal.Data;
@@ -20,6 +21,7 @@ public static partial class RpcTypeStringifier{
 
 
 	private static string GenerateMethod(string name,IEnumerable<(string[] parameters,string returns)> signatures,ProgrammingLanguage lang){
+		signatures=HandleOptionalParameters(signatures,lang);
 		return lang switch{
 			ProgrammingLanguage.CSharp=>signatures.Select(tuple=>GenerateCSharpMethod(name,tuple.returns,tuple.parameters)).Join('\n'),
 			ProgrammingLanguage.TypeScript=>GenerateTypeScriptMethod(name,signatures.ToArray()),
@@ -50,7 +52,7 @@ public static partial class RpcTypeStringifier{
 
 	private static string GenerateJavaScriptMethod(string name,(string[] parameters,string returns)[] signatures){
 		var str=new StringBuilder();
-		str.Append("/** @type {").Append(GenerateTypeScriptType(signatures)).Append("}*/\n");
+		str.Append("/** @type {").Append(GenerateTypeScriptSignature(signatures).Replace("/*","/#").Replace("*/","#/")).Append("}*/\n");
 		str.Append(EscapeJavaScript(name)==name?name:Quote(name));
 		if(signatures.Length!=1) str.Append("=(...params)=>{};");
 		else
@@ -63,9 +65,9 @@ public static partial class RpcTypeStringifier{
 	}
 
 	private static string GenerateTypeScriptMethod(string name,(string[] parameters,string returns)[] signatures)
-		=>$"{(EscapeJavaScript(name)==name?name:Quote(name))}:{GenerateTypeScriptType(signatures)}=null!;";
+		=>$"{(EscapeJavaScript(name)==name?name:Quote(name))}:{GenerateTypeScriptSignature(signatures)}=null!;";
 
-	private static string GenerateTypeScriptType((string[] parameters,string returns)[] signatures)
+	private static string GenerateTypeScriptSignature((string[] parameters,string returns)[] signatures)
 		=>signatures.Length switch{
 			0=>"unknown",
 			1=>$"({signatures[0].parameters.Join(',')})=>{signatures[0].returns}",
@@ -150,6 +152,43 @@ public static partial class RpcTypeStringifier{
 
 		return escaped;
 	}
+
+
+	private static IEnumerable<(string[] parameters,string returns)> HandleOptionalParameters(IEnumerable<(string[] parameters,string returns)> signatures,ProgrammingLanguage lang){
+		using var enumerator=signatures.GetEnumerator();
+		if(!enumerator.MoveNext()) yield break;
+		var last=enumerator.Current;//Without '?' for optional
+		var modified=last;//With '?' for optional
+		while(true){
+			if(!enumerator.MoveNext()){
+				yield return modified;
+				yield break;
+			}
+			var (currentParameters,currentReturns)=enumerator.Current;
+			if(modified.returns==currentReturns||//Must have same return type
+			   currentParameters.Length==last.parameters.Length+1||//Be exactly by one larger
+			   currentParameters.Take(last.parameters.Length).SequenceEqual(last.parameters)//and have the same paraemters, up to the target
+			  ){//Then it is an overload that can be extended with optional
+				modified.parameters=EnumerableUtils.Combine(modified.parameters,MakeOptional(currentParameters[modified.parameters.Length],lang));
+				last=enumerator.Current;
+			} else{
+				yield return modified;
+				last=enumerator.Current;
+				modified=last;
+			}
+		}
+	}
+
+	private static string MakeOptional(string parameter,ProgrammingLanguage lang)
+		=>lang switch{
+			ProgrammingLanguage.CSharp=>parameter.TryLastIndexOf(' ',out var space)
+				                            ?parameter.Substring(0,space)+"?"+parameter.Substring(space)
+				                            :parameter+"?",
+			ProgrammingLanguage.JavaScript or ProgrammingLanguage.TypeScript=>parameter.TryIndexOf(':',out var colon)
+				                                                                  ?parameter.Substring(0,colon)+"?"+parameter.Substring(colon)
+				                                                                  :parameter+"?",
+			_=>throw new ArgumentOutOfRangeException(nameof(lang),lang,null),
+		};
 	#endregion
 
 }
