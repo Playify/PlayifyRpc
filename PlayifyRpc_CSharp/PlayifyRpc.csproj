@@ -1,0 +1,129 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFrameworks>net6.0;net48</TargetFrameworks>
+		<LangVersion>12</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<OutputPath>_run</OutputPath>
+		<DefineConstants>TRACE;JETBRAINS_ANNOTATIONS</DefineConstants>
+
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Title>PlayifyRpc</Title>
+		<Description>Remote Procedure Call (Client and Server)</Description>
+		<RepositoryUrl>https://github.com/Playify/PlayifyRpc_CSharp</RepositoryUrl>
+		<RepositoryType>GitHub</RepositoryType>
+		<Authors>Playify</Authors>
+		<Version>1.9.3</Version>
+
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=.../PlayifyRpc_CSharp/</PathMap>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
+		<Reference Include="System.Net.Http" />
+		<Using Remove="System.Net.Http" />
+		<PackageReference Include="AsyncFriendlyStackTrace" Version="1.7.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="PlayifyUtility" Version="1.6.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="Tests\**" />
+		<None Remove="Tests\**" />
+		<EmbeddedResource Remove="Tests\**" />
+
+		<Compile Remove="SourceGenerator\**" />
+		<None Remove="SourceGenerator\**" />
+		<EmbeddedResource Remove="SourceGenerator\**" />
+
+		<None Include="README.md" Pack="true" PackagePath="\" />
+
+		<Compile Update="Rpc.Connection.cs">
+			<DependentUpon>Rpc.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Rpc.Functions.cs">
+			<DependentUpon>Rpc.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Rpc.Types.cs">
+			<DependentUpon>Rpc.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcDataPrimitive.From.cs">
+			<DependentUpon>RpcDataPrimitive.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcDataPrimitive.To.cs">
+			<DependentUpon>RpcDataPrimitive.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcDataPrimitive.Serialisation.cs">
+			<DependentUpon>RpcDataPrimitive.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Exceptions\RpcException.Attribute.cs">
+			<DependentUpon>RpcException.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Exceptions\RpcException.Data.cs">
+			<DependentUpon>RpcException.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Exceptions\RpcException.Extensions.cs">
+			<DependentUpon>RpcException.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Functions\PendingCall.Generic.cs">
+			<DependentUpon>PendingCall.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Functions\PendingCallRawData.cs">
+			<DependentUpon>PendingCall.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Functions\PendingCall.Casted.cs">
+			<DependentUpon>PendingCall.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Data\Objects\RpcDataObject.Reflection.cs">
+			<DependentUpon>RpcDataObject.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcInvoker.Helpers.cs">
+			<DependentUpon>RpcInvoker.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Types\Invokers\Invoker.CallFunction.cs">
+			<DependentUpon>Invoker.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcData.Delegates.cs">
+			<DependentUpon>RpcData.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcData.Register.cs">
+			<DependentUpon>RpcData.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcDataPrimitive.Parse.cs">
+			<DependentUpon>RpcDataPrimitive.cs</DependentUpon>
+		</Compile>
+		<Compile Update="RpcWebServer.MimeTypes.cs">
+			<DependentUpon>RpcWebServer.cs</DependentUpon>
+		</Compile>
+		<Compile Update="RpcWebServer.Console.cs">
+			<DependentUpon>RpcWebServer.cs</DependentUpon>
+		</Compile>
+		<None Remove="SourceGenerator.pdb" />
+		<None Remove="SourceGenerator.deps.json" />
+		<Compile Update="Internal\Data\RpcTypeStringifier.CodeGen.cs">
+			<DependentUpon>RpcTypeStringifier.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\ProgrammingLanguage.cs">
+			<DependentUpon>RpcTypeStringifier.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Internal\Data\RpcInvoker.MethodCandidate.cs">
+			<DependentUpon>RpcInvoker.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--<ProjectReference Include="PlayifyRpc.SourceGenerator\PlayifyRpc.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
+		<Analyzer Include="SourceGenerator.dll" Pack="true" />
+
+		<None Include="SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/" />
+	</ItemGroup>
+</Project>
