@@ -27,7 +27,6 @@ namespace WebDebugger{
 	std::map<String,std::function<String(String)>> setters;
 
 #define REGISTER_PIN(pin) WebDebugger::registerPin(#pin,pin)
-#define REGISTER_PINS(...) WebDebugger::registerPins( (const char*[]){#__VA_ARGS__}, (int[]){__VA_ARGS__}, sizeof((int[]){__VA_ARGS__})/sizeof(int) )
 
 
 	inline void registerPin(const String& name,uint8_t pin){
@@ -99,12 +98,6 @@ namespace WebDebugger{
 			return "Unknown Value: "+value;
 		};
 	}
-
-	inline void registerPins(const char* names[], const int values[], size_t count) {
-		for (size_t i = 0; i < count; ++i) {
-			registerPin(names[i], values[i]);
-		}
-	}
 	
 	inline int _tryParseInt(const String& s){
 		if(s.isEmpty())return -1;
@@ -156,21 +149,61 @@ namespace WebDebugger{
 		//ESP32 only
 #if ESP32
 #if SOC_TOUCH_SENSOR_NUM
-		REGISTER_PINS(T0,T1,T2,T3,T4,T5,T6,T7,T8,T9);
+		REGISTER_PIN(T0);
+		REGISTER_PIN(T1);
+		REGISTER_PIN(T2);
+		REGISTER_PIN(T3);
+		REGISTER_PIN(T4);
+		REGISTER_PIN(T5);
+		REGISTER_PIN(T6);
+		REGISTER_PIN(T7);
+		REGISTER_PIN(T8);
+		REGISTER_PIN(T9);
 #endif
 #if NUM_ANALOG_INPUTS==18
-		REGISTER_PINS(A0,A3,A4,A5,A6,A7,A10,A11,A12,A13,A14,A15,A16,A17,A18,A19);
+		REGISTER_PIN(A0);
+		REGISTER_PIN(A3);
+		REGISTER_PIN(A4);
+		REGISTER_PIN(A5);
+		REGISTER_PIN(A6);
+		REGISTER_PIN(A7);
+		REGISTER_PIN(A10);
+		REGISTER_PIN(A11);
+		REGISTER_PIN(A12);
+		REGISTER_PIN(A13);
+		REGISTER_PIN(A14);
+		REGISTER_PIN(A15);
+		REGISTER_PIN(A16);
+		REGISTER_PIN(A17);
+		REGISTER_PIN(A18);
+		REGISTER_PIN(A19);
 #elif NUM_ANALOG_INPUTS==6
-		REGISTER_PINS(A0,A1,A2,A3,A4,A5);
+		REGISTER_PIN(A0);
+		REGISTER_PIN(A1);
+		REGISTER_PIN(A2);
+		REGISTER_PIN(A3);
+		REGISTER_PIN(A4);
+		REGISTER_PIN(A5);
 #endif
 #if SOC_DAC_PERIPH_NUM>0
-		REGISTER_PINS(DAC1,DAC2);
+		REGISTER_PIN(DAC1);
+		REGISTER_PIN(DAC2);
 #endif
 #endif
 		
 		//ESP8266 only
 #if ESP8266
-		REGISTER_PINS(D0,D1,D2,D3,D4,D5,D6,D7,D8,D9,D10);
+		REGISTER_PIN(D0);
+		REGISTER_PIN(D1);
+		REGISTER_PIN(D2);
+		REGISTER_PIN(D3);
+		REGISTER_PIN(D4);
+		REGISTER_PIN(D5);
+		REGISTER_PIN(D6);
+		REGISTER_PIN(D7);
+		REGISTER_PIN(D8);
+		REGISTER_PIN(D9);
+		REGISTER_PIN(D10);
 		REGISTER_PIN(A0);
 #endif
 		
