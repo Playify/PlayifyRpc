@@ -95,6 +95,7 @@ public partial class RpcWebServer{
 	                                ./rpc.sh update
 	                                ./rpc.sh <flags> listen <port/ip>
 	                                ./rpc.sh <flags> call <call>
+	                                ./rpc.sh <flags> cli
 	                                ./rpc.sh help
 	                              Flags:
 	                                General:
@@ -120,6 +121,7 @@ public partial class RpcWebServer{
 		var listen=new List<IPEndPoint>();
 		var calls=new List<string>();
 		bool? pretty=true;
+		var cli=false;
 
 		try{
 			for(var i=0;i<args.Length;i++){
@@ -191,6 +193,10 @@ public partial class RpcWebServer{
 						while(i!=args.Length) result+=args[i++];
 						calls.Add(result);
 						break;
+					case "cli":
+						if(cli) throw new CloseException("cli already specified");
+						cli=true;
+						break;
 					case var unknown:
 						if(args.Length==1&&args[0] switch{
 							   var s when int.TryParse(s,out var port)=>new IPEndPoint(IPAddress.Any,port),
@@ -205,11 +211,11 @@ public partial class RpcWebServer{
 						throw new CloseException($"Unknown argument: {unknown}");
 				}
 			}
-			if(listen.Count==0&&calls.Count==0) throw new CloseException("");
+			if(listen.Count==0&&calls.Count==0&&!cli) throw new CloseException("");
 
 			if(!setToken&&token==null) Rpc.Logger.Warning("RPC_TOKEN is not defined, connections will not be secure");
 
-			if(listen.Count!=0) RunConsoleThread();
+			if(listen.Count!=0&&!cli) RunConsoleThread();
 			if(calls.Count!=0&&url==null) throw new CloseException("RPC_URL is not defined, cannot call remote function"+(calls.Count==0?"":"s"));
 
 
@@ -230,7 +236,7 @@ public partial class RpcWebServer{
 					Environment.Exit(-1);
 				}
 			}),
-			calls.Select(async call=>{
+			cli?[RunCli(calls,url!,token,pretty)]:calls.Select(async call=>{
 				try{
 					var (success,result)=await CallDirectly(call,url!,token,pretty);
 					await (success?Console.Out:Console.Error).WriteLineAsync(result);
@@ -239,5 +245,38 @@ public partial class RpcWebServer{
 				}
 			})
 		));
+	}
+
+	private static Task RunCli(IEnumerable<string> calls,string url,string? token,bool? pretty){
+		var logger=Rpc.Logger.WithName("CLI");
+		
+		Rpc.Connect(new Uri(url),token);
+		return Task.Run(()=>{
+			//Read in line from either the cli-params or from console
+			foreach(var call in calls.Concat(EnumerableUtils.SelectForever(Console.ReadLine))){
+				if(call==null) return;
+				if(call.TryRemoveFromStartOf("name=",out var newName)){
+					Rpc.SetName(newName);
+					logger.Info($"Name changed to \"{Rpc.PrettyName}\"");
+					continue;
+				}
+				if(call=="name"){
+					logger.Info($"Name is \"{Rpc.PrettyName}\"");
+					continue;
+				}
+				
+				RunCommand(call);
+			}
+		});
+		
+		async void RunCommand(string call){
+			try{
+				var s=await Rpc.EvalObject(call);
+				if(pretty is{} realPretty)
+					logger.Log(s.ToString(realPretty));
+			} catch(Exception e){
+				logger.Error(e.ToString());
+			}
+		}
 	}
 }
