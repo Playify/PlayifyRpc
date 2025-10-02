@@ -29,7 +29,7 @@ Remove-Item $tempFolder -Recurse -Force
 Set-Content -Path "rpc.bat" -Value @'
 @echo off
 if "%1" == "update" (
-    powershell -Command "irm https://raw.githubusercontent.com/Playify/PlayifyRpc_CSharp/master/_run/get-rpc.ps1 | iex"
+    powershell -Command "irm https://raw.githubusercontent.com/Playify/PlayifyRpc/master/PlayifyRpc_CSharp/_run/get-rpc.ps1 | iex"
     exit /b %ERRORLEVEL%
 )
 if not exist "%~dp0PlayifyRpc.dll" (
@@ -44,7 +44,7 @@ Set-Content -NoNewline -Path "rpc.sh" -Value (@'
 #!/bin/bash
 
 if [ "$1" == "update" ]; then
-  curl -sSL https://raw.githubusercontent.com/Playify/PlayifyRpc_CSharp/master/_run/get-rpc.sh | bash
+  curl -sSL https://raw.githubusercontent.com/Playify/PlayifyRpc/master/PlayifyRpc_CSharp/_run/get-rpc.sh | bash
   exit $?
 fi
 

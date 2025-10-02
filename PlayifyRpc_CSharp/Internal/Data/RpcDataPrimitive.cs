@@ -77,7 +77,8 @@ public readonly partial struct RpcDataPrimitive:IEquatable<RpcDataPrimitive>{
 	#endregion
 
 	#region Number
-	public RpcDataPrimitive(long number)=>_data=number;
+	public RpcDataPrimitive(int number)=>_data=(long)number;
+	public RpcDataPrimitive(uint number)=>_data=(long)number;
 	public RpcDataPrimitive(double number)=>_data=number;
 	public RpcDataPrimitive(BigInteger number)=>_data=number;
 

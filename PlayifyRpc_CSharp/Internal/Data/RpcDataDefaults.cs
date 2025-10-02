@@ -459,7 +459,8 @@ internal static class RpcDataDefaults{
 				return convertible.GetTypeCode() switch{
 					TypeCode.Int64=>new RpcDataPrimitive(new BigInteger(convertible.ToInt64(null))),
 					TypeCode.UInt64=>new RpcDataPrimitive(new BigInteger(convertible.ToUInt64(null))),
-					_=>new RpcDataPrimitive(convertible.ToInt64(null)),
+					TypeCode.UInt32=>new RpcDataPrimitive(convertible.ToUInt32(null)),
+					_=>new RpcDataPrimitive(convertible.ToInt32(null)),
 				};
 			},
 			(p,type,throwOnError,transformer)=>{

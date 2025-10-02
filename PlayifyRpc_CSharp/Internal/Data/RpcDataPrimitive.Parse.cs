@@ -100,11 +100,17 @@ public readonly partial struct RpcDataPrimitive{
 			var allowE=true;
 			var allowSign=true;
 			var hasDigits=false;
+			var radix=10;
 			while(true){
 				switch(c){
-					case >='0' and <='9':
+					case '0' or '1':
+					case >='0' and <='9' when radix>=10:
+					case >='a' and <='f' when radix>=16:
+					case >='A' and <='F' when radix>=16:
 						hasDigits=true;
 						builder.Append((char)c);
+						break;
+					case '_'://Allow as spacers
 						break;
 					case '.' when allowDot:
 						builder.Append('.');
@@ -119,24 +125,84 @@ public readonly partial struct RpcDataPrimitive{
 						r.Read();//remove peeked value from stream
 						c=r.Peek();
 						continue;//Can't use break, as that would set allowSign to false again.
-					case '+' or '-' when allowSign:
+					case '+' when allowSign:
+						//Don't add + to builder
+						break;
+					case '-' when allowSign:
 						builder.Append((char)c);
 						break;
-					case 'N' when builder.ToString() is "" or "+" or "-":
+					case 'N' when builder.ToString() is "" or "-":
 						return ReadLiteral(r,"NaN")?new RpcDataPrimitive(double.NaN):null;
-					case 'I' when builder.ToString() is "" or "+" or "-":
-						return ReadLiteral(r,"Infinity")?new RpcDataPrimitive(builder.Length!=0&&builder[0]=='-'?double.NegativeInfinity:double.PositiveInfinity):null;
-					case 'n':
-						if(!BigInteger.TryParse(builder.ToString(),NumberStyles.Any,CultureInfo.InvariantCulture,out var big)) return null;
+					case 'I' when builder.ToString() is "" or "-":
+						return ReadLiteral(r,"Infinity")?new RpcDataPrimitive(builder.Length!=0?double.NegativeInfinity:double.PositiveInfinity):null;
+					case 'b' when builder.ToString() is "0" or "-0" or "+0":
+						builder.Length--;
+						radix=2;
+						allowDot=false;
+						allowE=false;
+						break;
+					case 'x' when builder.ToString() is "0" or "-0" or "+0":
+						builder.Length--;
+						radix=16;
+						allowDot=false;
+						allowE=false;
+						break;
+					case 'n':{
+						if(ParseNumber(builder.ToString(),radix) is not{} big) return null;
 						r.Read();//remove peeked value from stream
 						return new RpcDataPrimitive(big);
+					}
 					default:{
-						return double.TryParse(builder.ToString(),NumberStyles.Any,CultureInfo.InvariantCulture,out var v)?new RpcDataPrimitive(v):null;
+						if(!hasDigits) return null;
+						switch(radix){
+							case 10:{
+								if(double.TryParse(builder.ToString(),NumberStyles.Any,CultureInfo.InvariantCulture,out var dbl))
+									return new RpcDataPrimitive(dbl);
+								return null;
+							}
+							default:{
+								if(ParseNumber(builder.ToString(),radix) is{} big)
+									return new RpcDataPrimitive((double)big);
+								return null;
+							}
+						}
 					}
 				}
 				r.Read();//remove peeked value from stream
 				allowSign=false;
 				c=r.Peek();
+			}
+		}
+
+		private static BigInteger? ParseNumber(string s,int radix){
+			switch(radix){
+				case 2:{
+					var negative=s.Length!=0&&s[0]=='-';
+					if(negative) s=s.Substring(1);
+
+					var val=BigInteger.Zero;
+					foreach(var cc in s){
+						val<<=1;
+						if(cc=='1') val|=1;
+						else if(cc!='0') return null;
+					}
+					
+					if(negative) val=-val;
+					return val;
+				}
+				case 16:{
+					var negative=s.Length!=0&&s[0]=='-';
+					if(negative) s=s.Substring(1);
+					
+					if(!BigInteger.TryParse("0"+s,NumberStyles.HexNumber,CultureInfo.InvariantCulture,out var big)) return null;
+
+					if(negative) big=-big;
+					return big;
+				}
+				default:{
+					if(!BigInteger.TryParse(s,NumberStyles.Any,CultureInfo.InvariantCulture,out var big)) return null;
+					return big;
+				}
 			}
 		}
 
