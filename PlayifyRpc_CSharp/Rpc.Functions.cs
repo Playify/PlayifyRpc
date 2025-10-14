@@ -32,6 +32,12 @@ public static partial class Rpc{
 	public static PendingCall<T> CallLocal<T>(Func<FunctionCallContext,object?> func)=>CallLocal(func).Cast<T>();
 	public static PendingCall<T> CallLocal<T>(Func<Task<object?>> func)=>CallLocal(func).Cast<T>();
 	public static PendingCall<T> CallLocal<T>(Func<FunctionCallContext,Task<object?>> func)=>CallLocal(func).Cast<T>();
+	//Generic2
+	public static PendingCall<T> CallLocal<T>(Func<T> func)=>Invoker.CallLocal(func).Cast<T>();
+	public static PendingCall<T> CallLocal<T>(Func<FunctionCallContext,T> func)=>Invoker.CallLocal(func).Cast<T>();
+	public static PendingCall<T> CallLocal<T>(Func<Task<T>> func)=>Invoker.CallLocal(func).Cast<T>();
+	public static PendingCall<T> CallLocal<T>(Func<FunctionCallContext,Task<T>> func)=>Invoker.CallLocal(func).Cast<T>();
+	
 
 	public static PendingCall CallFunction(string type,string method,params object?[] args)=>Invoker.CallFunction(type,method,args);
 	public static PendingCall<T> CallFunction<T>(string type,string method,params object?[] args)=>Invoker.CallFunction<T>(type,method,args);

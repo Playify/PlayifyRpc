@@ -92,14 +92,14 @@ public abstract partial class Invoker{
 	#endregion
 
 	#region CallLocal
-	internal static PendingCall<RpcDataPrimitive> CallLocal(Func<object?> f)=>CallLocal(_=>f());
+	internal static PendingCall<RpcDataPrimitive> CallLocal<T>(Func<T> f)=>CallLocal(_=>f());
 
 	internal static PendingCall CallLocal(Action<FunctionCallContext> a)=>CallLocal(ctx=>{
 		a(ctx);
 		return Task.FromResult(new RpcDataPrimitive());
 	},null,null,null);
 
-	internal static PendingCall<RpcDataPrimitive> CallLocal(Func<FunctionCallContext,object?> a)
+	internal static PendingCall<RpcDataPrimitive> CallLocal<T>(Func<FunctionCallContext,T> a)
 		=>CallLocal(ctx=>RpcInvoker.ObjectToTask(a(ctx),null),null,null,null);
 
 	private static PendingCall<RpcDataPrimitive> CallLocal(Func<FunctionCallContext,Task<RpcDataPrimitive>> a,string? type,string? method,RpcDataPrimitive[]? args){
