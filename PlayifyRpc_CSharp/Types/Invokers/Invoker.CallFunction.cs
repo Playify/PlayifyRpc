@@ -122,8 +122,6 @@ public abstract partial class Invoker{
 		return new PendingCall<RpcDataPrimitive>(rawData,null);
 	}
 
-	private static readonly Type VoidTaskResult=Type.GetType("System.Threading.Tasks.VoidTaskResult")!;
-
 	internal static async Task<RpcDataPrimitive> RunAndAwait(Func<FunctionCallContext,Task<RpcDataPrimitive>> a,FunctionCallContext ctx,string? type,string? method,RpcDataPrimitive[]? args){
 		try{
 			return await Task.Run(()=>a(ctx)).ConfigureAwait(false);
