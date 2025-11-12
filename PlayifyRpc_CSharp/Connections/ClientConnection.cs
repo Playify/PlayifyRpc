@@ -109,7 +109,8 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 					lock(_currentlyExecuting) _currentlyExecuting.Add(callId,context);
 
 					try{
-						var result=await Invoker.RunAndAwait(ctx=>local.Invoke(type,method,args,ctx),context,type,method,args);
+						var result=await Invoker.RunAndAwait(ctx=>local.Invoke(type,method,args,ctx),context,type,method,args)
+						                        .ConfigureAwait(false);
 						tcs.TrySetResult(result);
 						await Resolve(callId,result);
 					} catch(Exception e){//Inner catch handles normal errors, outer catch handles data exceptions

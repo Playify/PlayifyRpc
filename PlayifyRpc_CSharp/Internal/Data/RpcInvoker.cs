@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using JetBrains.Annotations;
 using PlayifyRpc.Types.Data;
@@ -10,6 +11,8 @@ namespace PlayifyRpc.Internal.Data;
 public static partial class RpcInvoker{
 
 	private static readonly Type VoidTaskResult=Type.GetType("System.Threading.Tasks.VoidTaskResult")!;
+	private static readonly ConcurrentDictionary<Type,PropertyInfo?> TaskResultProperties=new();
+	private static readonly ConcurrentDictionary<Type,MethodInfo?> ValueTaskAsTaskMethods=new();
 
 	internal static Task<RpcDataPrimitive> InvokeThrow(object? instance,IList<MethodCandidate?> overloads,RpcDataPrimitive[] args,Func<string,RpcException> error,FunctionCallContext? ctx){
 		try{
@@ -113,16 +116,29 @@ public static partial class RpcInvoker{
 		while(true)
 			switch(result){
 				case Task task:
-					await task;
-					result=task.GetType().GetProperty(nameof(Task<object>.Result))?.GetValue(result);
-					if(VoidTaskResult.IsInstanceOfType(result)) result=null;//VoidTaskResult should only occur here, and not elsewhere
+					if(task.Status!=TaskStatus.RanToCompletion)
+						await task.ConfigureAwait(false);
+
+					var type=task.GetType();
+					if(!type.IsGenericType){
+						result=null;
+						continue;
+					}
+
+					var prop=TaskResultProperties.GetOrAdd(type,t=>t.GetProperty(nameof(Task<object>.Result)))!;
+					result=prop.GetValue(result);
+
+					if(VoidTaskResult.IsInstanceOfType(result))
+						result=null;//VoidTaskResult should only occur here, and nowhere else
+
 					continue;
 				case ValueTask valueTask:
 					await valueTask;
 					result=null;
 					continue;
 				case not null when result.GetType() is{IsGenericType: true} t&&t.GetGenericTypeDefinition()==typeof(ValueTask<>):
-					result=t.GetMethod(nameof(ValueTask<object>.AsTask))?.Invoke(result,[]);
+					var method=ValueTaskAsTaskMethods.GetOrAdd(t,tt=>tt.GetMethod(nameof(ValueTask<object>.AsTask)))!;
+					result=method.Invoke(result,[]);
 					continue;
 				default:
 					return RpcDataPrimitive.From(result,null,transformer);

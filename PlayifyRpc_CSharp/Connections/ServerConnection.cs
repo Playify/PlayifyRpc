@@ -8,6 +8,7 @@ using PlayifyUtility.Loggers;
 using PlayifyUtility.Streams.Data;
 using PlayifyUtility.Utils;
 using PlayifyUtility.Utils.Extensions;
+using PlayifyUtility.Web.Utils;
 
 namespace PlayifyRpc.Connections;
 
@@ -119,7 +120,11 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
 						break;
 					}
-				await tuple.respondTo.ResolveRaw(tuple.respondId,data);
+				try{
+					await tuple.respondTo.ResolveRaw(tuple.respondId,data);
+				} catch(CloseException){
+					await tuple.respondTo.DisposeAsync();
+				}
 				break;
 			}
 			case PacketType.FunctionError:{
@@ -130,7 +135,11 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
 						break;
 					}
-				await tuple.respondTo.RejectRaw(tuple.respondId,data);
+				try{
+					await tuple.respondTo.RejectRaw(tuple.respondId,data);
+				} catch(CloseException){
+					await tuple.respondTo.DisposeAsync();
+				}
 				break;
 			}
 			case PacketType.FunctionCancel:{
@@ -141,7 +150,11 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 						Logger.Warning($"Invalid State: No ActiveExecution[{callId}] ({packetType})");
 						break;
 					}
-				await tuple.respondTo.CancelRaw(tuple.respondId,data);
+				try{
+					await tuple.respondTo.CancelRaw(tuple.respondId,data);
+				} catch(CloseException){
+					await tuple.respondTo.DisposeAsync();
+				}
 				break;
 			}
 			case PacketType.MessageToExecutor:{
@@ -156,7 +169,11 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				buff.WriteByte((byte)PacketType.MessageToExecutor);
 				buff.WriteLength(tuple.respondId);
 				buff.Write(data);
-				await tuple.respondTo.SendRaw(buff);
+				try{
+					await tuple.respondTo.SendRaw(buff);
+				} catch(CloseException){
+					await tuple.respondTo.DisposeAsync();
+				}
 				break;
 			}
 			case PacketType.MessageToCaller:{
@@ -171,7 +188,11 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				buff.WriteByte((byte)PacketType.MessageToCaller);
 				buff.WriteLength(tuple.respondId);
 				buff.Write(data);
-				await tuple.respondTo.SendRaw(buff);
+				try{
+					await tuple.respondTo.SendRaw(buff);
+				} catch(CloseException){
+					await tuple.respondTo.DisposeAsync();
+				}
 				break;
 			}
 			default:throw new ProtocolViolationException("Received invalid rpc-packet");

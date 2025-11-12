@@ -15,6 +15,7 @@ namespace PlayifyRpc.Types.Exceptions;
 public partial class RpcException{
 	private static readonly List<string> HiddenMethods=[
 		$"{typeof(Invoker).FullName}.",//everything from Invoker type
+		$"{typeof(RpcInvoker).FullName}.",//everything from RpcInvoker type
 		$"{typeof(PendingCall).FullName}.{nameof(PendingCall.ToTask)}(",
 		$"{typeof(Evaluate).FullName}.",//everything from Evaluate type
 		$"{typeof(RpcWebServer).FullName}.{nameof(RpcWebServer.HandleRequest)}(",
