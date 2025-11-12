@@ -98,7 +98,7 @@ namespace WebDebugger{
 			return "Unknown Value: "+value;
 		};
 	}
-	
+
 	inline int _tryParseInt(const String& s){
 		if(s.isEmpty())return -1;
 		for(const char i:s)
@@ -107,8 +107,6 @@ namespace WebDebugger{
 		return s.toInt();
 	}
 
-
-	
 
 	inline String runCommand(String cmd){
 		cmd.toUpperCase();
@@ -122,8 +120,8 @@ namespace WebDebugger{
 				registerPin(cmd,pin);
 				return runCommand(cmd);
 			}
-		} else{
-			const auto name = cmd.substring(0,index);
+		}else{
+			const auto name=cmd.substring(0,index);
 			const auto it=setters.find(name);
 			if(it!=setters.end())
 				return it->second(cmd.substring(index+1));
@@ -190,7 +188,7 @@ namespace WebDebugger{
 		REGISTER_PIN(DAC2);
 #endif
 #endif
-		
+
 		//ESP8266 only
 #if ESP8266
 		REGISTER_PIN(D0);
@@ -206,7 +204,7 @@ namespace WebDebugger{
 		REGISTER_PIN(D10);
 		REGISTER_PIN(A0);
 #endif
-		
+
 
 		getters["LOCK"]=getters["PAUSE"]=[]{
 			_locked=true;
@@ -225,15 +223,15 @@ namespace WebDebugger{
 		getters["WIFI"]=[]{
 			const auto status=WiFi.status();
 			static const char* statuses[]{
-				"WL_IDLE_STATUS",
-				"WL_NO_SSID_AVAIL",
-				"WL_SCAN_COMPLETED",
-				"WL_CONNECTED",
-				"WL_CONNECT_FAILED",
-				"WL_CONNECTION_LOST",
-				"WL_WRONG_PASSWORD",
-				"WL_DISCONNECTED",
-				"???"
+					"WL_IDLE_STATUS",
+					"WL_NO_SSID_AVAIL",
+					"WL_SCAN_COMPLETED",
+					"WL_CONNECTED",
+					"WL_CONNECT_FAILED",
+					"WL_CONNECTION_LOST",
+					"WL_WRONG_PASSWORD",
+					"WL_DISCONNECTED",
+					"???"
 			};
 			return "Wifi status: "+String(statuses[status<=7?status:8])+"="+status;
 		};
@@ -246,17 +244,17 @@ namespace WebDebugger{
 #if ESP32
 			const auto reason=esp_reset_reason();
 			static const char* reasons[]{
-				"ESP_RST_UNKNOWN",  //!< Reset reason can not be determined
-				"ESP_RST_POWERON",  //!< Reset due to power-on event
-				"ESP_RST_EXT",  //!< Reset by external pin (not applicable for ESP32)
-				"ESP_RST_SW",  //!< Software reset via esp_restart
-				"ESP_RST_PANIC",  //!< Software reset due to exception/panic
-				"ESP_RST_INT_WDT",  //!< Reset (software or hardware) due to interrupt watchdog
-				"ESP_RST_TASK_WDT",  //!< Reset due to task watchdog
-				"ESP_RST_WDT",  //!< Reset due to other watchdogs
-				"ESP_RST_DEEPSLEEP",  //!< Reset after exiting deep sleep mode
-				"ESP_RST_BROWNOUT",  //!< Brownout reset (software or hardware)
-				"ESP_RST_SDIO",  //!< Reset over SDIO
+					"ESP_RST_UNKNOWN",  //!< Reset reason can not be determined
+					"ESP_RST_POWERON",  //!< Reset due to power-on event
+					"ESP_RST_EXT",  //!< Reset by external pin (not applicable for ESP32)
+					"ESP_RST_SW",  //!< Software reset via esp_restart
+					"ESP_RST_PANIC",  //!< Software reset due to exception/panic
+					"ESP_RST_INT_WDT",  //!< Reset (software or hardware) due to interrupt watchdog
+					"ESP_RST_TASK_WDT",  //!< Reset due to task watchdog
+					"ESP_RST_WDT",  //!< Reset due to other watchdogs
+					"ESP_RST_DEEPSLEEP",  //!< Reset after exiting deep sleep mode
+					"ESP_RST_BROWNOUT",  //!< Brownout reset (software or hardware)
+					"ESP_RST_SDIO",  //!< Reset over SDIO
 			};
 			return "Reason: "+String(reasons[reason])+" ("+reason+")";
 #elif ESP8266
@@ -277,6 +275,32 @@ namespace WebDebugger{
 		setters["ARES"]=[](const String& value){
 			analogWriteResolution(value.toInt());
 			return String("analogWriteResolution(")+value.toInt()+")";
+		};
+
+
+		getters["HELP"]=[]{
+			std::map<String,String> info;
+
+			// Collect all names from getters
+			for(const auto& pair:getters)
+				info[pair.first]="get only";
+
+			// Merge setters
+			for(const auto& pair:setters)
+				if(info.find(pair.first)!=info.end())
+					info[pair.first]="get,set";
+				else
+					info[pair.first]="set only";
+
+
+			// Build result sorted alphabetically, skipping numeric names
+			String result="0-255: get,set";
+			for(const auto& pair:info){
+				if(_tryParseInt(pair.first)>=0)
+					continue; // skip numeric names
+				result+="\n"+pair.first+": "+pair.second;
+			}
+			return result;
 		};
 	}
 
@@ -339,6 +363,6 @@ namespace WebDebugger{
 #endif
 			}
 			// ReSharper disable once CppDFALoopConditionNotUpdated
-		} while(_locked);
+		}while(_locked);
 	}
 }
