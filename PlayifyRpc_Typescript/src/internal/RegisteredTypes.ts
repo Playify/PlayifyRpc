@@ -9,8 +9,7 @@ import {
 	ProgrammingLanguageEnumFromAny,
 	ProgrammingLanguageOrAny
 } from "./functionParameterNames";
-// @ts-ignore
-import {version} from "../../package.json";
+import {Rpc} from "../rpc";
 
 
 export type Func=((...args:any[])=>Promise<any>)&{
@@ -132,5 +131,5 @@ async function getMethods(invoker:Invoker):Promise<string[]>{
 async function getRpcVersion(invoker:Invoker):Promise<string>{
 	const getter=invoker[RpcSymbols.GetRpcVersion];
 	if(getter) return await getter.call(invoker);
-	return version+" JS";
+	return Rpc.version;
 }

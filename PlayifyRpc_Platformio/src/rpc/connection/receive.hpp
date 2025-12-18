@@ -195,7 +195,7 @@ namespace RpcInternal{
 					fcc.resolve(methods);
 					return;
 				}else if(meta=="V"){
-					fcc.resolve(String(getRpcVersion()+" C++"));
+					fcc.resolve(Rpc::version);
 				}
 			}else if(input.tryGetArgs(meta,method,lang)){
 				if(meta=="S"){

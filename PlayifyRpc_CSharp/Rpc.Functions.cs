@@ -11,6 +11,7 @@ public static partial class Rpc{
 	public static RpcFunction CreateFunction(string type,string method)=>new(type,method);
 
 	public static RpcFunction RegisterFunction(Delegate func)=>RpcFunction.RegisterFunction(func);
+	public static RpcFunction RegisterFunction(Delegate func,string name)=>RpcFunction.RegisterFunction(func,name);
 	public static void UnregisterFunction(Delegate func)=>RpcFunction.UnregisterFunction(func);
 	public static void UnregisterFunction(RpcFunction func)=>RpcFunction.UnregisterFunction(func);
 

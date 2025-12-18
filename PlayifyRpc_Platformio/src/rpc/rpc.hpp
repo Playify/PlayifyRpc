@@ -46,6 +46,8 @@ namespace Rpc{
 
 	extern String id;
 
+	extern const String version;
+
 
 	//Will be called on loop(), when returning true, the function gets removed
 	void addOnLoop(const std::function<bool()>& func){
@@ -100,6 +102,8 @@ namespace Rpc{
 		if(RpcInternal::RpcConnection::connected)
 			RpcInternal::callRemoteFunction(NULL_STRING,"N",name);
 	}
+	
+	const String version=RpcInternal::getRpcVersion()+" C++";
 
 	//Connection
 	void setup(const String& rpcToken,const String& host,const uint16_t port,const String& path="/rpc"){
@@ -124,9 +128,13 @@ namespace Rpc{
 	RpcFunction createFunction(String type,String method){ return RpcFunction(std::move(type),std::move(method)); }
 
 	RpcFunction registerFunction(CallReceiver func){
-		const String method(RpcInternal::RegisteredTypes::nextFunctionId++);
+		const String method="$"+String(RpcInternal::RegisteredTypes::nextFunctionId++,16);
 		RpcInternal::RegisteredTypes::registeredFunctions[method]=std::move(func);
 		return RpcFunction("$"+id,method);
+	}
+	RpcFunction registerFunction(CallReceiver func,String name){
+		RpcInternal::RegisteredTypes::registeredFunctions[name]=std::move(func);
+		return RpcFunction("$"+id,name);
 	}
 
 	void unregisterFunction(const RpcFunction& func){

@@ -122,7 +122,7 @@ const RpcFunctionClass=class RpcFunction extends (function Extendable(func:Funct
 };
 
 export const RpcFunction:{
-	new<FuncOrReturnType>(type:string,method:string):RpcFunction<FuncOrReturnType>
+	new<FuncOrReturnType=any>(type:string,method:string):RpcFunction<FuncOrReturnType>
 }=RpcFunctionClass as {new(type:string,method:string):any};
 
 export type RpcFunction<FuncOrReturnType=any>=InstanceType<typeof RpcFunctionClass> & Overloaded<FuncOrReturnType>
@@ -134,11 +134,14 @@ export type RpcFunction<FuncOrReturnType=any>=InstanceType<typeof RpcFunctionCla
 let nextId:number=Date.now();
 const functionCache=new WeakMap<((...args:any)=>any),string>();
 
-export function registerFunction<T extends ((...args:any)=>any)>(func:T):RpcFunction<T>{
+export function registerFunction<T extends ((...args:any)=>any)>(func:T,name?:string):RpcFunction<T>{
 	if(func instanceof RpcFunction) return func as RpcFunction<any> as RpcFunction<T>;
-	const already=functionCache.get(func);
-	if(already!=null) return new RpcFunction("$"+RpcId,already);
-	const id=(nextId++).toString(16);
+	if(name==null){
+		const already=functionCache.get(func);
+		if(already!=null) return new RpcFunction("$"+RpcId,already);
+	}else if(registeredFunctions[name])
+		throw new Error("A function with the name \""+name+"\" is already registered");
+	const id=name??(`$${(nextId++).toString(16)}`);
 
 	registeredFunctions[id]=func;
 	functionCache.set(func,id);

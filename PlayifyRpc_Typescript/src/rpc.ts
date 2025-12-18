@@ -9,6 +9,8 @@ import {
 	getFunctionContext,
 	runWithContext,
 } from "./types/functions/FunctionCallContext.js";
+// @ts-ignore
+import {version} from "../package.json";
 import {generateTypeName,registerType,unregisterType} from "./internal/RegisteredTypes.js";
 import {RpcId} from "./connection/RpcId.js";
 import {PendingCall} from "./types/functions/PendingCall.js";
@@ -47,6 +49,8 @@ export class Rpc{
 	}
 	
 	public static setName=setName;
+	
+	public static readonly version:string=version+" JS";
 
 	//Connection
 	public static get isConnected():boolean{

@@ -5,6 +5,7 @@ using PlayifyRpc.Internal;
 using PlayifyRpc.Internal.Data;
 using PlayifyRpc.Types.Functions;
 using PlayifyRpc.Types.Invokers;
+using PlayifyUtility.Jsons;
 using PlayifyUtility.Utils.Extensions;
 
 namespace PlayifyRpc.Types;
@@ -37,6 +38,7 @@ public readonly struct RpcObject(string type):IDynamicMetaObjectProvider,IEquata
 	public override int GetHashCode()=>Type.GetHashCode();
 	public static bool operator ==(RpcObject left,RpcObject right)=>left.Equals(right);
 	public static bool operator !=(RpcObject left,RpcObject right)=>!(left==right);
+	public override string ToString()=>$"{nameof(RpcObject)}({JsonString.Escape(Type)})";
 	#endregion
 
 	#region MetaObject

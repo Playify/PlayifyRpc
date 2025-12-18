@@ -26,10 +26,10 @@ public readonly struct RpcFunction(string type,string method):IEquatable<RpcFunc
 		await Invoker.CallFunction<(string[] parameters,string returns)[]>(Type,null,"S",Method,lang);
 
 
-	public static RpcFunction RegisterFunction(Delegate func){
+	public static RpcFunction RegisterFunction(Delegate func,string? name=null){
 		lock(StringToFunc){
-			if(!FuncToString.TryGetValue(func,out var id)){
-				id=(_id++).ToString("x");
+			if(name!=null||!FuncToString.TryGetValue(func,out var id)){
+				id=name??$"${_id++:x}";
 				StringToFunc.Add(id,func);
 				FuncToString.Add(func,id);
 			}
@@ -70,6 +70,8 @@ public readonly struct RpcFunction(string type,string method):IEquatable<RpcFunc
 
 	public static bool operator ==(RpcFunction left,RpcFunction right)=>left.Equals(right);
 	public static bool operator !=(RpcFunction left,RpcFunction right)=>!(left==right);
+
+	public override string ToString()=>$"{nameof(RpcFunction)}({Type}.{Method})";
 	#endregion
 
 }

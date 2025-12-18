@@ -1,4 +1,3 @@
-using System.Reflection;
 using JetBrains.Annotations;
 using PlayifyRpc.Internal.Data;
 using PlayifyRpc.Types.Exceptions;
@@ -48,10 +47,7 @@ public abstract partial class Invoker{
 	protected abstract Task<RpcDataPrimitive> DynamicInvoke(string? type,string method,RpcDataPrimitive[] args,FunctionCallContext ctx);
 	protected abstract ValueTask<string[]> GetMethods();
 
-	protected virtual ValueTask<string> GetRpcVersion(){
-		var version=Assembly.GetExecutingAssembly().GetName().Version;
-		return new ValueTask<string>((version?.ToString(version.Revision==0?3:4)??"Unknown")+" C#");
-	}
+	protected virtual ValueTask<string> GetRpcVersion()=>new(Rpc.Version);
 
 	protected abstract ValueTask<(string[] parameters,string returns)[]> GetMethodSignatures(string? type,string method,ProgrammingLanguage lang);
 }

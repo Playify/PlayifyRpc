@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Reflection;
+using JetBrains.Annotations;
 using PlayifyRpc.Internal;
 using PlayifyRpc.Types;
 using PlayifyUtility.Loggers;
@@ -29,4 +30,6 @@ public static partial class Rpc{
 	public static string? Name=>RegisteredTypes.Name;
 
 	public static Task SetName(string name)=>RegisteredTypes.SetName(name);
+
+	public static readonly string Version=(Assembly.GetExecutingAssembly().GetName().Version is {} version?version.ToString(version.Revision==0?3:4):"Unknown")+" C#";
 }
