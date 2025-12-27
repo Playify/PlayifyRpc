@@ -87,7 +87,9 @@ public partial class RpcWebServer{
 			},
 			Content=new StringContent(call,Encoding.UTF8,"text/plain"),
 		});
-		return (response.IsSuccessStatusCode,await response.Content.ReadAsStringAsync());
+		var result=await response.Content.ReadAsStringAsync();
+		if(!response.IsSuccessStatusCode&&result=="") result="Error "+((int)response.StatusCode)+": "+response.ReasonPhrase;
+		return (response.IsSuccessStatusCode,result);
 	}
 
 	private const string HelpText="""

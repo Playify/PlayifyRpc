@@ -74,6 +74,10 @@ public partial class RpcWebServer:WebBase{
 			case "/rpc.html":
 				await session.Send.File(Path.ChangeExtension(rpcJs,".html"));
 				return;
+			case var _ when session.Type is RequestType.Post or RequestType.Put:
+				await session.Send.Text("RPC_URL needs to end with /rpc e.g. ws://localhost:4590/rpc\r\n"+
+				                        "Alternatively a reverse proxy should point to /rpc instead",404);
+				return;
 			default:
 				await session.Send.Error(404);
 				return;
