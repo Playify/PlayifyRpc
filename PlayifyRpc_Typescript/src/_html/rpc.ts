@@ -336,7 +336,8 @@ async function getAutoCompleteParameters(value:string,from:number,to:number,star
 			});*/
 			return signatures.map(([parameters,returns])=>{
 				const div=document.createElement("div");
-				const content=checkArgs(splitArgs,parameters)?div.appendChild(document.createElement("b")):div;
+				const checkedArgs=checkArgs(splitArgs,parameters);
+				const content=checkedArgs?div.appendChild(document.createElement("b")):div;
 				content.appendChild(document.createTextNode(value.substring(0,from)));
 				let index=0;
 				for(let parameter of parameters){
@@ -352,6 +353,22 @@ async function getAutoCompleteParameters(value:string,from:number,to:number,star
 				}
 				content.appendChild(document.createTextNode(") ⇒ "));
 				content.appendChild(document.createTextNode(returns));
+				div.onclick=()=>{
+					console.log("TEST",splitArgs,parameters.length);
+					if(checkedArgs){
+						input.focus();
+						if(!value.endsWith(")")){
+							document.execCommand("selectAll",false,null!);
+							document.execCommand("insertText",false,value+=")");
+						}
+						input.selectionStart=input.selectionEnd=value.length;
+					}else if(!value.endsWith(")")){
+						input.focus();
+						document.execCommand("selectAll",false,null!);
+						document.execCommand("insertText",false,value+")");
+						input.selectionStart=input.selectionEnd=value.length;
+					}
+				};
 				return div;
 			});
 		}
