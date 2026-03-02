@@ -23,7 +23,7 @@ html
 		pre.result
 		
 		if js
-			script
+			script(type="module")
 				| !{js}
 		else
-			script(src="/_html/rpc.ts")
+			script(type="module" src="/_html/rpc.ts")
