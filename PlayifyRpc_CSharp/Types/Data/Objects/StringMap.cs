@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using PlayifyRpc.Internal.Data;
+using PlayifyRpc.Types.Exceptions;
 using PlayifyUtility.HelperClasses;
 using PlayifyUtility.Jsons;
 using PlayifyUtility.Utils.Extensions;
@@ -36,8 +37,8 @@ public sealed class StringMap<T>:InsertionOrderDictionary<string,T>,IRpcDataObje
 			try{
 				return tuple.value.TryTo(out T? child,throwOnError,transformer)&&this!.TryAdd(tuple.key,child);
 			} catch(Exception e){
-				throw new InvalidCastException("Error converting primitive "+original+" to "+RpcTypeStringifier.FromType(GetType())+
-				                               ", due to property "+JsonString.Escape(tuple.key),e);
+				throw new RpcDataException("Error converting primitive "+original+" to "+RpcTypeStringifier.FromType(GetType())+
+				                           ", due to property "+JsonString.Escape(tuple.key),e);
 			}
 		});
 

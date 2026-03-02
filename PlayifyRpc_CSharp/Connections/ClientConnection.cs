@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Net.Sockets;
 using PlayifyRpc.Internal;
 using PlayifyRpc.Internal.Data;
@@ -26,8 +27,7 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 	protected static void StartConnect()=>_connectionAttemptOnce=new TaskCompletionSource();
 
 	protected static async Task DoConnect(ClientConnection connection,string? reportedName=null,HashSet<string>? reportedTypes=null){
-		HashSet<string> toRegister;
-		lock(RegisteredTypes.Registered) toRegister=RegisteredTypes.Registered.Keys.ToHashSet();
+		var toRegister=RegisteredTypes.Registered.Keys.ToHashSet();
 		var toDelete=reportedTypes??["$"+Rpc.Id];
 		toRegister.RemoveWhere(toDelete.Remove);
 
@@ -57,16 +57,16 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 	}
 	#endregion
 
-	private readonly Dictionary<int,PendingCallRawData> _activeRequests=new();
-	private readonly Dictionary<int,FunctionCallContext> _currentlyExecuting=new();
+	private readonly ConcurrentDictionary<int,PendingCallRawData> _activeRequests=new();
+	private readonly ConcurrentDictionary<int,FunctionCallContext> _currentlyExecuting=new();
 
 	internal void SendCall(int callId,PendingCallRawData call,DataOutputBuff buff){
-		lock(_activeRequests) _activeRequests.Add(callId,call);
+		_activeRequests.TryAdd(callId,call);
 		SendRaw(buff).Catch(call.Reject);
 	}
 
 	protected override void RespondedToCallId(int callId){
-		lock(_currentlyExecuting) _currentlyExecuting.Remove(callId);
+		_currentlyExecuting.TryRemove(callId,out _);
 	}
 
 	protected async Task Receive(DataInputBuff data){
@@ -82,10 +82,8 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 
 					if(type==null)
 						throw new RpcTypeNotFoundException(null);
-					Invoker? local;
-					lock(RegisteredTypes.Registered)
-						if(!RegisteredTypes.Registered.TryGetValue(type,out local))
-							throw new RpcTypeNotFoundException(type);
+					if(!RegisteredTypes.Registered.TryGetValue(type,out var local))
+						throw new RpcTypeNotFoundException(type);
 
 					var method=data.ReadString();
 
@@ -106,7 +104,7 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 						},
 						tcs,
 						()=>Invoker.CallFunction<string>(null,"c",callId));
-					lock(_currentlyExecuting) _currentlyExecuting.Add(callId,context);
+					_currentlyExecuting.TryAdd(callId,context);
 
 					try{
 						var result=await Invoker.RunAndAwait(ctx=>local.Invoke(type,method,args,ctx),context,type,method,args)
@@ -134,12 +132,10 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 			}
 			case PacketType.FunctionSuccess:{
 				var callId=data.ReadLength();
-				PendingCallRawData? pending;
-				lock(_activeRequests)
-					if(!_activeRequests.Remove(callId,out pending)){
-						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeRequests.TryRemove(callId,out var pending)){
+					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
+					break;
+				}
 				try{
 					var already=new Dictionary<int,RpcDataPrimitive>();
 					pending.Resolve(RpcDataPrimitive.Read(data,already));
@@ -150,12 +146,10 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 			}
 			case PacketType.FunctionError:{
 				var callId=data.ReadLength();
-				PendingCallRawData? pending;
-				lock(_activeRequests)
-					if(!_activeRequests.Remove(callId,out pending)){
-						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeRequests.Remove(callId,out var pending)){
+					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
+					break;
+				}
 				try{
 					pending.Reject(RpcException.Read(data));
 				} catch(Exception e){
@@ -165,35 +159,29 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 			}
 			case PacketType.FunctionCancel:{
 				var callId=data.ReadLength();
-				FunctionCallContext? ctx;
-				lock(_currentlyExecuting)
-					if(!_currentlyExecuting.TryGetValue(callId,out ctx)){
-						//Already finished executing => no longer in list. Would mean additional overhead to prevent this warning, so just not warning here should be fine
-						//Logger.Warning($"Invalid State: No CurrentlyExecuting[{callId}] ({packetType})");
-						break;
-					}
+				if(!_currentlyExecuting.TryGetValue(callId,out var ctx)){
+					//Already finished executing => no longer in list. Would mean additional overhead to prevent this warning, so just not warning here should be fine
+					//Logger.Warning($"Invalid State: No CurrentlyExecuting[{callId}] ({packetType})");
+					break;
+				}
 				ctx.CancelSelf();
 				break;
 			}
 			case PacketType.MessageToExecutor:{
 				var callId=data.ReadLength();
-				FunctionCallContext? ctx;
-				lock(_currentlyExecuting)
-					if(!_currentlyExecuting.TryGetValue(callId,out ctx)){
-						Logger.Warning($"Invalid State: No CurrentlyExecuting[{callId}] ({packetType})");
-						break;
-					}
+				if(!_currentlyExecuting.TryGetValue(callId,out var ctx)){
+					Logger.Warning($"Invalid State: No CurrentlyExecuting[{callId}] ({packetType})");
+					break;
+				}
 				ctx.MessageQueue.DoReceiveMessage(RpcDataPrimitive.ReadArray(data));
 				break;
 			}
 			case PacketType.MessageToCaller:{
 				var callId=data.ReadLength();
-				PendingCallRawData? pending;
-				lock(_activeRequests)
-					if(!_activeRequests.TryGetValue(callId,out pending)){
-						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeRequests.TryGetValue(callId,out var pending)){
+					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
+					break;
+				}
 				pending.MessageQueue.DoReceiveMessage(RpcDataPrimitive.ReadArray(data));
 				break;
 			}
@@ -208,16 +196,13 @@ internal abstract class ClientConnection:AnyConnection,IAsyncDisposable{
 		_disposed=true;
 		GC.SuppressFinalize(this);
 
-		lock(_activeRequests)
-			if(_activeRequests.Count!=0){
-				var exception=new RpcConnectionException("Websocket closed");
-				foreach(var pending in _activeRequests.Values) pending.Reject(exception);
-				_activeRequests.Clear();
-			}
-		lock(_currentlyExecuting)
-			if(_currentlyExecuting.Count!=0)
-				foreach(var ctx in _currentlyExecuting.Values)
-					ctx.CancelSelf();
+		if(!_activeRequests.IsEmpty){
+			var exception=new RpcConnectionException("Websocket closed");
+			foreach(var pending in _activeRequests.Values) pending.Reject(exception);
+			_activeRequests.Clear();
+		}
+		foreach(var ctx in _currentlyExecuting.Values) ctx.CancelSelf();
+		_currentlyExecuting.Clear();
 		return default;
 	}
 }

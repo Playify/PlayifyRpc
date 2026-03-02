@@ -1,18 +1,21 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using JetBrains.Annotations;
 using PlayifyRpc.Internal.Data;
 using PlayifyRpc.Types.Functions;
+using PlayifyUtility.HelperClasses;
 using PlayifyUtility.HelperClasses.Dispose;
 
 namespace PlayifyRpc.Utils;
 
 [PublicAPI]
 public class RpcListenerSet:IEnumerable<FunctionCallContext>{
-	private readonly HashSet<FunctionCallContext> _set=[];
-	private List<Action>? _dispose;
+	private readonly ConcurrentDictionary<FunctionCallContext,VoidType> _set=[];
+	private readonly Queue<Action> _disposeActions=[];//can't be concurrent, as it depends on _set.IsEmpty
 
 	private RpcDataPrimitive.Already Already=>new(a=>{
-		lock(this) (_dispose??=[]).Add(a);
+		lock(_disposeActions)
+			_disposeActions.Enqueue(a);
 	});
 
 	public RpcDataPrimitive[]? LastMessage{get;private set;}
@@ -20,9 +23,8 @@ public class RpcListenerSet:IEnumerable<FunctionCallContext>{
 
 	public void SendAllRaw(params RpcDataPrimitive[] args){
 		LastMessage=args;
-		lock(_set)
-			foreach(var ctx in _set)
-				ctx.SendMessageRaw(args);
+		foreach(var pair in _set)
+			pair.Key.SendMessageRaw(args);
 	}
 
 	public void SendAll(params object?[] args)=>SendAllRaw(RpcDataPrimitive.FromArray(args,Already));
@@ -34,9 +36,8 @@ public class RpcListenerSet:IEnumerable<FunctionCallContext>{
 	public void SendLazyRaw(Func<RpcDataPrimitive> generate)=>SendLazyRaw(()=>[generate()]);
 
 	public void SendLazyRaw(Func<RpcDataPrimitive[]> generate){
-		lock(_set)
-			if(_set.Count==0)
-				return;
+		if(_set.IsEmpty) return;
+
 		var args=generate();
 		SendAllRaw(args);
 	}
@@ -44,45 +45,34 @@ public class RpcListenerSet:IEnumerable<FunctionCallContext>{
 
 	[MustDisposeResource]
 	public IDisposable Add(FunctionCallContext ctx){
-		lock(_set) _set.Add(ctx);
+		_set.TryAdd(ctx,default);
 		return new CallbackAsDisposable(()=>Remove(ctx));
 	}
 
 	public void Remove(FunctionCallContext ctx){
-		lock(_set) _set.Remove(ctx);
-		lock(this){
-			if(_set.Count!=0||_dispose==null) return;
-			foreach(var action in _dispose) action();
-			_dispose=null;
-		}
-	}
-
-	public bool Contains(FunctionCallContext ctx){
-		lock(_set) return _set.Contains(ctx);
+		if(!_set.TryRemove(ctx,out _)) return;
+		lock(_disposeActions)
+			if(_set.IsEmpty)
+				while(_disposeActions.Count!=0)
+					_disposeActions.Dequeue()();
 	}
 
 	public void Clear(){
-		lock(_set) _set.Clear();
-		lock(this){
-			if(_dispose==null) return;
-			foreach(var action in _dispose) action();
-			_dispose=null;
+		lock(_disposeActions){
+			_set.Clear();
+			while(_disposeActions.Count!=0)
+				_disposeActions.Dequeue()();
 		}
 	}
 
-	public int Count{
-		get{
-			lock(_set) return _set.Count;
-		}
-	}
-
-	public static explicit operator HashSet<FunctionCallContext>(RpcListenerSet listeners)=>listeners._set;
+	public bool Contains(FunctionCallContext ctx)=>_set.ContainsKey(ctx);
+	
+	public bool IsEmpty=>_set.IsEmpty;
+	public int Count=>_set.Count;
 
 
 	[MustDisposeResource]
-	public IEnumerator<FunctionCallContext> GetEnumerator(){
-		lock(_set) return _set.ToList().GetEnumerator();
-	}
+	public IEnumerator<FunctionCallContext> GetEnumerator()=>_set.Keys.GetEnumerator();
 
 	[MustDisposeResource]
 	IEnumerator IEnumerable.GetEnumerator()=>((IEnumerable<FunctionCallContext>)this).GetEnumerator();

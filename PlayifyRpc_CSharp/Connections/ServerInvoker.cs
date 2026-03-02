@@ -9,21 +9,30 @@ namespace PlayifyRpc.Connections;
 
 [UsedImplicitly(ImplicitUseTargetFlags.Members)]
 internal class ServerInvoker(ServerConnection connection):TypeInvoker{
+	private bool _handShakeHappened;
 
 	[RpcNamed("N")]//Rpc.SetName
 	public void Name(string? name)=>connection.Name=name;
 
 	[RpcNamed("H")]//Connections
-	public void Handshake(string? name)=>Name(name);
+	public void Handshake(string? name){
+		if(_handShakeHappened) throw new Exception("Handshake has already been called");
+		_handShakeHappened=true;
+		Name(name);
+	}
 
 	[RpcNamed("H")]
 	public void Handshake(string? name,string[]? register,string[]? unregister){
+		if(_handShakeHappened) throw new Exception("Handshake has already been called");
+		_handShakeHappened=true;
 		Name(name);
 		Handshake(register,unregister);
 	}
 
 	[RpcNamed("H")]
 	public void Handshake(string[]? register,string[]? unregister){
+		if(_handShakeHappened) throw new Exception("Handshake has already been called");
+		_handShakeHappened=true;
 		if(register!=null) connection.Register(register,false);
 		if(unregister!=null) connection.Unregister(unregister,false);
 	}

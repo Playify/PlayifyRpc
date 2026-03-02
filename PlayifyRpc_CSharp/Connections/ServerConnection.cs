@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using PlayifyRpc.Internal;
@@ -14,8 +15,8 @@ namespace PlayifyRpc.Connections;
 
 internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 	internal static readonly HashSet<ServerConnection> Connections=[];
-	private readonly Dictionary<int,(ServerConnection respondFrom,int respondId)> _activeExecutions=new();
-	private readonly Dictionary<int,(ServerConnection respondTo,int respondId)> _activeRequests=new();
+	private readonly ConcurrentDictionary<int,(ServerConnection respondFrom,int respondId)> _activeExecutions=new();
+	private readonly ConcurrentDictionary<int,(ServerConnection respondTo,int respondId)> _activeRequests=new();
 	internal readonly HashSet<string> Types=[];
 	private readonly ServerInvoker _invoker;
 	private int _nextId;
@@ -41,20 +42,23 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 			return k.DisposeAsync();
 		})).AsTask().Background();
 
-		lock(RpcServer.Types){
-			RpcServer.Types["$"+id]=this;
-			Types.Add("$"+id);
+		
+		if(!RegisteredServerTypes.Register("$"+Id,this)){
+			ForceUnregister();
+			throw new Exception("Cannot register internal rpc-type");
 		}
+		Types.Add("$"+id);
 	}
 
 	//Used when the constructor fails
 	protected void ForceUnregister(){
 		lock(Connections) Connections.Remove(this);
 
-		lock(RpcServer.Types){
-			foreach(var type in Types)
-				if(RpcServer.Types.Remove(type,out var con)&&con!=this)
-					RpcServer.Types[type]=con;//if deleted wrongly, put back in
+		lock(Types){
+			Types.RemoveWhere(s=>RegisteredServerTypes.Unregister(s,this));
+			if(Types.Count==0) return;
+			
+			Logger.Error("Error unregistering all. Types could not be unregistered properly: "+Types.Select(t=>$"\"{t}\"").Join(","));
 			Types.Clear();
 		}
 	}
@@ -69,23 +73,18 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 
 		ForceUnregister();
 
-		(ServerConnection respondTo,int respondId)[] toReject;
-		(ServerConnection respondTo,int respondId)[] toCancel;
-		lock(_activeRequests){
-			toReject=_activeRequests.Values.ToArray();
-			_activeRequests.Clear();
-		}
-		lock(_activeRequests){
-			toCancel=_activeExecutions.Values.ToArray();
-			_activeExecutions.Clear();
-		}
+			
 		var exception=new RpcConnectionException("Connection closed by "+PrettyName);
-		await Task.WhenAll(toReject.Select(t=>t.respondTo.Reject(t.respondId,exception))
-		                           .Concat(toCancel.Select(t=>t.respondTo.CancelRaw(t.respondId,null))));
+		var task=Task.WhenAll(_activeRequests.Values.Select(t=>t.respondTo.Reject(t.respondId,exception))
+		                           .Concat(_activeExecutions.Values.Select(t=>t.respondFrom.CancelRaw(t.respondId,null))));
+		_activeRequests.Clear();
+		_activeExecutions.Clear();
+		
+		await task;
 	}
 
 	protected override void RespondedToCallId(int callId){
-		lock(_activeExecutions) _activeExecutions.Remove(callId);
+		_activeExecutions.TryRemove(callId,out _);
 	}
 
 	protected async Task Receive(DataInputBuff data){
@@ -99,14 +98,12 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 
 				if(type==null) await CallServer(this,data,callId);
 				else{
-					ServerConnection? handler;
-					lock(RpcServer.Types)
-						if(!RpcServer.Types.TryGetValue(type,out handler))
-							handler=null;
+					if(!RegisteredServerTypes.TryGet(type,out var handler))
+						handler=null;
 					if(handler==null) await Reject(callId,new RpcTypeNotFoundException(type));
 					else{
 						var task=handler.CallFunction(type,data,this,callId,out var sentId);
-						lock(_activeExecutions) _activeExecutions.Add(callId,(handler,sentId));
+						_activeExecutions.TryAdd(callId,(handler,sentId));
 						await task;
 					}
 				}
@@ -114,12 +111,10 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 			}
 			case PacketType.FunctionSuccess:{
 				var callId=data.ReadLength();
-				(ServerConnection respondTo,int respondId) tuple;
-				lock(_activeRequests)
-					if(!_activeRequests.Remove(callId,out tuple)){
-						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeRequests.Remove(callId,out var tuple)){
+					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
+					break;
+				}
 				try{
 					await tuple.respondTo.ResolveRaw(tuple.respondId,data);
 				} catch(CloseException){
@@ -129,12 +124,10 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 			}
 			case PacketType.FunctionError:{
 				var callId=data.ReadLength();
-				(ServerConnection respondTo,int respondId) tuple;
-				lock(_activeRequests)
-					if(!_activeRequests.Remove(callId,out tuple)){
-						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeRequests.Remove(callId,out var tuple)){
+					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
+					break;
+				}
 				try{
 					await tuple.respondTo.RejectRaw(tuple.respondId,data);
 				} catch(CloseException){
@@ -144,46 +137,40 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 			}
 			case PacketType.FunctionCancel:{
 				var callId=data.ReadLength();
-				(ServerConnection respondTo,int respondId) tuple;
-				lock(_activeExecutions)
-					if(!_activeExecutions.TryGetValue(callId,out tuple)){
-						Logger.Warning($"Invalid State: No ActiveExecution[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeExecutions.TryGetValue(callId,out var tuple)){
+					Logger.Warning($"Invalid State: No ActiveExecution[{callId}] ({packetType})");
+					break;
+				}
 				try{
-					await tuple.respondTo.CancelRaw(tuple.respondId,data);
+					await tuple.respondFrom.CancelRaw(tuple.respondId,data);
 				} catch(CloseException){
-					await tuple.respondTo.DisposeAsync();
+					await tuple.respondFrom.DisposeAsync();
 				}
 				break;
 			}
 			case PacketType.MessageToExecutor:{
 				var callId=data.ReadLength();
-				(ServerConnection respondTo,int respondId) tuple;
-				lock(_activeExecutions)
-					if(!_activeExecutions.TryGetValue(callId,out tuple)){
-						Logger.Warning($"Invalid State: No ActiveExecution[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeExecutions.TryGetValue(callId,out var tuple)){
+					Logger.Warning($"Invalid State: No ActiveExecution[{callId}] ({packetType})");
+					break;
+				}
 				var buff=new DataOutputBuff();
 				buff.WriteByte((byte)PacketType.MessageToExecutor);
 				buff.WriteLength(tuple.respondId);
 				buff.Write(data);
 				try{
-					await tuple.respondTo.SendRaw(buff);
+					await tuple.respondFrom.SendRaw(buff);
 				} catch(CloseException){
-					await tuple.respondTo.DisposeAsync();
+					await tuple.respondFrom.DisposeAsync();
 				}
 				break;
 			}
 			case PacketType.MessageToCaller:{
 				var callId=data.ReadLength();
-				(ServerConnection respondTo,int respondId) tuple;
-				lock(_activeRequests)
-					if(!_activeRequests.TryGetValue(callId,out tuple)){
-						Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
-						break;
-					}
+				if(!_activeRequests.TryGetValue(callId,out var tuple)){
+					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
+					break;
+				}
 				var buff=new DataOutputBuff();
 				buff.WriteByte((byte)PacketType.MessageToCaller);
 				buff.WriteLength(tuple.respondId);
@@ -211,7 +198,7 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 		buff.Write(data);
 
 
-		lock(_activeRequests) _activeRequests.Add(callId,(respondTo,respondId));
+		_activeRequests.TryAdd(callId,(respondTo,respondId));
 
 		return SendRaw(buff);
 	}
@@ -258,20 +245,18 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 
 	internal void Register(string[] types,bool log){
 		if(types.Length==0) return;
-		string[] failed;
-		lock(RpcServer.Types)
-			failed=types.Where(type=>{
-				if(!RpcServer.Types.TryAdd(type,this)) return true;
-				Types.Add(type);
-				return false;
-			}).ToArray();
+		List<string>? failed=null;
+		lock(Types)
+			foreach(var type in types)
+				if(!RegisteredServerTypes.Register(type,this)) (failed??=[]).Add(type);
+				else Types.Add(type);
 
-		if(failed.Length!=0){
+		if(failed!=null){
 			if(log)
 				Logger.Warning(types.Length==1
 					               ?$"Tried registering Type \"{types[0]}\""
 					               :$"Tried registering Types \"{types.Join("\",\"")}\"");
-			throw new RpcException(failed.Length==1
+			throw new RpcException(failed.Count==1
 				                       ?$"Type \"{failed[0]}\" was already registered"
 				                       :$"Types \"{failed.Join("\",\"")}\" were already registered");
 		}
@@ -283,20 +268,19 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 
 	internal void Unregister(string[] types,bool log){
 		if(types.Length==0) return;
-		string[] failed;
-		lock(RpcServer.Types)
-			failed=types.Where(type=>{
-				if(!Types.Remove(type)) return true;
-				RpcServer.Types.Remove(type);
-				return false;
-			}).ToArray();
+		List<string>? failed=null;
 
-		if(failed.Length!=0){
+		lock(Types)
+			foreach(var type in types)
+				if(!Types.Remove(type)||!RegisteredServerTypes.Unregister(type,this))
+					(failed??=[]).Add(type);
+
+		if(failed!=null){
 			if(log)
 				Logger.Warning(types.Length==1
 					               ?$"Tried unregistering Type \"{types[0]}\""
 					               :$"Tried unregistering Types \"{types.Join("\",\"")}\"");
-			throw new RpcException(failed.Length==1
+			throw new RpcException(failed.Count==1
 				                       ?$"Type \"{failed[0]}\" was not registered"
 				                       :$"Types \"{failed.Join("\",\"")}\" were not registered");
 		}
@@ -307,10 +291,8 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 	}
 	#endregion
 
-	public string GetCaller(int callId){
-		lock(_activeRequests)
-			if(_activeRequests.TryGetValue(callId,out var tuple))
-				return tuple.respondTo.PrettyName;
-		throw new RpcException("Error finding caller");
-	}
+	public string GetCaller(int callId)
+		=>_activeRequests.TryGetValue(callId,out var tuple)
+			  ?tuple.respondTo.PrettyName
+			  :throw new RpcException("Error finding caller");
 }

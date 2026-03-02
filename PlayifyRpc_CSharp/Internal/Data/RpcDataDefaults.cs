@@ -216,7 +216,7 @@ internal static class RpcDataDefaults{
 						else return p.RemoveAlready(expando);
 					} catch(Exception e){
 						p.RemoveAlready(expando);
-						throw new InvalidCastException("Error converting primitive "+p+" to ExpandoObject, due to property "+JsonString.Escape(key),e);
+						throw new RpcDataException("Error converting primitive "+p+" to ExpandoObject, due to property "+JsonString.Escape(key),e);
 					}
 				return expando;
 			},
@@ -231,11 +231,11 @@ internal static class RpcDataDefaults{
 				foreach(var (key,child) in props)
 					try{
 						if(child.IsString(out var s)) nvc.Add(key,s);
-						else if(throwOnError) throw new InvalidCastException("Error converting "+child+" to string");
+						else if(throwOnError) throw new RpcDataException("Error converting "+child+" to string");
 						else return p.RemoveAlready(nvc);
 					} catch(Exception e){
 						p.RemoveAlready(nvc);
-						throw new InvalidCastException("Error converting primitive "+p+" to ExpandoObject, due to property "+JsonString.Escape(key),e);
+						throw new RpcDataException("Error converting primitive "+p+" to ExpandoObject, due to property "+JsonString.Escape(key),e);
 					}
 				return nvc;
 			},
@@ -311,7 +311,7 @@ internal static class RpcDataDefaults{
 						else return p.RemoveAlready(array);
 					} catch(Exception e){
 						p.RemoveAlready(array);
-						throw new InvalidCastException("Error converting primitive "+p+" to "+RpcTypeStringifier.FromType(elementType)+"[], due to index "+i,e);
+						throw new RpcDataException("Error converting primitive "+p+" to "+RpcTypeStringifier.FromType(elementType)+"[], due to index "+i,e);
 					}
 				return array;
 			},
@@ -337,7 +337,7 @@ internal static class RpcDataDefaults{
 						else return p.RemoveAlready(instance);
 					} catch(Exception e){
 						p.RemoveAlready(instance);
-						throw new InvalidCastException("Error converting primitive "+p+" to List<"+RpcTypeStringifier.FromType(elementType)+">, due to index "+instance.Count,e);
+						throw new RpcDataException("Error converting primitive "+p+" to List<"+RpcTypeStringifier.FromType(elementType)+">, due to index "+instance.Count,e);
 					}
 				return instance;
 			},
@@ -414,7 +414,7 @@ internal static class RpcDataDefaults{
 			if(primitive.IsAlready(out Json already)) return already;
 			if(primitive.IsArray(out var arr)) return ReadJsonArray(primitive,arr,throwOnError);
 			if(primitive.IsObject(out var obj)) return ReadJsonObject(primitive,obj,throwOnError);
-			if(throwOnError) throw new InvalidCastException("Error converting primitive "+primitive+" to a Json value");
+			if(throwOnError) throw new RpcDataException("Can't convert primitive "+primitive+" to a json compatible type");
 			return null;
 		}
 
@@ -429,7 +429,7 @@ internal static class RpcDataDefaults{
 					}
 				} catch(Exception e){
 					p.RemoveAlready(array);
-					throw new InvalidCastException("Error converting primitive "+p+" to JsonArray, due to index "+array.Count,e);
+					throw new RpcDataException("Error converting primitive "+p+" to JsonArray, due to index "+array.Count,e);
 				}
 			return array;
 		}
@@ -445,7 +445,7 @@ internal static class RpcDataDefaults{
 					}
 				} catch(Exception e){
 					p.RemoveAlready(obj);
-					throw new InvalidCastException("Error converting primitive "+p+" to JsonObject, due to property "+JsonString.Escape(key),e);
+					throw new RpcDataException("Error converting primitive "+p+" to JsonObject, due to property "+JsonString.Escape(key),e);
 				}
 			return obj;
 		}

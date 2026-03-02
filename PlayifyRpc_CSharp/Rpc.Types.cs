@@ -30,7 +30,8 @@ public static partial class Rpc{
 	public static Task UnregisterType(string type)=>RegisteredTypes.Unregister(type);
 	public static Task UnregisterType(RpcObject type)=>RegisteredTypes.Unregister(type.Type);
 
-	public static IReadOnlyCollection<string> LocalTypes=>RegisteredTypes.Registered.Keys;
+	public static IReadOnlyCollection<string> LocalTypes=>RegisteredTypes.Registered.Keys as IReadOnlyCollection<string>
+	                                                      ??new List<string>(RegisteredTypes.Registered.Keys);//fallback should not be executed
 
 	public static string GenerateTypeName()=>"$"+Id+"$"+Guid.NewGuid().ToString("N");
 

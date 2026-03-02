@@ -1,6 +1,6 @@
 import {RpcName,setName} from "./connection/RpcName.js";
 import {isConnected,waitConnected} from "./connection/WebSocketConnection.js";
-import {createRemoteObject,RpcObject} from "./types/RpcObject.js";
+import {createRemoteObject,RpcObject,RpcSymbols} from "./types/RpcObject.js";
 import {registerFunction,RpcFunction,unregisterFunction} from "./types/RpcFunction.js";
 import {
 	callLocal,

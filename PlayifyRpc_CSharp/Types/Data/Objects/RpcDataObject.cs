@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using PlayifyRpc.Internal.Data;
+using PlayifyRpc.Types.Exceptions;
 using PlayifyRpc.Utils;
 
 namespace PlayifyRpc.Types.Data.Objects;
@@ -23,7 +24,7 @@ public abstract partial class RpcDataObject:IRpcDataObject,ICloneable{
 
 	public static bool StaticLoad(Type type,RpcDataPrimitive primitive,bool throwOnError,RpcDataTransformerAttribute? transformer=null){
 		if(primitive.IsObject(out var entries)) return Reflection.SetProps(type,entries,throwOnError,transformer,primitive);
-		return throwOnError?throw new InvalidCastException("Error converting primitive "+primitive+" to static "+RpcTypeStringifier.FromType(type)):false;
+		return throwOnError?throw new RpcDataException("Error converting primitive "+primitive+" to static "+RpcTypeStringifier.FromType(type)):false;
 	}
 
 	public static RpcDataPrimitive StaticSave(Type type,RpcDataPrimitive.Already? already=null,RpcDataTransformerAttribute? transformer=null){

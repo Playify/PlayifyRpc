@@ -1,4 +1,5 @@
 using PlayifyRpc.Types.Data;
+using PlayifyRpc.Types.Exceptions;
 
 namespace PlayifyRpc.Internal.Data;
 
@@ -19,7 +20,7 @@ public readonly partial struct RpcDataPrimitive{
 	public object? To(Type type,RpcDataTransformerAttribute? transformer=null)
 		=>TryTo(type,out var obj,true,transformer)
 			  ?obj
-			  :throw new InvalidCastException("Error converting primitive "+this+" to "+RpcTypeStringifier.FromType(type));
+			  :throw new RpcDataException("Error converting primitive "+this+" to "+RpcTypeStringifier.FromType(type)+", error was not thrown properly");
 
 	public bool TryTo<T>(out T? t,bool throwOnError=false,RpcDataTransformerAttribute? transformer=null){
 		if(TryTo(typeof(T),out var obj,throwOnError,transformer)){
@@ -42,7 +43,7 @@ public readonly partial struct RpcDataPrimitive{
 				if(result!=RpcData.ContinueWithNext) return true;
 			}
 		if(throwOnError)
-			throw new InvalidCastException("Error converting primitive "+this+" to "+RpcTypeStringifier.FromType(type));
+			throw new RpcDataException("Can't convert primitive "+this+" to "+RpcTypeStringifier.FromType(type)+", as those types are incompatible");
 		result=null;
 		return false;
 	}

@@ -13,28 +13,28 @@ namespace PlayifyRpc.Internal;
 
 [PublicAPI]
 public static class RpcServer{//Class is registered as "Rpc" from Server
-
-	internal static readonly Dictionary<string,ServerConnection> Types=new();
-
+	
 	public static RpcObject? GetObjectWithFallback(params string[] types){
-		lock(Types)
-			foreach(var s in types)
-				if(Types.ContainsKey(s))
-					return new RpcObject(s);
+		foreach(var s in types)
+			if(RegisteredServerTypes.Exists(s))
+				return new RpcObject(s);
 		return null;
 	}
 
-	public static int CheckTypes(params string[] types){
-		lock(Types) return Types.Keys.Intersect(types).Count();
+	public static int CheckTypes(params string[] types)=>RegisteredServerTypes.GetAllTypes().Intersect(types).Count();
+
+	public static bool CheckType(string type)=>RegisteredServerTypes.Exists(type);
+
+	public static Task ListenType(FunctionCallContext ctx,string type)=>RegisteredServerTypes.Listen(ctx,type);
+
+	public static async Task ListenTypes(FunctionCallContext ctx){
+		using var _=RegisteredServerTypes.AllTypesListeners.Add(ctx);
+		foreach(var s in RegisteredServerTypes.GetAllTypes())
+			ctx.SendMessage(s,true);
+		await ctx.TaskRaw;
 	}
 
-	public static bool CheckType(string type){
-		lock(Types) return Types.ContainsKey(type);
-	}
-
-	public static string[] GetAllTypes(){
-		lock(Types) return Types.Keys.OrderBy(s=>s).ToArray();
-	}
+	public static string[] GetAllTypes()=>RegisteredServerTypes.GetAllTypes().OrderBy(s=>s).ToArray();
 
 	public static string[] GetAllConnections(){
 		lock(ServerConnection.Connections) return ServerConnection.Connections.Select(c=>c.PrettyName).OrderBy(s=>s).ToArray();
@@ -70,7 +70,7 @@ public static class RpcServer{//Class is registered as "Rpc" from Server
 			foreach(var c in ServerConnection
 			                 .Connections
 			                 .OrderBy(c=>c.PrettyName))
-				lock(Types)
+				lock(c.Types)
 					map.Add(c.PrettyName,(includeHidden
 						                      ?c.Types
 						                      :c.Types.Where(t=>t!="$"+c.Id))
@@ -110,6 +110,16 @@ public static class RpcServer{//Class is registered as "Rpc" from Server
 	public static object? Return(object? o)=>o;
 	public static object?[] ReturnArguments(params object?[] o)=>o;
 	public static void Throw(string? msg=null)=>throw new Exception(msg);
+
+	public static int Test(NestedObject? n){
+		var i=0;
+		for(;n!=null;n=n.Child) i++;
+		return i;
+	}
+
+	public class NestedObject:RpcDataObject{
+		public NestedObject? Child;
+	}
 	#endregion
 
 	#region Logging

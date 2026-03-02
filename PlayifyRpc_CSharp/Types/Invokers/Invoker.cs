@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using JetBrains.Annotations;
 using PlayifyRpc.Internal.Data;
 using PlayifyRpc.Types.Exceptions;
@@ -8,7 +9,7 @@ namespace PlayifyRpc.Types.Invokers;
 [PublicAPI]
 public abstract partial class Invoker{
 	private static readonly ThreadLocal<string?> MetaCallType=new();
-	private static readonly Dictionary<string,RpcInvoker.MethodCandidate> MetaCache=new();
+	private static readonly ConcurrentDictionary<string,RpcInvoker.MethodCandidate> MetaCache=new();
 
 	protected internal Task<RpcDataPrimitive> Invoke(string? type,string? method,RpcDataPrimitive[] args,FunctionCallContext ctx){
 		if(method!=null) return DynamicInvoke(type,method,args,ctx);
@@ -18,18 +19,14 @@ public abstract partial class Invoker{
 		MetaCallType.Value=type;
 
 		//Meta calls, using null as method
-
-		RpcInvoker.MethodCandidate? candidate;
-		lock(MetaCache)
-			if(!MetaCache.TryGetValue(meta??"",out candidate))
-				MetaCache[meta??""]=
-					candidate=RpcInvoker.MethodCandidate.Create(
-						          ((Delegate)(meta switch{
-								                     "M"=>GetMethods,
-								                     "S"=>GetMethodSignaturesBase,
-								                     "V"=>GetRpcVersion,
-								                     _=>throw new RpcMetaMethodNotFoundException(type,meta),
-							                     })).Method)??throw new RpcMetaMethodNotFoundException(type,meta);
+		var candidate=MetaCache.GetOrAdd(meta??"",_=>
+			RpcInvoker.MethodCandidate.Create(
+				((Delegate)(meta switch{
+						           "M"=>GetMethods,
+						           "S"=>GetMethodSignaturesBase,
+						           "V"=>GetRpcVersion,
+						           _=>throw new RpcMetaMethodNotFoundException(type,meta),
+					           })).Method)??throw new RpcMetaMethodNotFoundException(type,meta));
 
 		return RpcInvoker.InvokeThrow(this,[candidate],args.Skip(1).ToArray(),msg=>new RpcMetaMethodNotFoundException(type,meta,msg),ctx);
 	}

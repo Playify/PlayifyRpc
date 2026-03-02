@@ -28,16 +28,10 @@ public abstract partial class Invoker{
 	}
 
 	internal static PendingCall<RpcDataPrimitive> CallFunctionRaw(string? type,string? method,RpcDataPrimitive[] args){
-		if(type!=null){
-			Invoker? local;
-			lock(RegisteredTypes.Registered)
-				if(!RegisteredTypes.Registered.TryGetValue(type,out local))
-					local=null;
-			if(local!=null){
-				ListenAllCalls.Broadcast(type,method,args);
-				var pending=CallLocal(ctx=>local.Invoke(type,method,args,ctx),type,method,args);
-				return pending;
-			}
+		if(type!=null&&RegisteredTypes.Registered.GetValueOrDefault(type) is{} local){
+			ListenAllCalls.Broadcast(type,method,args);
+			var pending=CallLocal(ctx=>local.Invoke(type,method,args,ctx),type,method,args);
+			return pending;
 		}
 
 		var rawData=new PendingCallRawData(type,method,args);

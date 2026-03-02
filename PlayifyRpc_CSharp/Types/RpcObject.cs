@@ -24,12 +24,7 @@ public readonly struct RpcObject(string type):IDynamicMetaObjectProvider,IEquata
 	public Task<string> GetRpcVersion()=>Invoker.CallFunction<string>(Type,null,"V");
 	public Task<bool> Exists()=>Invoker.CallFunction<bool>(null,"E",Type);
 
-	public bool RegisteredLocally{
-		get{
-			lock(RegisteredTypes.Registered)
-				return RegisteredTypes.Registered.ContainsKey(Type);
-		}
-	}
+	public bool RegisteredLocally=>RegisteredTypes.Registered.ContainsKey(Type);
 
 
 	#region Equality

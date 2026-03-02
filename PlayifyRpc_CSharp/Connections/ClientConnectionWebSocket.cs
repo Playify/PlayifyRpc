@@ -55,10 +55,9 @@ internal class ClientConnectionWebSocket:ClientConnection{
 				if(reportedName!=null)
 					query+="&name="+WebUtility.UrlEncode(reportedName);
 
-				lock(RegisteredTypes.Registered)
-					foreach(var type in RegisteredTypes.Registered.Keys)
-						if(reportedTypes.Add(type))
-							query+="&type="+WebUtility.UrlEncode(type);
+				foreach(var type in RegisteredTypes.Registered.Keys)
+					if(reportedTypes.Add(type))
+						query+="&type="+WebUtility.UrlEncode(type);
 
 
 				uri=new UriBuilder(uri){

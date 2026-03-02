@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using JetBrains.Annotations;
 using PlayifyRpc.Internal.Data;
+using PlayifyRpc.Types.Exceptions;
 using PlayifyUtility.Jsons;
 using PlayifyUtility.Utils;
 
@@ -31,8 +33,8 @@ public partial class RpcDataObject{
 	}
 
 	public class Reflection{
-		private static readonly Dictionary<Type,Reflection> Cached=new();
-		private static readonly Dictionary<Type,Reflection> CachedStatic=new();
+		private static readonly ConcurrentDictionary<Type,Reflection> Cached=new();
+		private static readonly ConcurrentDictionary<Type,Reflection> CachedStatic=new();
 		private readonly List<(string key,Func<object?,RpcDataPrimitive.Already,RpcDataTransformerAttribute?,RpcDataPrimitive> getValue)> _getters=[];
 
 		private delegate bool SetterFunc(object? thiz,RpcDataPrimitive value,bool throwOnError,RpcDataTransformerAttribute? transformer);
@@ -79,15 +81,9 @@ public partial class RpcDataObject{
 				return true;
 			};
 
-		private static Reflection Get(Type type){
-			lock(Cached)
-				return Cached.TryGetValue(type,out var already)?already:Cached[type]=new Reflection(type,false);
-		}
+		private static Reflection Get(Type type)=>Cached.GetOrAdd(type,static t=>new Reflection(t,false));
 
-		private static Reflection GetStatic(Type type){
-			lock(CachedStatic)
-				return CachedStatic.TryGetValue(type,out var already)?already:CachedStatic[type]=new Reflection(type,true);
-		}
+		private static Reflection GetStatic(Type type)=>CachedStatic.GetOrAdd(type,static t=>new Reflection(t,true));
 
 		public static IEnumerable<(string key,RpcDataPrimitive value)> GetProps(object thiz,RpcDataPrimitive.Already already,RpcDataTransformerAttribute? transformer)
 			=>thiz is Type type
@@ -123,7 +119,7 @@ public partial class RpcDataObject{
 						if(throwOnError) throw new KeyNotFoundException();
 						else return false;
 				} catch(Exception e){
-					throw new InvalidCastException("Error converting primitive "+original+" to "+RpcTypeStringifier.FromType(type)+
+					throw new RpcDataException("Error converting primitive "+original+" to "+RpcTypeStringifier.FromType(type)+
 					                               ", due to property "+JsonString.Escape(key),e);
 				}
 			return true;
@@ -145,10 +141,10 @@ public partial class RpcDataObject{
 					   ||typeInfo._settersIgnoreCase.TryGetValue(key,out setter)){
 						if(!setter(thiz,primitive,throwOnError,transformer)) return false;
 					} else if(extraProp==null||!extraProp(key,primitive,throwOnError,transformer))
-						if(throwOnError) throw new KeyNotFoundException();
+						if(throwOnError) throw new RpcDataException("Property "+JsonString.Escape(key)+" is not valid for "+RpcTypeStringifier.FromType(thiz as Type??thiz.GetType()));
 						else return false;
 				} catch(Exception e){
-					throw new InvalidCastException("Error converting primitive "+original+" to "+RpcTypeStringifier.FromType(thiz as Type??thiz.GetType())+", due to property "+JsonString.Escape(key),e);
+					throw new RpcDataException("Error converting primitive "+original+" to "+RpcTypeStringifier.FromType(thiz as Type??thiz.GetType())+", due to property "+JsonString.Escape(key),e);
 				}
 			return true;
 		}

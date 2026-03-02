@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using PlayifyRpc.Types;
 using PlayifyRpc.Types.Invokers;
@@ -7,7 +8,7 @@ using PlayifyUtility.Utils.Extensions;
 namespace PlayifyRpc.Internal;
 
 internal static class RegisteredTypes{
-	internal static readonly Dictionary<string,Invoker> Registered=new();
+	internal static readonly ConcurrentDictionary<string,Invoker> Registered=new();
 
 	internal static string? Name;
 
@@ -35,23 +36,18 @@ internal static class RegisteredTypes{
 	}
 
 	internal static async Task Register(string type,Invoker invoker){
-		lock(Registered)
-			Registered.Add(type,invoker);
+		if(!Registered.TryAdd(type,invoker))return;
+		
 		try{
 			if(Rpc.IsConnected) await Invoker.CallFunction(null,"+",type);
 		} catch(Exception e){
 			Rpc.Logger.Error($"Error registering type \"{type}\": {e}");
-
-			lock(Registered)
-				if(Registered.TryGetValue(type,out var revert)&&revert==invoker)
-					Registered.Remove(type);
+			Registered.TryRemove(type,invoker);
 		}
 	}
 
 	internal static async Task Unregister(string type){
-		lock(Registered)
-			if(!Registered.ContainsKey(type))
-				return;
+		if(!Registered.ContainsKey(type)) return;
 		try{
 			if(Rpc.IsConnected) await Invoker.CallFunction(null,"-",type);
 		} catch(Exception e){
@@ -59,7 +55,7 @@ internal static class RegisteredTypes{
 
 			//Also delete locally, as it won't be listened to, and on the server it probably is already unregistered
 		} finally{
-			lock(Registered) Registered.Remove(type);
+			Registered.Remove(type, out _);
 		}
 	}
 

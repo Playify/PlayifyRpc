@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using PlayifyRpc.Internal;
 using PlayifyRpc.Internal.Data;
+using PlayifyRpc.Types.Data.Objects;
 using PlayifyRpc.Types.Functions;
 using PlayifyRpc.Types.Invokers;
 using PlayifyUtility.Utils.Extensions;
@@ -20,6 +21,8 @@ public partial class RpcException{
 		$"{typeof(Evaluate).FullName}.",//everything from Evaluate type
 		$"{typeof(RpcWebServer).FullName}.{nameof(RpcWebServer.HandleRequest)}(",
 		$"{typeof(RpcWebServer).FullName}.{nameof(RpcWebServer.HandleWebCall)}(",
+		$"{typeof(RpcDataPrimitive).FullName}.",
+		$"{typeof(RpcDataObject).FullName}.",
 	];
 
 	private static string GetOwnStackTrace(Exception e){

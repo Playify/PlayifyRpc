@@ -371,7 +371,7 @@ public partial class RpcWebServer:WebBase{
 		try{
 
 			string types;
-			lock(RpcServer.Types) types=connection.Types.Where(t=>t!="$"+connection.Id).Select(t=>$"\"{t}\"").Join(",");
+			lock(connection.Types) types=connection.Types.Where(t=>t!="$"+connection.Id).Select(t=>$"\"{t}\"").Join(",");
 
 			connection.Logger.Info(types==""
 				                       ?"Connected (no Types)"
