@@ -64,6 +64,18 @@ public static class RpcServer{//Class is registered as "Rpc" from Server
 		return map;
 	}
 
+	public static StringMap<int> GetStatistics(){
+		var result=new StringMap<int>();
+		var referenced=new HashSet<ServerConnection>();
+		lock(ServerConnection.Connections)
+			foreach(var connection in ServerConnection.Connections)
+				connection.Statistics(Add,c=>referenced.Add(c));
+		Add("referenced",referenced.Count);
+		return result;
+		
+		void Add(string property,int count)=>result[property]=result.TryGetValue(property,out var already)?already+count:count;
+	}
+
 	public static StringMap<string[]> GetRegistrations(bool includeHidden=false){
 		lock(ServerConnection.Connections){
 			var map=new StringMap<string[]>();

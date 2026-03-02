@@ -1,6 +1,6 @@
 {
 	"name": "playify-rpc",
-	"version": "1.9.0",
+	"version": "1.9.1",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -19,7 +19,7 @@
 		"@types/ws": "~8.5.10",
 		"pug-cli": "^1.0.0-alpha6",
 		"typescript": "^5.5.4",
-		"vite":"6.2.3"
+		"vite":"^7.3.1"
 	},
 	"dependencies": {
 		"error-stack-parser": "^2.1.4",

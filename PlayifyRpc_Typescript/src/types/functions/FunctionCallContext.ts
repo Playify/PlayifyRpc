@@ -116,6 +116,15 @@ function callLocalFunction<T>(func:()=>(Promise<T> | T),type:string | null,metho
 	};
 	pending.cancel=()=>pending.finished||context.cancelSelf();
 
+	controller.signal.addEventListener("abort",()=>{
+		try{
+			controller.signal.throwIfAborted();
+			rejectCall.get(pending)?.(new Error("Cancelled"));
+		}catch(e){
+			rejectCall.get(pending)?.(e as Error);
+		}
+	});
+
 	// noinspection JSIgnoredPromiseFromCall
 	invokeForPromise(func,context,resolveCall.get(pending),rejectCall.get(pending),type,method,args);
 

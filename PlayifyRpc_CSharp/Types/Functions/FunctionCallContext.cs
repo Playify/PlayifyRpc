@@ -24,6 +24,11 @@ public sealed class FunctionCallContext{
 		_tcs=tcs;
 		_caller=caller;
 		MessageQueue=new MessageQueue(tcs.Task,type,method,args,_caller);
+
+		//Theoretically, Cancellation and TaskRaw could be separate without any link between,
+		//but usage shows, that the user expects the TaskRaw to get cancelled on .Cancel()
+		var reg=_cts.Token.Register(()=>_tcs.TrySetCanceled(_cts.Token));
+		TaskRaw.ContinueWith(_=>reg.Dispose(),CancellationToken.None);
 	}
 
 	public Task<string> GetCaller()=>_caller();
@@ -38,7 +43,7 @@ public sealed class FunctionCallContext{
 	
 
 	public FunctionCallContext SendMessage(params object?[] args){
-		var already=new RpcDataPrimitive.Already(a=>TaskRaw.ContinueWith(_=>a(),default(CancellationToken)));
+		var already=new RpcDataPrimitive.Already(a=>TaskRaw.ContinueWith(_=>a(),CancellationToken.None));
 		return SendMessageRaw(RpcDataPrimitive.FromArray(args,already));
 	}
 

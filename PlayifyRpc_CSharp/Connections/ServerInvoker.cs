@@ -24,7 +24,6 @@ internal class ServerInvoker(ServerConnection connection):TypeInvoker{
 	[RpcNamed("H")]
 	public void Handshake(string? name,string[]? register,string[]? unregister){
 		if(_handShakeHappened) throw new Exception("Handshake has already been called");
-		_handShakeHappened=true;
 		Name(name);
 		Handshake(register,unregister);
 	}

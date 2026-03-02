@@ -117,7 +117,7 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				}
 				try{
 					await tuple.respondTo.ResolveRaw(tuple.respondId,data);
-				} catch(CloseException){
+				} catch(Exception){
 					await tuple.respondTo.DisposeAsync();
 				}
 				break;
@@ -130,7 +130,7 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				}
 				try{
 					await tuple.respondTo.RejectRaw(tuple.respondId,data);
-				} catch(CloseException){
+				} catch(Exception){
 					await tuple.respondTo.DisposeAsync();
 				}
 				break;
@@ -143,7 +143,7 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				}
 				try{
 					await tuple.respondFrom.CancelRaw(tuple.respondId,data);
-				} catch(CloseException){
+				} catch(Exception){
 					await tuple.respondFrom.DisposeAsync();
 				}
 				break;
@@ -160,7 +160,7 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				buff.Write(data);
 				try{
 					await tuple.respondFrom.SendRaw(buff);
-				} catch(CloseException){
+				} catch(Exception){
 					await tuple.respondFrom.DisposeAsync();
 				}
 				break;
@@ -177,7 +177,7 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 				buff.Write(data);
 				try{
 					await tuple.respondTo.SendRaw(buff);
-				} catch(CloseException){
+				} catch(Exception){
 					await tuple.respondTo.DisposeAsync();
 				}
 				break;
@@ -295,4 +295,15 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 		=>_activeRequests.TryGetValue(callId,out var tuple)
 			  ?tuple.respondTo.PrettyName
 			  :throw new RpcException("Error finding caller");
+
+	internal void Statistics(Action<string,int> values,Action<ServerConnection> referenced){
+		values("connections",1);
+		values("referenced",0);//for better sorting, will be filled out afterwards
+		values("activeRequests",_activeRequests.Count);
+		values("activeExecutions",_activeExecutions.Count);
+		lock(Types) values("types",Types.Count);
+		values("callId_"+PrettyName,_nextId);
+		foreach(var (_,(con,_)) in _activeRequests) referenced(con);
+		foreach(var (_,(con,_)) in _activeExecutions) referenced(con);
+	}
 }

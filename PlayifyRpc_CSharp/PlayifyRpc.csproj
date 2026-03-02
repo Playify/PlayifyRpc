@@ -15,7 +15,7 @@
 		<RepositoryUrl>https://github.com/Playify/PlayifyRpc_CSharp</RepositoryUrl>
 		<RepositoryType>GitHub</RepositoryType>
 		<Authors>Playify</Authors>
-		<Version>1.9.4</Version>
+		<Version>1.9.5</Version>
 
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>

@@ -140,6 +140,14 @@ export async function receiveRpc(data:DataInput){
 					cancelSelf:()=>controller.abort(),
 					[Symbol.asyncIterator]:()=>getAsyncIterator(context),
 				};
+				controller.signal.addEventListener("abort",()=>{
+					try{
+						controller.signal.throwIfAborted();
+						reject(new Error("Cancelled"));
+					}catch(e){
+						reject(e as Error);
+					}
+				});
 				currentlyExecuting.set(callId,context);
 
 
