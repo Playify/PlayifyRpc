@@ -71,6 +71,11 @@ public static class RpcServer{//Class is registered as "Rpc" from Server
 			foreach(var connection in ServerConnection.Connections)
 				connection.Statistics(Add,c=>referenced.Add(c));
 		Add("referenced",referenced.Count);
+		var exec=ServerConnection.MessageToExecutorCount;
+		var send=ServerConnection.MessageToSenderCount;
+		Add("messages",exec+send);
+		Add("messagesToExecutor",exec);
+		Add("messagesToSender",send);
 		return result;
 		
 		void Add(string property,int count)=>result[property]=result.TryGetValue(property,out var already)?already+count:count;

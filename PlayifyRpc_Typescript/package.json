@@ -48,5 +48,7 @@
 		"dist_dev",
 		"vite.d.ts",
 		"tsconfig.json"
-	]
+	],
+	"--token":"https://www.npmjs.com/settings/playify/tokens/",
+	"--token command":"npm config set //registry.npmjs.org/:_authToken=..."
 }

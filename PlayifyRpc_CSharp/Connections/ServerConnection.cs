@@ -9,7 +9,6 @@ using PlayifyUtility.Loggers;
 using PlayifyUtility.Streams.Data;
 using PlayifyUtility.Utils;
 using PlayifyUtility.Utils.Extensions;
-using PlayifyUtility.Web.Utils;
 
 namespace PlayifyRpc.Connections;
 
@@ -18,6 +17,8 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 	private readonly ConcurrentDictionary<int,(ServerConnection respondFrom,int respondId)> _activeExecutions=new();
 	private readonly ConcurrentDictionary<int,(ServerConnection respondTo,int respondId)> _activeRequests=new();
 	internal readonly HashSet<string> Types=[];
+	internal static int MessageToExecutorCount;
+	internal static int MessageToSenderCount;
 	private readonly ServerInvoker _invoker;
 	private int _nextId;
 
@@ -154,6 +155,8 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 					Logger.Warning($"Invalid State: No ActiveExecution[{callId}] ({packetType})");
 					break;
 				}
+				Interlocked.Increment(ref MessageToExecutorCount);
+				
 				var buff=new DataOutputBuff();
 				buff.WriteByte((byte)PacketType.MessageToExecutor);
 				buff.WriteLength(tuple.respondId);
@@ -171,6 +174,8 @@ internal abstract class ServerConnection:AnyConnection,IAsyncDisposable{
 					Logger.Warning($"Invalid State: No ActiveRequest[{callId}] ({packetType})");
 					break;
 				}
+				Interlocked.Increment(ref MessageToSenderCount);
+
 				var buff=new DataOutputBuff();
 				buff.WriteByte((byte)PacketType.MessageToCaller);
 				buff.WriteLength(tuple.respondId);
