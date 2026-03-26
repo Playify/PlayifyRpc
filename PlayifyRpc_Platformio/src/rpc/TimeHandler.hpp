@@ -50,6 +50,13 @@ namespace TimeHandler{
 	uint32_t lastTime;
 	Duration deltaTime;
 
+	
+	//counts up to maximum
+	inline void countUp(Duration& timer){
+		const auto sum=timer+deltaTime;
+		if(sum<timer) timer=Duration::maximum();//Integer Overflow
+		else timer=sum;
+	}
 
 	//counts down to zero, then return true every time
 	inline bool waitZero(Duration& timer){

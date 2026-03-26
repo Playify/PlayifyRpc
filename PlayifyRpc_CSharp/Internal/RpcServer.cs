@@ -127,16 +127,6 @@ public static class RpcServer{//Class is registered as "Rpc" from Server
 	public static object? Return(object? o)=>o;
 	public static object?[] ReturnArguments(params object?[] o)=>o;
 	public static void Throw(string? msg=null)=>throw new Exception(msg);
-
-	public static int Test(NestedObject? n){
-		var i=0;
-		for(;n!=null;n=n.Child) i++;
-		return i;
-	}
-
-	public class NestedObject:RpcDataObject{
-		public NestedObject? Child;
-	}
 	#endregion
 
 	#region Logging

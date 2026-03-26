@@ -23,6 +23,12 @@ public static class DynamicInvoking{
 
 		[return: StringEnum]
 		public static AssemblyFlags TransformerTest(AssemblyFlags x)=>x;
+		
+		public static Task Task1()=>Task.FromResult(123);
+		public static Task<Task> Task2()=>Task.FromResult<Task>(Task.FromResult(123));
+		public static Task<Task<Task>> Task3()=>Task.FromResult(Task.FromResult<Task>(Task.FromResult(123)));
+		public static Task<Task> Task4()=>Task.FromResult(Task.FromException(new Exception()));
+		public static Task<Task> Task5()=>Task.FromResult<Task>(Task.FromResult(Task.FromException(new Exception())));
 	}
 
 	[SetUp]
@@ -42,6 +48,13 @@ public static class DynamicInvoking{
 		Assert.That(await Rpc.CallFunction<bool>("TestClass",nameof(TestClass.Fcc)),Is.True,nameof(FunctionCallContext)+" arguments should be auto filled in");
 		Assert.That(await Rpc.CallFunction<bool>("TestClass",nameof(TestClass.Specific),""),Is.True,"specific types should be prefered over RpcDataPrimitive arguments");
 		Assert.That(await Rpc.CallFunction<object>("TestClass",nameof(TestClass.TransformerTest),AssemblyFlags.PublicKey),Is.EqualTo(nameof(AssemblyFlags.PublicKey)));
+		Assert.That(await Rpc.CallFunction<object>("TestClass",nameof(TestClass.Task1)),Is.Null,"methods returning Task should not return a value");
+		Assert.That(await Rpc.CallFunction<object>("TestClass",nameof(TestClass.Task2)),Is.Null,"methods returning Task<Task> should not return a value");
+		Assert.That(await Rpc.CallFunction<object>("TestClass",nameof(TestClass.Task3)),Is.Null,"methods returning Task<Task<Task>> should not return a value");
+		Assert.ThrowsAsync<RpcException>(async()=>await Rpc.CallFunction<object>("TestClass",nameof(TestClass.Task4)),
+			"methods returning Task<Task> should await those 2 tasks, not fewer");
+		Assert.DoesNotThrowAsync(async()=>await Rpc.CallFunction<object>("TestClass",nameof(TestClass.Task5)),
+			"methods returning Task<Task> should only await those 2 tasks, not any deeper");
 
 		dynamic obj=Rpc.CreateObject("TestClass");
 		var func=obj.Func;

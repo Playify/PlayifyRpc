@@ -13,6 +13,7 @@ public static partial class RpcInvoker{
 		public readonly int MinParameterCount;
 		public readonly int MaxParameterCount;
 		public RpcDataTransformerAttribute? ReturnTransformer;
+		public readonly int VoidTaskDepth;
 
 		private MethodCandidate(MethodInfo methodInfo,ParameterInfo[] allParameters){
 			MethodInfo=methodInfo;
@@ -36,7 +37,9 @@ public static partial class RpcInvoker{
 				MaxParameterCount=ParamArrayType!=null?int.MaxValue:FilteredParameters.Length;
 			}
 
-			if(MethodInfo.ReturnParameter.GetCustomAttribute<RpcDataTransformerAttribute>() is{} attribute) ReturnTransformer=attribute;
+			if(MethodInfo.ReturnParameter?.GetCustomAttribute<RpcDataTransformerAttribute>() is{} attribute) ReturnTransformer=attribute;
+
+			VoidTaskDepth=GetVoidTaskDepth(methodInfo.ReturnType);
 		}
 
 		public Type ParameterType(int index){
@@ -97,6 +100,23 @@ public static partial class RpcInvoker{
 			var allParameters=info.GetParameters();
 			if(allParameters.Any(p=>p.IsOut||p.ParameterType.IsByRef)) return null;
 			return new MethodCandidate(info,allParameters);
+		}
+	}
+	
+
+	//When function should return Task, but returns Task<object>, the object should not be a return value, therefore this it needs to be caught and the value gets discarded
+	internal static int GetVoidTaskDepth(Type returnType){
+		for(int i=0;;i++){
+			if(returnType==typeof(Task)) return i;
+			if(returnType==typeof(ValueTask)) return i;
+			//any normal type
+			if(!returnType.IsGenericType) return int.MaxValue;
+				
+			//check generic type
+			var generic=returnType.GetGenericTypeDefinition();
+			if(generic!=typeof(Task<>)&&generic!=typeof(ValueTask<>)) return int.MaxValue;
+			//Task<T> or ValueTask<T>: extract T and check again
+			returnType=returnType.GetGenericArguments()[0];
 		}
 	}
 }

@@ -94,7 +94,7 @@ public abstract partial class Invoker{
 	},null,null,null);
 
 	internal static PendingCall<RpcDataPrimitive> CallLocal<T>(Func<FunctionCallContext,T> a)
-		=>CallLocal(ctx=>RpcInvoker.ObjectToTask(a(ctx),null),null,null,null);
+		=>CallLocal(ctx=>RpcInvoker.ObjectToTask(a(ctx),null,RpcInvoker.GetVoidTaskDepth(typeof(T))),null,null,null);
 
 	private static PendingCall<RpcDataPrimitive> CallLocal(Func<FunctionCallContext,Task<RpcDataPrimitive>> a,string? type,string? method,RpcDataPrimitive[]? args){
 		var rawData=new PendingCallRawData(type,method,args);

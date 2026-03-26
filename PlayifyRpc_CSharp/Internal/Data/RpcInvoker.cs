@@ -104,7 +104,7 @@ public static partial class RpcInvoker{
 
 			//Invoke
 			var result=bestCandidate.MethodInfo.Invoke(instance,bestCandidate.FillArguments(commonArgs,args,ctx));
-			return ObjectToTask(result,bestCandidate.ReturnTransformer);
+			return ObjectToTask(result,bestCandidate.ReturnTransformer,bestCandidate.VoidTaskDepth);
 		} catch(TargetInvocationException e){
 			throw RpcException.WrapAndFreeze(e.InnerException??e);
 		} catch(Exception e){
@@ -112,7 +112,7 @@ public static partial class RpcInvoker{
 		}
 	}
 
-	internal static async Task<RpcDataPrimitive> ObjectToTask(object? result,RpcDataTransformerAttribute? transformer){
+	internal static async Task<RpcDataPrimitive> ObjectToTask(object? result,RpcDataTransformerAttribute? transformer,int voidTaskDepth){
 		while(true)
 			switch(result){
 				case Task task:
@@ -120,22 +120,22 @@ public static partial class RpcInvoker{
 						await task.ConfigureAwait(false);
 
 					var type=task.GetType();
-					if(!type.IsGenericType){
-						result=null;
-						continue;
-					}
+					if(!type.IsGenericType)
+						return RpcDataPrimitive.From(null,null,transformer);
 
 					var prop=TaskResultProperties.GetOrAdd(type,t=>t.GetProperty(nameof(Task<object>.Result)))!;
 					result=prop.GetValue(result);
 
 					if(VoidTaskResult.IsInstanceOfType(result))
-						result=null;//VoidTaskResult should only occur here, and nowhere else
+						return RpcDataPrimitive.From(null,null,transformer);//VoidTaskResult should only occur here, and nowhere else
+					
+					if(voidTaskDepth--<=0)
+						return RpcDataPrimitive.From(null,null,transformer);
 
 					continue;
 				case ValueTask valueTask:
 					await valueTask;
-					result=null;
-					continue;
+					return RpcDataPrimitive.From(null,null,transformer);
 				case not null when result.GetType() is{IsGenericType: true} t&&t.GetGenericTypeDefinition()==typeof(ValueTask<>):
 					var method=ValueTaskAsTaskMethods.GetOrAdd(t,tt=>tt.GetMethod(nameof(ValueTask<object>.AsTask)))!;
 					result=method.Invoke(result,[]);

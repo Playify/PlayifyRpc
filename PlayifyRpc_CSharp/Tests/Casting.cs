@@ -5,6 +5,7 @@ using PlayifyRpc;
 using PlayifyRpc.Internal.Data;
 using PlayifyRpc.Types.Data;
 using PlayifyRpc.Types.Data.Objects;
+using PlayifyRpc.Types.Exceptions;
 using PlayifyRpc.Utils;
 using PlayifyUtility.HelperClasses;
 using PlayifyUtility.Jsons;
@@ -58,8 +59,8 @@ public class Casting{
 		Assert.That(RpcDataPrimitive.Cast<bool?>(DBNull.Value),Is.EqualTo(null));
 		Assert.That(RpcDataPrimitive.Cast<bool?>(JsonBool.False),Is.EqualTo(false));
 
-		Assert.That(()=>RpcDataPrimitive.Cast<JsonNull>(false),Throws.TypeOf<InvalidCastException>());
-		Assert.That(()=>RpcDataPrimitive.Cast<bool>(null),Throws.TypeOf<InvalidCastException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<JsonNull>(false),Throws.TypeOf<RpcDataException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<bool>(null),Throws.TypeOf<RpcDataException>());
 
 		Assert.That(RpcDataPrimitive.Cast<string>(null),Is.EqualTo(null));
 	});
@@ -69,10 +70,10 @@ public class Casting{
 		Assert.That(RpcDataPrimitive.Cast<double>((long)4),Is.EqualTo((double)4));
 		Assert.That(RpcDataPrimitive.Cast<int>(10e1),Is.EqualTo(100));
 
-		Assert.That(()=>RpcDataPrimitive.Cast<bool>(1),Throws.TypeOf<InvalidCastException>());
-		Assert.That(()=>RpcDataPrimitive.Cast<int>(true),Throws.TypeOf<InvalidCastException>());
-		Assert.That(()=>RpcDataPrimitive.Cast<int>(1.5f),Throws.TypeOf<InvalidCastException>());
-		Assert.That(()=>RpcDataPrimitive.Cast<int>(uint.MaxValue),Throws.TypeOf<InvalidCastException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<bool>(1),Throws.TypeOf<RpcDataException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<int>(true),Throws.TypeOf<RpcDataException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<int>(1.5f),Throws.TypeOf<RpcDataException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<int>(uint.MaxValue),Throws.TypeOf<RpcDataException>());
 	});
 
 	[Test]
@@ -107,7 +108,7 @@ public class Casting{
 		Assert.That(RpcDataPrimitive.From(new StringEnum<ByteEnum>(ByteEnum.Small)),Is.EqualTo(new RpcDataPrimitive(nameof(ByteEnum.Small))));
 		Assert.That(RpcDataPrimitive.Cast<int>(IntEnum.Big),Is.EqualTo(500));
 
-		Assert.That(()=>RpcDataPrimitive.Cast<ByteEnum>(IntEnum.Big),Throws.TypeOf<InvalidCastException>());
+		Assert.That(()=>RpcDataPrimitive.Cast<ByteEnum>(IntEnum.Big),Throws.TypeOf<RpcDataException>());
 	});
 
 	[Test]
@@ -157,12 +158,12 @@ public class Casting{
 				}
 			},
 		};
-		var exception=Assert.Throws<InvalidCastException>(()=>RpcDataPrimitive.Cast<Json>(obj))!;
+		var exception=Assert.Throws<RpcDataException>(()=>RpcDataPrimitive.Cast<Json>(obj))!;
 		StringAssert.Contains("index 0",exception.ToString());
 		StringAssert.Contains("property \"a\"",exception.ToString());
 
 		//If property is not found, it should appear in the stack trace
-		StringAssert.Contains("property \"A\"",Assert.Throws<InvalidCastException>(()=>RpcDataPrimitive.Cast<ReducedObjectType>(new ExampleObjectType()))!.ToString());
+		StringAssert.Contains("property \"A\"",Assert.Throws<RpcDataException>(()=>RpcDataPrimitive.Cast<ReducedObjectType>(new ExampleObjectType()))!.ToString());
 	});
 
 
